@@ -18,7 +18,6 @@ Scene::Scene(sf::RenderWindow* hwnd, InputManager* inpt, sf::View* vw)
 Scene::~Scene() 
 {
 	delete shape;
-	shape = NULL;
 }
 
 void Scene::Init()
@@ -48,7 +47,7 @@ void Scene::RunScene(float dt)
 
 void Scene::HandleInput(float dt)
 {
-	OverrideHandleInput();
+	OverrideHandleInput(dt);
 }
 
 void Scene::Update(float dt)

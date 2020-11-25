@@ -1,6 +1,6 @@
+#include <SFML/Graphics.hpp>
 #include "Configurations.h" // Common configurations for the game
 #include <net_common.h> // Network static libraries
-#include <SFML/Graphics.hpp>
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h
 
