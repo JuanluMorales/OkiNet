@@ -1,5 +1,11 @@
 #include <net_common.h>
 
+enum class CustomMsgTypes : uint32_t
+{
+	Fire,
+	Move,
+};
+
 std::vector<char> vBuffer(20 * 1024); // Large buffer to store messages
 
 void GrabSomeData(asio::ip::tcp::socket& socket)
@@ -22,63 +28,64 @@ void GrabSomeData(asio::ip::tcp::socket& socket)
 		}
 	);
 }
-
+/*
 int main()
 {
-	asio::error_code ec; 
 
-	// ASIO interface object
-	asio::io_context context;
-	// Create fake tasks to asio so the context doesnt finish to allow asynchronicity
-	asio::io_context::work idleWork(context);
-	// Start the context in a new thread so there is no blocking
-	std::thread thrContext = std::thread([&]() {context.run(); });
-	
-	// Create a tcp endpoint to connect to
-	asio::ip::tcp::endpoint endpoint(asio::ip::make_address("93.184.216.34", ec), 80);
+	//asio::error_code ec; 
 
-	// Create socket, the context delivers the implementation
-	asio::ip::tcp::socket socket(context);
+	//// ASIO interface object
+	//asio::io_context context;
+	//// Create fake tasks to asio so the context doesnt finish to allow asynchronicity
+	//asio::io_context::work idleWork(context);
+	//// Start the context in a new thread so there is no blocking
+	//std::thread thrContext = std::thread([&]() {context.run(); });
+	//
+	//// Create a tcp endpoint to connect to
+	//asio::ip::tcp::endpoint endpoint(asio::ip::make_address("93.184.216.34", ec), 80);
 
-	// tell socket to connect
-	socket.connect(endpoint, ec);
+	//// Create socket, the context delivers the implementation
+	//asio::ip::tcp::socket socket(context);
 
-	// check if there were errors
-	if (!ec)
-	{
-		std::cout << "Connected!" << std::endl;
-	}
-	else
-	{
-		std::cout << "Failed to connect to address:\n" << ec.message() << std::endl;
-	}
+	//// tell socket to connect
+	//socket.connect(endpoint, ec);
 
-	if (socket.is_open())
-	{
-		// Start reading asynchronously
-		GrabSomeData(socket);
+	//// check if there were errors
+	//if (!ec)
+	//{
+	//	std::cout << "Connected!" << std::endl;
+	//}
+	//else
+	//{
+	//	std::cout << "Failed to connect to address:\n" << ec.message() << std::endl;
+	//}
 
-		// Send a test message/request
-		std::string sRequest =
-			"GET /index.html HTTP/1.1\r\n"
-			"Host: example.com\r\n"
-			"Connection: close\r\n\r\n";
+	//if (socket.is_open())
+	//{
+	//	// Start reading asynchronously
+	//	GrabSomeData(socket);
 
-		socket.write_some(asio::buffer(sRequest.data(), sRequest.size()), ec);
+	//	// Send a test message/request
+	//	std::string sRequest =
+	//		"GET /index.html HTTP/1.1\r\n"
+	//		"Host: example.com\r\n"
+	//		"Connection: close\r\n\r\n";
 
-		// program does soemthing else, while handling data transfer
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(20000ms);
+	//	socket.write_some(asio::buffer(sRequest.data(), sRequest.size()), ec);
 
-		context.stop();
-		if (thrContext.joinable()) thrContext.join();
-	}
+	//	// program does soemthing else, while handling data transfer
+	//	using namespace std::chrono_literals;
+	//	std::this_thread::sleep_for(20000ms);
+
+	//	context.stop();
+	//	if (thrContext.joinable()) thrContext.join();
+	//}
 
 
-	system("PAUSE");
+	//system("PAUSE");
 
-	return 0;
-}
+	//return 0;
+}*/
 
 
 //#include <SFML/Graphics.hpp>

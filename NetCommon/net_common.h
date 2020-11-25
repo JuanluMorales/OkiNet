@@ -6,7 +6,7 @@
 #include <thread>
 #include <mutex>
 #include <deque>
-#include <optional>
+//#include <optional> // c++17 functionality only
 #include <vector>
 #include <iostream>
 #include <algorithm>

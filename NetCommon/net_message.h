@@ -8,7 +8,7 @@
 template <typename T>
 struct message_header
 {
-	T id{};
+	T id{}; // Templated class to allow enum classes to be used as ID
 	uint32_t size = 0; // use unit32 instead of size_t to reduce byte issues
 };
 
@@ -16,7 +16,7 @@ template <typename T>
 struct message
 {
 	message_header<T> header{};
-	std::vector<uint8_t> body;
+	std::vector<uint8_t> body; // Vector byte contents of the message
 
 	// Return the size of the entire message packet in bytes
 	size_t size() const
@@ -24,10 +24,11 @@ struct message
 		return sizeof(message_header<T>) + body.size();
 	}
 
-	// Override std::cout for friendlier description of the message
+	// Override std::cout for friendlier description of the packet contents
+	// This way "std::cout << Message" will output "ID: X  Size: X"
 	friend std::ostream& operator << (std::ostream& os, const message<T>& msg)
 	{
-		os << "ID:" << int(msg.header.id) << " Size:" << msg.header.size;
+		os << "ID: " << int(msg.header.id) << " Size: " << msg.header.size << " bytes";
 		return os;
 	}
 
@@ -49,4 +50,29 @@ struct message
 		// Return the target message so it can be chained
 		return msg;
 	}
+
+	// Override the >> operator to improve readability when outputting the message contents
+	// Use like "Message >> Content"
+	template<typename DataType>
+	friend message<T>& operator >> (message<T>& msg, DataType& data)
+	{
+		// check that the type of the data is copyable
+		static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to copy");
+
+		// store the location of the first data 
+		size_t i = msg.body.size() - sizeof(DataType);
+
+		// copy from vector to variable
+		std::memcpy(&data, msg.body.data() + i, sizeof(DataType));
+
+		// shrink vector to remove read bytes
+		msg.body.resize(i);
+
+		// recalculate message size
+		msg.header.size = msg.size();
+
+		return msg;
+			
+	}
+
 };
