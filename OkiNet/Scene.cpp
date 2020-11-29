@@ -8,22 +8,15 @@ Scene::Scene(sf::RenderWindow* hwnd, InputManager* inpt, sf::View* vw)
 	input = inpt;
 	view = vw;
 
-	rectShape.setSize(sf::Vector2f(50, 50));
-	rectShape.setPosition(0, 0);
-	rectShape.setFillColor(sf::Color::Green);
-
 	Init();
 }
 
 Scene::~Scene() 
 {
-	delete shape;
 }
 
 void Scene::Init()
 {
-	shape = new sf::CircleShape(100.0f);
-	shape->setFillColor(sf::Color::Green);
 }
 
 void Scene::OverrideRender()
@@ -65,9 +58,6 @@ void Scene::Render()
 
 	// Call inherited virtual function to include render objects
 	OverrideRender();
-
-	// render something to test
-	window->draw(rectShape);
 
 	EndDraw();
 }

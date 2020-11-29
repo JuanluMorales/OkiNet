@@ -4,8 +4,6 @@
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h
 
-
-
 int main()
 {
 //start: // Start label for goto purposes
@@ -24,12 +22,7 @@ int main()
 	//--------------------------------------
 
 	// Create test scene
-	Scene match(&window, &inputManager, &view);
 	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
-	
-	////// render something to test
-	//sf::CircleShape shape(100.f);
-	//shape.setFillColor(sf::Color::Green);
 
 	// GAME LOOP
 	while (window.isOpen())
@@ -102,3 +95,5 @@ int main()
 
 	return 0;
 }
+
+

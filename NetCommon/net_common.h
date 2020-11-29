@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <vector>
+#include <functional>
 
 #ifdef _WIN32 // Define that the Windows API is to be used (does not mean just use win32) and fix ASIO compiler warning
 #define _WIN32_WINNT 0x0A00

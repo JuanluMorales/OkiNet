@@ -28,17 +28,15 @@ private:
 	void Update(float dt);
 	void Render();
 
-	sf::RenderWindow* window;
-	sf::View* view;
-	InputManager* input;
-	
 	//Clear window to redraw
 	void BeginDraw();
 	//Display the screen with what has been drawn
 	void EndDraw();
 
-
-	sf::CircleShape* shape;
-	sf::RectangleShape rectShape;
+protected:
+	sf::RenderWindow* window;
+	sf::View* view;
+	InputManager* input;
+	
 };
 

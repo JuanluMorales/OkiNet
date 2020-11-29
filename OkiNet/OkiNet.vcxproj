@@ -159,6 +159,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Scene_OfflineMatch.cpp" />
+    <ClCompile Include="Source.cpp" />
     <ClCompile Include="SpriteBase.cpp" />
   </ItemGroup>
   <ItemGroup>

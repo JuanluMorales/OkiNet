@@ -15,5 +15,6 @@ public:
 
 private:
 
+	sf::RectangleShape rectShape;
 };
 

@@ -9,5 +9,6 @@
   <ItemGroup>
     <ClInclude Include="net_message.h" />
     <ClInclude Include="net_common.h" />
+    <ClInclude Include="net_threadSafeQueue.h" />
   </ItemGroup>
 </Project>
