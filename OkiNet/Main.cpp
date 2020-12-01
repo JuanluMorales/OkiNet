@@ -1,7 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "Configurations.h" // Common configurations for the game
 #include <net_common.h> // Network static libraries
-#include <net_threadSafeQueue.h>
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h
 
@@ -19,7 +18,7 @@ int main()
 	sf::Clock clock;
 	float deltaTime;
 
-	// Create and initialize test scene
+	// Create and initialize offline test scene
 	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
 	offlineMatch.Init();
 

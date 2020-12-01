@@ -25,3 +25,4 @@
 #include <asio/ts/internet.hpp>
 
 #include "net_message.h"
+#include "net_threadSafeQueue.h"

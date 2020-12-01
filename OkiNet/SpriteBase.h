@@ -37,6 +37,9 @@ public:
 
 	SpriteType thisSpriteType;
 
+	const int PIXEL_SCALE_FACTOR = 3; //Scale factor applied to the sprites to upscale them
+	const double PI = 3.14159265; //just pi
+
 protected:
 	// Sprite properties
 	sf::Vector2f velocity;

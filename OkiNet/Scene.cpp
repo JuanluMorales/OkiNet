@@ -63,7 +63,7 @@ void Scene::Render()
 }
 
 void Scene::BeginDraw() {
-	window->clear(sf::Color::Red);
+	window->clear(sf::Color::Blue);
 }
 
 void Scene::EndDraw() {

@@ -19,21 +19,15 @@
     <Filter Include="Source Files\Scenes">
       <UniqueIdentifier>{34208635-b5a9-44de-92f1-21f37d18a7b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\BaseClasses">
+      <UniqueIdentifier>{2be79034-2bfc-4ef6-b6f1-1a6111f42673}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\BaseClasses">
+      <UniqueIdentifier>{ac99e82c-24ec-4500-926e-318a61d349fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="GameState.cpp">
-      <Filter>Source Files\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene_OfflineMatch.cpp">
@@ -43,29 +37,47 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Collision.cpp">
+      <Filter>Source Files\BaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files\BaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteBase.cpp">
+      <Filter>Source Files\BaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\BaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="GameState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerCharacter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Configurations.h">
       <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="GameState.h">
-      <Filter>Header Files\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteBase.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Scene_OfflineMatch.h">
       <Filter>Header Files\Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteBase.h">
+      <Filter>Header Files\BaseClasses</Filter>
+    </ClInclude>
     <ClInclude Include="Collision.h">
+      <Filter>Header Files\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="GameState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerCharacter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

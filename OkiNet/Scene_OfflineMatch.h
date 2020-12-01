@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "PlayerCharacter.h"
 
 // Scene that comprises the offline version of the game
 class Scene_OfflineMatch : public Scene
@@ -15,6 +16,14 @@ public:
 
 private:
 
-	sf::RectangleShape rectShape;
+	SpriteBase platform;
+	PlayerCharacter playerOne;
+	PlayerCharacter playerTwo;
+
+	sf::Vector2f playerOneStartPos;
+	sf::Vector2f playerTwoStartPos;
+
+	sf::Font DebugFont;
+	sf::Text DebugText;
 };
 
