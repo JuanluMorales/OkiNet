@@ -14,7 +14,7 @@ PlayerCharacter::PlayerCharacter()
 	CanGoUp = true; //If theres a ceiling, doesnt allow to go up
 	maxHealthPoints = 50; //Total hit points the player can suffer before dying
 	currentHealthPoints = 50; //Current health 
-	MoveSpeed = 400; //Multiplier for the movement speed
+	MoveSpeed = 100; //Multiplier for the movement speed
 
 	CharacterSetUp = false;
 }

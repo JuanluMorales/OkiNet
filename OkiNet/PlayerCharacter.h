@@ -18,6 +18,8 @@ public:
 	void update(float dt, sf::Window* wnd); // Update states and apply transformations
 	void handleInput(InputManager* input); // Register input
 
+	int MoveSpeed; //Multiplier for the movement speed
+
 protected:
 	sf::Texture texture; // The graphic component of the character
 
@@ -33,9 +35,6 @@ protected:
 
 	int maxHealthPoints; //Total hit points the player can suffer before dying
 	int currentHealthPoints; //Current health 
-
-	// Input variables
-	int MoveSpeed = 400; //Multiplier for the movement speed
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 
