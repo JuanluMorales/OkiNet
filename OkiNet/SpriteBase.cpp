@@ -28,11 +28,11 @@ sf::Vector2f SpriteBase::getVelocity()
 	return velocity;
 }
 
-//// Returns collision box + position, giving the collision box in the correct position
-//sf::FloatRect SpriteBase::getCollisionBox() {
-//
-//	return sf::FloatRect(collisionBox.left + getPosition().x, collisionBox.top + getPosition().y, collisionBox.width, collisionBox.height);
-//}
+// Returns collision box + position, giving the collision box in the correct position
+sf::FloatRect SpriteBase::getCollisionBox() {
+
+	return sf::FloatRect(collisionBox.left + getPosition().x, collisionBox.top + getPosition().y, collisionBox.width, collisionBox.height);
+}
 
 // Reponse function, what the sprite does based on collision
 // Colliding object is passed in for information

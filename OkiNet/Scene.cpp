@@ -8,7 +8,7 @@ Scene::Scene(sf::RenderWindow* hwnd, InputManager* inpt, sf::View* vw)
 	input = inpt;
 	view = vw;
 
-	Init();
+	 Init();
 }
 
 Scene::~Scene() 

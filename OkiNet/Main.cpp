@@ -1,28 +1,27 @@
 #include <SFML/Graphics.hpp>
 #include "Configurations.h" // Common configurations for the game
 #include <net_common.h> // Network static libraries
+#include <net_threadSafeQueue.h>
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h
 
 int main()
 {
-//start: // Start label for goto purposes
-
 	// Create components needed for SFML to run
 	// Window to render on
 	sf::RenderWindow window(sf::VideoMode(configs::WindowWidth, configs::WindowHeight), configs::WindowName);
 	window.setFramerateLimit(configs::FrameRateCap);
-	// View (center, size)
+	// View (center, size) --> Acts as a "2D camera" or viewport
 	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(configs::WindowWidth, configs::WindowHeight));
 	// Input
 	InputManager inputManager;
 	// Clock with delta time
 	sf::Clock clock;
 	float deltaTime;
-	//--------------------------------------
 
-	// Create test scene
+	// Create and initialize test scene
 	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
+	offlineMatch.Init();
 
 	// GAME LOOP
 	while (window.isOpen())
@@ -83,14 +82,9 @@ int main()
 		//Calculate delta time; how much time has passed since 
 		//it was last calculated (in seconds) and restart the clock
 		deltaTime = clock.restart().asSeconds();
-
-		//match.RunScene(deltaTime);
 		
 		offlineMatch.RunScene(deltaTime);
 
-		//window.clear();
-		//window.draw(shape);
-		//window.display();
 	}
 
 	return 0;

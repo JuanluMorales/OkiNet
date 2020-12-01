@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-class SpriteBase
+class SpriteBase : public sf::RectangleShape
 {
 public:
 	SpriteBase();
@@ -21,13 +21,10 @@ public:
 	// for sprite collision
 	bool isCollider() { return collider; };
 	void setCollider(bool b) { collider = b; };
-	//sf::FloatRect getCollisionBox();
+	sf::FloatRect getCollisionBox();
 	void setCollisionBox(float x, float y, float width, float height) { collisionBox = sf::FloatRect(x, y, width, height); };
 	void setCollisionBox(sf::FloatRect fr) { collisionBox = fr; };
 	virtual void collisionResponse(SpriteBase* sp);
-
-	// input component
-	//void setInput(Input* in) { input = in; };
 
 	//Animations that can be created through AddNewAnimation() for static object such as tiles from the tilemap
 	//std::vector<Animation> animations;
@@ -48,8 +45,5 @@ protected:
 	// Collision vars
 	sf::FloatRect collisionBox;
 	bool collider;
-
-	// input component
-	//Input* input;
 };
 

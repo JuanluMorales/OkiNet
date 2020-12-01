@@ -1,6 +1,7 @@
 #pragma once
 #include "net_common.h"
-// Thread safe queue is needed for the queue of messages from the connections to be only written once at a time because of the asynchronous nature of the ASIO library
+// Thread safe queue is needed for the queue of messages from and to the connections 
+// to be only written once at a time because of the asynchronous nature of the ASIO library
 
 namespace net
 {
@@ -8,11 +9,15 @@ namespace net
 	template<typename T>
 	class TQueue
 	{
+	protected:
+		std::mutex muxQueue; // To lock the deque and avoid deadlock with
+		std::deque<T> deqQueue; // Double ended queue with dynamic size, capable of contracting or expanding 
+
 	public:
-		TQueue() = default; // Use default constructor
+		TQueue() = default; // Explicitly defaulted constructor to make sure no parameters can be ever passed in
 		TQueue(const TQueue<T>&) = delete; // Do not allow the queue to be copied as it uses mutexes
+		virtual ~TQueue() { clear(); } // Call clear() on destructor, must be virtual to call the destructors in the derived classes
 		
-	public:
 		// Add guarding to the standard functions the queue would have so they return safely
 		const T& front()
 		{
@@ -28,13 +33,32 @@ namespace net
 		void push_back(const T& item)
 		{
 			std::scoped_lock lock(muxQueue);
-			return deqQueue.emplace_back(std::move(item)); // use emplace instead of push back for compiler optimization based on c++ documentation (?)
+			deqQueue.emplace_back(std::move(item)); // use emplace instead of push back for compiler optimization based on c++ documentation (?)
+													// use std::move() for efficient transfer of resources when moving from t to another object
 		}
 
 		void push_front(const T& item)
 		{
 			std::scoped_lock lock(muxQueue);
-			return deqQueue.emplace_front(std::move(item)); 
+			deqQueue.emplace_front(std::move(item)); 
+		}
+
+		// Remove and return item from front
+		T pop_front()
+		{
+			std::scoped_lock lock(muxQueue);
+			// Use move() and store the t item to allow return along with deletion
+			auto t = std::move(deqQueue.front()); // Store item in fribt
+			deqQueue.pop_front();
+			return t;
+		}
+
+		T pop_back()
+		{
+			std::scoped_lock lock(muxQueue);
+			auto t = std::move(deqQueue.back());
+			deqQueue.pop_back();
+			return t;
 		}
 
 		// Other helpful functions ---------------
@@ -50,15 +74,12 @@ namespace net
 			std::scoped_lock lock(muxQueue);
 			return deqQueue.size();
 		}
-		// Flush clear the queue
+		// Erase all queue
 		void clear()
 		{
 			std::scoped_lock lock(muxQueue);
 			deqQueue.clear();
 		}
 
-	protected:
-		std::mutex muxQueue; // To lock the deque and avoid deadlock with
-		std::deque<T> deqQueue; // Double ended queue with dynamic size, capable of contracting or expanding 
 	};
 }
