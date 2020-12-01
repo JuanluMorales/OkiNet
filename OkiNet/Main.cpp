@@ -4,6 +4,10 @@
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h and other scenes
 
+// Scenes includes
+#include "Scene_MainMenu.h"
+#include "Scene_OfflineMatch.h"
+
 int main()
 {
 	// Create components needed for SFML to run
@@ -18,14 +22,19 @@ int main()
 	sf::Clock clock;
 	float deltaTime;
 
-	// Create main menu
+	// Game Scene Manager
+	GameState* scenesManager;
+	scenesManager = new GameState(scenes::MainMenu);
+
+	// Create first scene: main menu so it can be fed to the sceneManager
 	Scene_MainMenu mainMenu(&window, &inputManager, &view);
+	mainMenu.Init(scenesManager);
+
 	// Create and initialize offline test scene
 	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
-	offlineMatch.Init();
+	offlineMatch.Init(scenesManager);
 
-	// Setup the game stateManager with initial scene
-	GameState scenesManager = GameState(&offlineMatch);
+
 
 	// GAME LOOP
 	while (window.isOpen())
@@ -88,11 +97,11 @@ int main()
 		deltaTime = clock.restart().asSeconds();
 
 		// Switch on the scene to select which one to update
-		if (scenesManager.currentScene == &mainMenu)
+		if (scenesManager->currentScene == scenes::MainMenu)
 		{
 			mainMenu.RunScene(deltaTime);
 		}else
-		if (scenesManager.currentScene == &offlineMatch)
+		if (scenesManager->currentScene == scenes::OfflineMatch)
 		{
 			offlineMatch.RunScene(deltaTime);
 		}

@@ -1,5 +1,5 @@
 #pragma once
-#include "Scene.h"
+#include "GameState.h"
 #include "PlayerCharacter.h"
 
 // Scene that comprises the offline version of the game
@@ -9,12 +9,13 @@ public:
 	// Make sure to allow use of the default constructor
 	using Scene::Scene;
 
-	void Init();
+	void Init(GameState* stateManager);
 	void OverrideRender();
 	void OverrideUpdate(float dt);
 	void OverrideHandleInput(float dt);
 
 private:
+	GameState* stateManager;
 
 	SpriteBase platform;
 	PlayerCharacter playerOne;
@@ -25,5 +26,7 @@ private:
 
 	sf::Font DebugFont;
 	sf::Text DebugText;
+
+	
 };
 

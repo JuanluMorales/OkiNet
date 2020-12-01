@@ -1,7 +1,9 @@
 #include "Scene_OfflineMatch.h"
 
-void Scene_OfflineMatch::Init()
+void Scene_OfflineMatch::Init(GameState* stateMan)
 {
+	stateManager = stateMan;
+
 	platform.setSize(sf::Vector2f(1500, 100));
 	platform.setPosition(-700, 300);
 	platform.setFillColor(sf::Color::Green);

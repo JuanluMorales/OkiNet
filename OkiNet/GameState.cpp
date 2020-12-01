@@ -1,14 +1,13 @@
 #include "GameState.h"
 
-GameState::GameState(Scene* CurrentSceneReference)
+GameState::GameState(scenes CurrentSceneReference)
 {
 	currentScene = CurrentSceneReference;
 }
 
 // Search in the map for the scene and return it
-Scene* GameState::GoToScene(Scene* state)
+void GameState::GoToScene(scenes state)
 {
 	currentScene = state;
-	return currentScene;
 }
 
