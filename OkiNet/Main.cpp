@@ -2,7 +2,7 @@
 #include "Configurations.h" // Common configurations for the game
 #include <net_common.h> // Network static libraries
 #include "InputManager.h"
-#include "GameState.h" // Includes Scene.h
+#include "GameState.h" // Includes Scene.h and other scenes
 
 int main()
 {
@@ -18,9 +18,14 @@ int main()
 	sf::Clock clock;
 	float deltaTime;
 
+	// Create main menu
+	Scene_MainMenu mainMenu(&window, &inputManager, &view);
 	// Create and initialize offline test scene
 	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
 	offlineMatch.Init();
+
+	// Setup the game stateManager with initial scene
+	GameState scenesManager = GameState(&offlineMatch);
 
 	// GAME LOOP
 	while (window.isOpen())
@@ -81,8 +86,18 @@ int main()
 		//Calculate delta time; how much time has passed since 
 		//it was last calculated (in seconds) and restart the clock
 		deltaTime = clock.restart().asSeconds();
+
+		// Switch on the scene to select which one to update
+		if (scenesManager.currentScene == &mainMenu)
+		{
+			mainMenu.RunScene(deltaTime);
+		}else
+		if (scenesManager.currentScene == &offlineMatch)
+		{
+			offlineMatch.RunScene(deltaTime);
+		}
 		
-		offlineMatch.RunScene(deltaTime);
+	
 
 	}
 
