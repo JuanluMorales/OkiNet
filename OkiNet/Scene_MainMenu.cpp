@@ -16,7 +16,7 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	offlineMatchText.setFillColor(sf::Color::White);
 
 	onlineMatchText.setFont(menuFont);
-	onlineMatchText.setString("LOCALHOST PLACEHOLDER ONLINE MATCH");
+	onlineMatchText.setString("ONLINE MATCH");
 	onlineMatchText.setCharacterSize(25);
 	onlineMatchText.setOrigin(sf::Vector2f(onlineMatchText.getGlobalBounds().width / 2, onlineMatchText.getGlobalBounds().height / 2));
 	onlineMatchText.setPosition(sf::Vector2f(0, 50));

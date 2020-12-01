@@ -1,12 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include "Configurations.h" // Common configurations for the game
-#include <net_common.h> // Network static libraries
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h and other scenes
 
 // Scenes includes
 #include "Scene_MainMenu.h"
 #include "Scene_OfflineMatch.h"
+#include "Scene_OnlineMatch.h"
 
 int main()
 {
@@ -34,6 +34,8 @@ int main()
 	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
 	offlineMatch.Init(scenesManager);
 
+	Scene_OnlineMatch onlineMatch(&window, &inputManager, &view);
+	onlineMatch.Init(scenesManager);
 
 
 	// GAME LOOP
@@ -96,7 +98,7 @@ int main()
 		//it was last calculated (in seconds) and restart the clock
 		deltaTime = clock.restart().asSeconds();
 
-		// Switch on the scene to select which one to update
+		// FakeSwitch on the scenes to select which one to update
 		if (scenesManager->currentScene == scenes::MainMenu)
 		{
 			mainMenu.RunScene(deltaTime);
@@ -104,6 +106,9 @@ int main()
 		if (scenesManager->currentScene == scenes::OfflineMatch)
 		{
 			offlineMatch.RunScene(deltaTime);
+		}else if (scenesManager->currentScene == scenes::OnlineMatch)
+		{
+			onlineMatch.RunScene(deltaTime);
 		}
 		
 	

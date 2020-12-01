@@ -1,4 +1,5 @@
 #pragma once
+#include <net_common.h> // Network static libraries
 #include "GameState.h"
 #include "PlayerCharacter.h"
 
@@ -8,10 +9,16 @@ public:
 	// Make sure to allow use of the default constructor
 	using Scene::Scene;
 
+	// False = Host
 	void Init(GameState* stateMan);
 	void OverrideRender();
 	void OverrideUpdate(float dt);
 	void OverrideHandleInput(float dt);
+
+	bool AttemptConnection();
+	void GrabSomeData(asio::ip::tcp::socket& socket);
+
+	bool PlayerTwoConnected;
 
 private:
 	GameState* stateManager;
@@ -26,6 +33,9 @@ private:
 	sf::Font DebugFont;
 	sf::Text DebugText;
 
-	bool PlayerTwoConnected;
+
+
+	// network variables
+	std::vector<char> vBuffer; // Large buffer to store messages
 };
 
