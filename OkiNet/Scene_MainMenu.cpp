@@ -4,7 +4,6 @@ void Scene_MainMenu::Init(GameState* stateMan)
 {
 	stateManager = stateMan;
 	currentSelection = menuSelection::OfflineMatch;
-	IPInputFieldActive = false;
 
 	// Setup debug font and text
 	menuFont.loadFromFile("font/8-BIT WONDER.ttf");
@@ -56,7 +55,7 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 	}
 
 	// Allow movement 
-	if (IPInputFieldActive == false && input->isKeyDown(sf::Keyboard::W) || input->isKeyDown(sf::Keyboard::Up) || input->isKeyDown(sf::Keyboard::S) || input->isKeyDown(sf::Keyboard::Down))
+	if (input->isKeyDown(sf::Keyboard::W) || input->isKeyDown(sf::Keyboard::Up) || input->isKeyDown(sf::Keyboard::S) || input->isKeyDown(sf::Keyboard::Down))
 	{
 		// Lift buttons so it acts as a trigger instead of constant press
 		input->SetKeyUp(sf::Keyboard::W);

@@ -24,6 +24,5 @@ private:
 	sf::Text offlineMatchText;
 
 	menuSelection currentSelection;
-	bool IPInputFieldActive;
 };
 
