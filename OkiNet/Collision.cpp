@@ -15,8 +15,60 @@ bool Collision::checkBoundingBox(SpriteBase* s1, SpriteBase* s2)
 	if (s1->getCollisionBox().top > s2->getCollisionBox().top + s2->getCollisionBox().height)
 		return false;
 
-
 	return true;
+}
+
+Collision::CollisionResponse Collision::checkBoundingBox_Sides(SpriteBase* s1, SpriteBase* s2)
+{
+	sf::FloatRect s1FR = s1->getCollisionBox();
+	sf::FloatRect s2FR = s2->getCollisionBox();
+
+	CollisionResponse newResponse;
+
+	if (s1->getCollisionBox().left + s1->getCollisionBox().width < s2->getCollisionBox().left)
+		return newResponse;
+
+	if (s1->getCollisionBox().left > s2->getCollisionBox().left + s2->getCollisionBox().width)
+		return newResponse;
+
+	if (s1->getCollisionBox().top + s1->getCollisionBox().height < s2->getCollisionBox().top)
+		return newResponse;
+
+	if (s1->getCollisionBox().top > s2->getCollisionBox().top + s2->getCollisionBox().height)
+		return newResponse;
+
+	// If checks passed, a collision must have occurred
+	newResponse.None = false;
+
+	// s1R > s2L
+	if (s1->getCollisionBox().left + s1->getCollisionBox().width > s2->getCollisionBox().left)
+	{
+		newResponse.s1Right = true;
+		newResponse.s2Left = true;
+	}
+
+	// s1L < s2R
+	if (s1->getCollisionBox().left < s2->getCollisionBox().left + s2->getCollisionBox().width)
+	{
+		newResponse.s1Left = true;
+		newResponse.s2Right = true;
+	}
+
+	// s1u > s2D
+	if (s1->getCollisionBox().top + s1->getCollisionBox().height > s2->getCollisionBox().top)
+	{
+		newResponse.s1Top = true;
+		newResponse.s2Down = true;
+	}
+
+	// s1D < s2U
+	if (s1->getCollisionBox().top < s2->getCollisionBox().top + s2->getCollisionBox().height)
+	{
+		newResponse.s1Down = true;
+		newResponse.s2Top = true;
+	}
+
+	return newResponse;
 }
 
 

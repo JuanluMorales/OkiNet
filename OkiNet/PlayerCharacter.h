@@ -2,7 +2,7 @@
 #include "SpriteBase.h" // Sprite graphics
 #include "InputManager.h" // To enable input from this class for encapsulation
 #include "Collision.h"
-
+#include "Animation.h"
 
 class PlayerCharacter : public SpriteBase
 {
@@ -16,9 +16,19 @@ public:
 	~PlayerCharacter();
 
 	void update(float dt, sf::Window* wnd); // Update states and apply transformations
-	void handleInput(InputManager* input); // Register input
+	void handleInput(InputManager* input, float dt); // Register input
 
 	int MoveSpeed; //Multiplier for the movement speed
+
+	//List of animations 
+	Animation idle; //when no input received for the player
+	Animation walkFWD; // Right walk
+	Animation walkBKW; // Left walk
+	Animation fastPunch; 
+
+	// Body collision
+	SpriteBase bodyColl;
+	sf::Vector2f bodyCollOffset;	
 
 protected:
 	sf::Texture texture; // The graphic component of the character
@@ -32,11 +42,12 @@ protected:
 	bool CanGoLeft; //Allows the player to move left 
 	bool CanGoRight; // "   "    "     "		"	right
 	bool CanGoUp; //If theres a ceiling, doesnt allow to go up
-
+	
 	int maxHealthPoints; //Total hit points the player can suffer before dying
 	int currentHealthPoints; //Current health 
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 
+	Animation* currentAnim; //Holds current animation and is the one to be updated like currentAnim = &animation;
 };
 

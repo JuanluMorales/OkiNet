@@ -38,13 +38,14 @@ public:
 
 	SpriteType thisSpriteType;
 
-	const int PIXEL_SCALE_FACTOR = 3; //Scale factor applied to the sprites to upscale them
+	const int PIXEL_SCALE_FACTOR = 5; //Scale factor applied to the sprites to upscale them
 	const double PI = 3.14159265; //just pi
 
 protected:
 	// Sprite properties
 	sf::Vector2f velocity;
 	bool alive;
+	bool flipped = false; // Is the sprite flipped
 
 	// Collision vars
 	sf::FloatRect collisionBox;

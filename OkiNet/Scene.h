@@ -37,6 +37,6 @@ protected:
 	sf::RenderWindow* window;
 	sf::View* view;
 	InputManager* input;
-	
+	sf::Color clearColor;
 };
 

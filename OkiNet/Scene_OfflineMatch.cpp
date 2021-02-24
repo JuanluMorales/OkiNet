@@ -23,7 +23,7 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 	playerOne.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
 
 	// Setup player two
-	playerTwoStartPos = sf::Vector2f(350, 8);	
+	playerTwoStartPos = sf::Vector2f(200, 52);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
 }
@@ -31,10 +31,15 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 void Scene_OfflineMatch::OverrideRender()
 {
 	// render something to test
-	window->draw(platform);
+	//window->draw(platform);
+
+	window->draw(playerOne.bodyColl);
+	window->draw(playerTwo.bodyColl);
 
 	window->draw(playerOne);
 	window->draw(playerTwo);
+
+
 
 	// Render font
 	window->draw(DebugText);
@@ -44,6 +49,19 @@ void Scene_OfflineMatch::OverrideRender()
 
 void Scene_OfflineMatch::OverrideUpdate(float dt)
 {
+	playerOne.update(dt, window);
+	playerTwo.update(dt, window);
+
+	// Check collision
+	// For player one
+
+	Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&playerOne.bodyColl, &playerTwo.bodyColl);
+	if (newColl.None == false)
+	{
+		
+		DebugText.setString("COLLISION");
+	}else DebugText.setString("NO COLLISION");
+
 }
 
 void Scene_OfflineMatch::OverrideHandleInput(float dt)
@@ -53,22 +71,8 @@ void Scene_OfflineMatch::OverrideHandleInput(float dt)
 		window->close();
 	}
 
-	// Placeholder movement
-	if (input->isKeyDown(sf::Keyboard::A))
-	{
-		playerOne.setPosition(playerOne.getPosition().x - playerOne.MoveSpeed * dt, playerOne.getPosition().y);
-	}
-	if (input->isKeyDown(sf::Keyboard::D))
-	{
-		playerOne.setPosition(playerOne.getPosition().x + playerOne.MoveSpeed * dt, playerOne.getPosition().y);
-	}
+	playerOne.handleInput(input, dt);
+	playerTwo.handleInput(input, dt);
 
-	if (input->isKeyDown(sf::Keyboard::Left))
-	{
-		playerTwo.setPosition(playerTwo.getPosition().x - playerTwo.MoveSpeed * dt, playerTwo.getPosition().y);
-	}
-	if (input->isKeyDown(sf::Keyboard::Right))
-	{
-		playerTwo.setPosition(playerTwo.getPosition().x + playerTwo.MoveSpeed * dt, playerTwo.getPosition().y);
-	}
+
 }

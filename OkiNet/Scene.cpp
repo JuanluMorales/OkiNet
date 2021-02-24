@@ -7,6 +7,7 @@ Scene::Scene(sf::RenderWindow* hwnd, InputManager* inpt, sf::View* vw)
 	window = hwnd;
 	input = inpt;
 	view = vw;
+	clearColor = sf::Color::White;
 
 	 Init();
 }
@@ -63,7 +64,7 @@ void Scene::Render()
 }
 
 void Scene::BeginDraw() {
-	window->clear(sf::Color::Blue);
+	window->clear(clearColor);
 }
 
 void Scene::EndDraw() {
