@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Animation.h"
 
 class SpriteBase : public sf::RectangleShape
 {
@@ -27,7 +28,7 @@ public:
 	virtual void collisionResponse(SpriteBase* sp);
 
 	//Animations that can be created through AddNewAnimation() for static object such as tiles from the tilemap
-	//std::vector<Animation> animations;
+	std::vector<Animation> animations;
 
 	enum class SpriteType //Helps discriminate this sprite
 	{
