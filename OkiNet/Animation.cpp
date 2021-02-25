@@ -36,6 +36,35 @@ sf::IntRect Animation::getCurrentFrame()
 	return frame;
 }
 
+bool Animation::isAnimationCompleted()
+{
+	// Find the current frame
+	//auto it = std::find(frames.begin(), frames.end(), frames[currentFrame]);
+
+	//if (it != frames.end()) // If element was found
+	//{
+	//	int index = it - frames.begin();
+
+	//	if (index == frames.size() - 1)
+	//	{
+	//		return true;
+	//	}
+	//	else return false;
+	//}
+	//else {
+	//	// Element could not be found
+	//	return false;
+	//}
+
+	if (currentFrame == frames.size() - 1)
+	{
+		return true;
+	}
+	else return false;
+
+
+}
+
 // Check if the animation should progress, if so move to next frame, or loop back to the start
 void Animation::animate(float dt)
 {

@@ -48,24 +48,9 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	}
 
 	// Setup Animations
-	idle.addFrame(sf::IntRect(0, 0, 78, 55));
-	idle.addFrame(sf::IntRect(78, 0, 78, 55));
-	idle.addFrame(sf::IntRect(156, 0, 78, 55));
-	idle.addFrame(sf::IntRect(234, 0, 78, 55));
-	idle.setFrameSpeed(0.15f);
+	SetUpAnimations();
 
-	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55));
-	walkFWD.setFrameSpeed(0.15f);
-
-	currentAnim = &idle;
 	setPosition(startPos);
-
 
 	// Setup collision
 	// Body collision
@@ -74,7 +59,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	bodyColl.setCollider(true);
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
 	sf::Vector2f bodycallSize = sf::Vector2f(25 * PIXEL_SCALE_FACTOR, 42 * PIXEL_SCALE_FACTOR);
-	bodyColl.setCollisionBox(sf::FloatRect(sf::Vector2f(0,0), bodycallSize));
+	bodyColl.setCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), bodycallSize));
 	bodyColl.setOutlineColor(sf::Color::Green);
 	bodyColl.setOutlineThickness(5.f);
 	bodyColl.setFillColor(sf::Color::Transparent);
@@ -97,30 +82,7 @@ void PlayerCharacter::update(float dt, sf::Window* wnd)
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
 	bodyColl.setPosition(newPos);
 
-	switch (moveState)
-	{
-	case MoveState::Idle:
-		currentAnim = &idle;
-		break;
-	case MoveState::Right:
-		currentAnim = &walkFWD;
-		break;
-	case MoveState::Left:
-		currentAnim = &walkFWD;
-		break;
-	default:
-		break;
-	}
-
-	if (flipped)
-	{
-		currentAnim->setFlipped(true);
-	}
-
-
-	currentAnim->animate(dt);
-	setTextureRect(currentAnim->getCurrentFrame());
-	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250));
+	HandleAnimation(dt);
 
 }
 
@@ -128,6 +90,11 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
+		if (input->isKeyDown(sf::Keyboard::Q))
+		{
+			attackState = AttackState::FastPunch;
+		}
+
 		// Placeholder movement
 		if (input->isKeyDown(sf::Keyboard::A))
 		{
@@ -159,4 +126,90 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 	}
 
 
+}
+
+void PlayerCharacter::HandleAnimation(float dt)
+{
+	bool isAttacking = false; // track if the character is attacking this frame
+	
+
+	switch (attackState)
+	{
+	case AttackState::None:
+		fastPunch.reset();
+		break;
+	case AttackState::FastPunch:
+		if (currentAnim->isAnimationCompleted())
+		{
+			fastPunch.reset();
+			attackState = AttackState::None;
+		}
+		else
+		{
+			currentAnim = &fastPunch;
+		}
+		break;
+	default:
+		break;
+	}
+
+	if (attackState != AttackState::None) isAttacking = true;
+
+	if (!isAttacking)
+	{
+		// Update movement animation
+		switch (moveState)
+		{
+		case MoveState::Idle:
+			currentAnim = &idle;
+			break;
+		case MoveState::Right:
+			currentAnim = &walkFWD;
+			break;
+		case MoveState::Left:
+			currentAnim = &walkFWD;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (flipped)
+	{
+		currentAnim->setFlipped(true);
+	}
+
+
+	currentAnim->animate(dt);
+	setTextureRect(currentAnim->getCurrentFrame());
+	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250));
+}
+
+void PlayerCharacter::SetUpAnimations()
+{
+	idle.addFrame(sf::IntRect(0, 0, 78, 55));
+	idle.addFrame(sf::IntRect(78, 0, 78, 55));
+	idle.addFrame(sf::IntRect(156, 0, 78, 55));
+	idle.addFrame(sf::IntRect(234, 0, 78, 55));
+	idle.setFrameSpeed(0.15f);
+
+	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55));
+	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55));
+	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55));
+	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55));
+	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55));
+	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55));
+	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55));
+	walkFWD.setFrameSpeed(0.15f);
+
+	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55));
+	fastPunch.addFrame(sf::IntRect(234, 165, 78, 55));
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55));
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55));
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55));
+	fastPunch.setFrameSpeed(0.1f);
+	fastPunch.setLooping(false);
+
+
+	currentAnim = &idle;
 }

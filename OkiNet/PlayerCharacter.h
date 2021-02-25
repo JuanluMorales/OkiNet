@@ -10,6 +10,7 @@ public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, };
 	enum class MoveState { Idle, Left, Right };
+	enum class AttackState { None, FastPunch };
 
 	PlayerCharacter();
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);
@@ -17,18 +18,19 @@ public:
 
 	void update(float dt, sf::Window* wnd); // Update states and apply transformations
 	void handleInput(InputManager* input, float dt); // Register input
-
+	void HandleAnimation(float dt);
 	int MoveSpeed; //Multiplier for the movement speed
 
 	//List of animations 
 	Animation idle; //when no input received for the player
 	Animation walkFWD; // Right walk
 	Animation walkBKW; // Left walk
-	Animation fastPunch; 
+	Animation fastPunch;
+	bool b_fastPunch = false; // Helper for triggering the animation on/off
 
 	// Body collision
 	SpriteBase bodyColl;
-	sf::Vector2f bodyCollOffset;	
+	sf::Vector2f bodyCollOffset;
 
 protected:
 	sf::Texture texture; // The graphic component of the character
@@ -36,18 +38,20 @@ protected:
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState = PlayerState::Alive; // Alive by default
 	MoveState moveState = MoveState::Idle; // Idle by default
-
+	AttackState attackState = AttackState::None; 
 
 	bool grounded; //Sets the player able to jump when true
 	bool CanGoLeft; //Allows the player to move left 
 	bool CanGoRight; // "   "    "     "		"	right
 	bool CanGoUp; //If theres a ceiling, doesnt allow to go up
-	
+
 	int maxHealthPoints; //Total hit points the player can suffer before dying
 	int currentHealthPoints; //Current health 
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 
 	Animation* currentAnim; //Holds current animation and is the one to be updated like currentAnim = &animation;
+
+	void SetUpAnimations(); // Encapsulate the frame setup for the animations
 };
 

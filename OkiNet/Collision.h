@@ -4,15 +4,6 @@
 class Collision
 {
 public:
-	enum class Sides//Posible contact points for a collision
-	{
-		Top,
-		Down,
-		Left,
-		Right,
-		None,
-	};
-
 	// In case of a collision, where is it colliding
 	struct CollisionResponse
 	{
@@ -31,7 +22,7 @@ public:
 
 	//AABB --> returns true if colliding
 	static bool checkBoundingBox(SpriteBase* sp1, SpriteBase* sp2);
-	// Return the collision from the pov of sp1
+	// Return the collision with information of the sides
 	static CollisionResponse checkBoundingBox_Sides(SpriteBase* sp1, SpriteBase* sp2);
 
 	// Bounding circle
