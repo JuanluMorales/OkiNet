@@ -39,35 +39,32 @@ Collision::CollisionResponse Collision::checkBoundingBox_Sides(SpriteBase* s1, S
 
 	// If checks passed, a collision must have occurred
 	newResponse.None = false;
+	sf::Vector2f s1Pos = s1->getPosition();
+	sf::Vector2f s2Pos = s2->getPosition();
 
-	// s1R > s2L
-	if (s1->getCollisionBox().left + s1->getCollisionBox().width > s2->getCollisionBox().left)
+	// Check which side the collision belongs by measuring the distances
+
+	if (s1->getPosition().x < s2->getPosition().x)
 	{
 		newResponse.s1Right = true;
 		newResponse.s2Left = true;
 	}
-
-	// s1L < s2R
-	if (s1->getCollisionBox().left < s2->getCollisionBox().left + s2->getCollisionBox().width)
+	else if (s1->getPosition().x > s2->getPosition().x)
 	{
 		newResponse.s1Left = true;
 		newResponse.s2Right = true;
 	}
 
-	// s1u > s2D
-	if (s1->getCollisionBox().top + s1->getCollisionBox().height > s2->getCollisionBox().top)
+	if (s1Pos.y < s2Pos.y)
 	{
 		newResponse.s1Top = true;
 		newResponse.s2Down = true;
 	}
-
-	// s1D < s2U
-	if (s1->getCollisionBox().top < s2->getCollisionBox().top + s2->getCollisionBox().height)
+	else if (s1Pos.y > s2Pos.y)
 	{
 		newResponse.s1Down = true;
 		newResponse.s2Top = true;
 	}
-
 	return newResponse;
 }
 

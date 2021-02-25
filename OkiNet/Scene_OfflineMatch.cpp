@@ -58,7 +58,6 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&playerOne.bodyColl, &playerTwo.bodyColl);
 	if (newColl.None == false)
 	{
-		
 		DebugText.setString("COLLISION");
 	}else DebugText.setString("NO COLLISION");
 
