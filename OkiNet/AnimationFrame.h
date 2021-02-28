@@ -4,9 +4,10 @@
 // This animation's frames can be any of these types
 enum class AnimationFrameType
 {
-	StartUp,
-	Active,
-	Recovery
+	Idle, // A looping animation 
+	StartUp, // The attack is winding up
+	Active, // The attack can hurt if the hitbox connects
+	Recovery // The player makes a follow through 
 };
 
 // Class that represents an individual frame of animation and its characteristics

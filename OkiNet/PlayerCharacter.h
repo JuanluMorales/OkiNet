@@ -39,6 +39,9 @@ protected:
 	PlayerState playerState = PlayerState::Alive; // Alive by default
 	MoveState moveState = MoveState::Idle; // Idle by default
 	AttackState attackState = AttackState::None; 
+	AnimationFrameType animState = AnimationFrameType::Idle;
+
+	bool shouldAcceptInput = true;
 
 	bool grounded; //Sets the player able to jump when true
 	bool CanGoLeft; //Allows the player to move left 

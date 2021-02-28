@@ -84,12 +84,32 @@ void PlayerCharacter::update(float dt, sf::Window* wnd)
 
 	HandleAnimation(dt);
 
+	switch (animState)
+	{
+	case AnimationFrameType::Idle:
+		shouldAcceptInput = true;
+		break;
+	case AnimationFrameType::StartUp:
+		shouldAcceptInput = false;
+		break;
+	case AnimationFrameType::Active:
+		shouldAcceptInput = false;
+		break;
+	case AnimationFrameType::Recovery:
+		shouldAcceptInput = true;
+		break;
+	default:
+		break;
+	}
+
 }
 
 void PlayerCharacter::handleInput(InputManager* input, float dt)
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
+		if (!shouldAcceptInput) return;
+
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
 			attackState = AttackState::FastPunch;
@@ -111,6 +131,9 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 	}
 	else if (playerID == PlayerID::PlayerTwo)
 	{
+
+		if (!shouldAcceptInput) return;
+
 		if (input->isKeyDown(sf::Keyboard::Left))
 		{
 			setPosition(getPosition().x - MoveSpeed * dt, getPosition().y);
@@ -131,7 +154,6 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 void PlayerCharacter::HandleAnimation(float dt)
 {
 	bool isAttacking = false; // track if the character is attacking this frame
-	
 
 	switch (attackState)
 	{
@@ -174,6 +196,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 		}
 	}
 
+	// Remember the animation class of the flip state of the sprite
 	if (flipped)
 	{
 		currentAnim->setFlipped(true);
@@ -183,30 +206,33 @@ void PlayerCharacter::HandleAnimation(float dt)
 	currentAnim->animate(dt);
 	setTextureRect(currentAnim->getCurrentFrame().GetRect());
 	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250));
+
+	// Set the animation state (startup, active, recovery...)
+	animState = currentAnim->getCurrentFrame().GetFrameType();
 }
 
 void PlayerCharacter::SetUpAnimations()
 {
-	idle.addFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::StartUp);
-	idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::StartUp);
-	idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::StartUp);
-	idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::StartUp);
+	idle.addFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
+	idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
+	idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
+	idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
 	idle.setFrameSpeed(0.15f);
 
-	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::StartUp);
-	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::StartUp);
-	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::StartUp);
-	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::StartUp);
-	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::StartUp);
-	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::StartUp);
-	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
+	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
+	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle);
+	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle);
+	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
+	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
+	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
 	walkFWD.setFrameSpeed(0.15f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
 	fastPunch.addFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp);
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp);
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp);
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery);
 	fastPunch.setFrameSpeed(0.1f);
 	fastPunch.setLooping(false);
 
