@@ -1,6 +1,6 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 #include <vector>
+#include "AnimationFrame.h"
 
 // Contains an ensemble of sprites to convey animation
 class Animation
@@ -9,7 +9,7 @@ public:
 	Animation();
 
 	// Create animation
-	void addFrame(sf::IntRect rect);
+	void addFrame(sf::IntRect rect, AnimationFrameType animType);
 	void setFrameSpeed(float speed);
 	int getSize();
 
@@ -18,7 +18,7 @@ public:
 	void reset();
 
 	// get current frame of animation
-	sf::IntRect getCurrentFrame();
+	AnimationFrame getCurrentFrame();
 	// Returns whether the animation finished looping through all its frames
 	bool isAnimationCompleted();
 	// Returns whether or not the animation has reached N frame, useful for checking if we are over the active frames and we are in recover frames
@@ -35,8 +35,8 @@ public:
 	int GetAnimationFramesCount(); //returns the number of frames this animation has
 
 protected:
-	std::vector<sf::IntRect>frames;
-	sf::IntRect frame;
+	std::vector<AnimationFrame>frames;
+	AnimationFrame frame;
 	int currentFrame;
 	float animationSpeed;	// in FPS
 	bool flipped;

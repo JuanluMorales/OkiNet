@@ -1,5 +1,9 @@
 #include "AnimationFrame.h"
 
+AnimationFrame::AnimationFrame()
+{
+}
+
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 {
 	frameRect = rect;
@@ -8,6 +12,7 @@ AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 
 AnimationFrame::~AnimationFrame()
 {
+
 }
 
 AnimationFrameType AnimationFrame::GetFrameType()
@@ -18,4 +23,12 @@ AnimationFrameType AnimationFrame::GetFrameType()
 sf::IntRect AnimationFrame::GetRect()
 {
 	return frameRect;
+}
+
+void AnimationFrame::SetRect(int left, int top, int width, int height)
+{
+	frameRect.left = left;
+	frameRect.top = top;
+	frameRect.width = width;
+	frameRect.height = height;
 }

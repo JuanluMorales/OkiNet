@@ -13,9 +13,10 @@ Animation::Animation()
 }
 
 // Adds animation frame. Rect object represent a single sprite frame
-void Animation::addFrame(sf::IntRect rect)
+void Animation::addFrame(sf::IntRect rect, AnimationFrameType animType)
 {
-	frames.push_back(rect);
+	AnimationFrame* anim = new AnimationFrame(rect, animType);
+	frames.push_back(*anim);
 }
 
 // Returns the size of the animation. The number of frames.
@@ -25,37 +26,19 @@ int Animation::getSize()
 }
 
 // Get current frame from the animation. Flip the returning frame if required.
-sf::IntRect Animation::getCurrentFrame()
+AnimationFrame Animation::getCurrentFrame()
 {
 	frame = frames[currentFrame];
 	if (flipped)
 	{
-
-		frame = sf::IntRect(frame.left + frame.width, frame.top, -frame.width, frame.height);
+		sf::IntRect frameRect = frame.GetRect();
+		frame.SetRect(frameRect.left + frameRect.width, frameRect.top, -frameRect.width, frameRect.height);
 	}
 	return frame;
 }
 
 bool Animation::isAnimationCompleted()
 {
-	// Find the current frame
-	//auto it = std::find(frames.begin(), frames.end(), frames[currentFrame]);
-
-	//if (it != frames.end()) // If element was found
-	//{
-	//	int index = it - frames.begin();
-
-	//	if (index == frames.size() - 1)
-	//	{
-	//		return true;
-	//	}
-	//	else return false;
-	//}
-	//else {
-	//	// Element could not be found
-	//	return false;
-	//}
-
 	if (currentFrame == frames.size() - 1)
 	{
 		return true;

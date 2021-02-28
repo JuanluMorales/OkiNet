@@ -13,12 +13,14 @@ enum class AnimationFrameType
 class AnimationFrame
 {
 public:
-
+	
+	AnimationFrame();
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType);
 	~AnimationFrame();
 
 	AnimationFrameType GetFrameType();
 	sf::IntRect GetRect();
+	void SetRect(int left, int top, int width, int height);
 
 private:
 	AnimationFrameType thisFrameType;

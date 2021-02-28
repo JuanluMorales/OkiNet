@@ -181,32 +181,32 @@ void PlayerCharacter::HandleAnimation(float dt)
 
 
 	currentAnim->animate(dt);
-	setTextureRect(currentAnim->getCurrentFrame());
+	setTextureRect(currentAnim->getCurrentFrame().GetRect());
 	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250));
 }
 
 void PlayerCharacter::SetUpAnimations()
 {
-	idle.addFrame(sf::IntRect(0, 0, 78, 55));
-	idle.addFrame(sf::IntRect(78, 0, 78, 55));
-	idle.addFrame(sf::IntRect(156, 0, 78, 55));
-	idle.addFrame(sf::IntRect(234, 0, 78, 55));
+	idle.addFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::StartUp);
+	idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::StartUp);
+	idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::StartUp);
+	idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::StartUp);
 	idle.setFrameSpeed(0.15f);
 
-	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55));
-	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55));
+	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::StartUp);
+	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::StartUp);
 	walkFWD.setFrameSpeed(0.15f);
 
-	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55));
-	fastPunch.addFrame(sf::IntRect(234, 165, 78, 55));
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55));
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55));
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55));
+	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
+	fastPunch.addFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp);
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp);
+	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp);
 	fastPunch.setFrameSpeed(0.1f);
 	fastPunch.setLooping(false);
 
