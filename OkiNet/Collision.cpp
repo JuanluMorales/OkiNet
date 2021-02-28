@@ -1,4 +1,4 @@
-#include "Collision.h"
+ #include "Collision.h"
 
 // check AABB
 bool Collision::checkBoundingBox(SpriteBase* s1, SpriteBase* s2)
