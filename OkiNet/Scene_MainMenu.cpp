@@ -13,14 +13,14 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	offlineMatchText.setCharacterSize(25);
 	offlineMatchText.setOrigin(sf::Vector2f(offlineMatchText.getGlobalBounds().width / 2, offlineMatchText.getGlobalBounds().height / 2));
 	offlineMatchText.setPosition(sf::Vector2f(0, -20));
-	offlineMatchText.setFillColor(sf::Color::White);
+	offlineMatchText.setFillColor(sf::Color::Black);
 
 	onlineMatchText.setFont(menuFont);
 	onlineMatchText.setString("ONLINE MATCH");
 	onlineMatchText.setCharacterSize(25);
 	onlineMatchText.setOrigin(sf::Vector2f(onlineMatchText.getGlobalBounds().width / 2, onlineMatchText.getGlobalBounds().height / 2));
 	onlineMatchText.setPosition(sf::Vector2f(0, 50));
-	onlineMatchText.setFillColor(sf::Color::White);
+	onlineMatchText.setFillColor(sf::Color::Black);
 }
 
 void Scene_MainMenu::OverrideRender()
@@ -39,10 +39,10 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 	if (currentSelection == menuSelection::OfflineMatch) 
 	{
 		offlineMatchText.setFillColor(sf::Color::Red);
-		onlineMatchText.setFillColor(sf::Color::White);
+		onlineMatchText.setFillColor(sf::Color::Black);
 	}else
 	{
-		offlineMatchText.setFillColor(sf::Color::White);
+		offlineMatchText.setFillColor(sf::Color::Black);
 		onlineMatchText.setFillColor(sf::Color::Red);
 	}
 }

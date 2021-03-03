@@ -113,6 +113,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
 			attackState = AttackState::FastPunch;
+			animState = AnimationFrameType::StartUp;
 		}
 
 		// Placeholder movement
@@ -158,9 +159,13 @@ void PlayerCharacter::HandleAnimation(float dt)
 	switch (attackState)
 	{
 	case AttackState::None:
-		fastPunch.reset();
 		break;
 	case AttackState::FastPunch:
+		if (currentAnim->isAnimationCompleted() && animState == AnimationFrameType::StartUp) // TODO: modify condition so that it checks if this is the loop where we inputted the action
+		{
+			fastPunch.reset();
+			currentAnim = &fastPunch;
+		}else
 		if (currentAnim->isAnimationCompleted())
 		{
 			fastPunch.reset();
@@ -170,6 +175,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 		{
 			currentAnim = &fastPunch;
 		}
+
 		break;
 	default:
 		break;

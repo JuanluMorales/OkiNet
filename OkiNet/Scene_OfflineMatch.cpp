@@ -19,11 +19,11 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 
 
 	// Setup player one
-	playerOneStartPos = sf::Vector2f(-500, 52);
+	playerOneStartPos = sf::Vector2f(-600, -200);
 	playerOne.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
 
 	// Setup player two
-	playerTwoStartPos = sf::Vector2f(200, 52);
+	playerTwoStartPos = sf::Vector2f(-150, -200);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
 }

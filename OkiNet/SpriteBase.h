@@ -38,7 +38,7 @@ public:
 
 	SpriteType thisSpriteType;
 
-	const int PIXEL_SCALE_FACTOR = 5; //Scale factor applied to the sprites to upscale them
+	const int PIXEL_SCALE_FACTOR = 10; //Scale factor applied to the sprites to upscale them
 	const double PI = 3.14159265; //just pi
 
 protected:
