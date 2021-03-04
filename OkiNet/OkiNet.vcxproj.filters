@@ -69,11 +69,11 @@
     <ClCompile Include="AnimationFrame.cpp">
       <Filter>Source Files\BaseClasses</Filter>
     </ClCompile>
+    <ClCompile Include="CollisionBox.cpp">
+      <Filter>Source Files\BaseClasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Configurations.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scene_OfflineMatch.h">
       <Filter>Header Files\Scenes</Filter>
     </ClInclude>
@@ -108,6 +108,9 @@
       <Filter>Header Files\BaseClasses</Filter>
     </ClInclude>
     <ClInclude Include="AnimationFrame.h">
+      <Filter>Header Files\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionBox.h">
       <Filter>Header Files\BaseClasses</Filter>
     </ClInclude>
   </ItemGroup>

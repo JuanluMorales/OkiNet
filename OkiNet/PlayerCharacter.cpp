@@ -1,6 +1,5 @@
 #include "PlayerCharacter.h"
 
-
 PlayerCharacter::PlayerCharacter()
 {
 	// Set character defaults
@@ -34,7 +33,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		texture.loadFromFile("Sprites/Player1_Sheet.png");
 		setSize(sf::Vector2f(78, 55));
 
-		setScale(PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
+		setScale( PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
 		setTexture(&texture);
 	}
 	else
@@ -108,7 +107,19 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
+		if (!input->isKeyDown(sf::Keyboard::S) && currentAnim == &anim_defend)
+		{
+			shouldAcceptInput = true;
+			attackState = AttackState::None;
+		}
+
 		if (!shouldAcceptInput) return;
+
+		if (input->isKeyDown(sf::Keyboard::S))
+		{
+			attackState = AttackState::Defend;
+			animState = AnimationFrameType::StartUp;
+		} 
 
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
@@ -163,19 +174,22 @@ void PlayerCharacter::HandleAnimation(float dt)
 	case AttackState::FastPunch:
 		if (currentAnim->isAnimationCompleted() && animState == AnimationFrameType::StartUp) // TODO: modify condition so that it checks if this is the loop where we inputted the action
 		{
-			fastPunch.reset();
-			currentAnim = &fastPunch;
+			anim_fastPunch.reset();
+			currentAnim = &anim_fastPunch;
 		}else
 		if (currentAnim->isAnimationCompleted())
 		{
-			fastPunch.reset();
+			anim_fastPunch.reset();
 			attackState = AttackState::None;
 		}
 		else
 		{
-			currentAnim = &fastPunch;
+			currentAnim = &anim_fastPunch;
 		}
 
+		break;
+	case AttackState::Defend:
+		currentAnim = &anim_defend;
 		break;
 	default:
 		break;
@@ -189,13 +203,13 @@ void PlayerCharacter::HandleAnimation(float dt)
 		switch (moveState)
 		{
 		case MoveState::Idle:
-			currentAnim = &idle;
+			currentAnim = &anim_idle;
 			break;
 		case MoveState::Right:
-			currentAnim = &walkFWD;
+			currentAnim = &anim_walkFWD;
 			break;
 		case MoveState::Left:
-			currentAnim = &walkFWD;
+			currentAnim = &anim_walkFWD;
 			break;
 		default:
 			break;
@@ -219,29 +233,31 @@ void PlayerCharacter::HandleAnimation(float dt)
 
 void PlayerCharacter::SetUpAnimations()
 {
-	idle.addFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
-	idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
-	idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
-	idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
-	idle.setFrameSpeed(0.15f);
+	anim_idle.addFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.setFrameSpeed(0.15f);
 
-	walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
-	walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
-	walkFWD.addFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle);
-	walkFWD.addFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle);
-	walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
-	walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
-	walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
-	walkFWD.setFrameSpeed(0.15f);
+	anim_walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.addFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.addFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.setFrameSpeed(0.15f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
-	fastPunch.addFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
-	fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery);
-	fastPunch.setFrameSpeed(0.1f);
-	fastPunch.setLooping(false);
+	anim_fastPunch.addFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
+	anim_fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
+	anim_fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
+	anim_fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery);
+	anim_fastPunch.setFrameSpeed(0.1f);
+	anim_fastPunch.setLooping(false);
 
+	anim_defend.addFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::StartUp);
+	anim_defend.setLooping(false);
 
-	currentAnim = &idle;
+	currentAnim = &anim_idle;
 }

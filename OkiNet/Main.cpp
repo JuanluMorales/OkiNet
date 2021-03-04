@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include "Configurations.h" // Common configurations for the game
 #include "InputManager.h"
 #include "GameState.h" // Includes Scene.h and other scenes
 
@@ -8,14 +7,22 @@
 #include "Scene_OfflineMatch.h"
 #include "Scene_OnlineMatch.h"
 
+// Aspect ratio of the window
+const unsigned int WindowWidth = 1280;
+const unsigned int WindowHeight = 720;
+
+const char* WindowName = "OkiNet";
+
+const unsigned int FrameRateCap = 60;
+
 int main()
 {
 	// Create components needed for SFML to run
 	// Window to render on
-	sf::RenderWindow window(sf::VideoMode(configs::WindowWidth, configs::WindowHeight), configs::WindowName);
-	window.setFramerateLimit(configs::FrameRateCap);
+	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), WindowName);
+	window.setFramerateLimit(FrameRateCap);
 	// View (center, size) --> Acts as a "2D camera" or viewport
-	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(configs::WindowWidth, configs::WindowHeight));
+	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(WindowWidth, WindowHeight));
 	// Input
 	InputManager inputManager;
 	// Clock with delta time

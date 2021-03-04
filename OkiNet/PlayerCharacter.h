@@ -1,8 +1,9 @@
 #pragma once
 #include "SpriteBase.h" // Sprite graphics
 #include "InputManager.h" // To enable input from this class for encapsulation
-#include "Collision.h"
 #include "Animation.h"
+#include "Collision.h"
+#include "CollisionBox.h"
 
 class PlayerCharacter : public SpriteBase
 {
@@ -10,7 +11,7 @@ public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, };
 	enum class MoveState { Idle, Left, Right };
-	enum class AttackState { None, FastPunch };
+	enum class AttackState { None, FastPunch, Defend };
 
 	PlayerCharacter();
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);
@@ -22,10 +23,11 @@ public:
 	int MoveSpeed; //Multiplier for the movement speed
 
 	//List of animations 
-	Animation idle; //when no input received for the player
-	Animation walkFWD; // Right walk
-	Animation walkBKW; // Left walk
-	Animation fastPunch;
+	Animation anim_idle; //when no input received for the player
+	Animation anim_walkFWD; // Right walk
+	Animation anim_walkBKW; // Left walk
+	Animation anim_fastPunch;
+	Animation anim_defend;
 	bool b_fastPunch = false; // Helper for triggering the animation on/off
 
 	// Body collision
