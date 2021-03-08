@@ -8,7 +8,7 @@ CollisionBox::CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color
 {
 	thisCollType = collType;
 	setColliderActive(true);
-	setCollisionBox(collRect);
+	setCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), size));
 	setPosition(position);
 	setSize(size);
 	setFillColor(fillColor);
