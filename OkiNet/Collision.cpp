@@ -1,7 +1,7 @@
  #include "Collision.h"
 
 // check AABB
-bool Collision::checkBoundingBox(SpriteBase* s1, SpriteBase* s2)
+bool Collision::checkBoundingBox(CollisionBox* s1, CollisionBox* s2)
 {
 	if (s1->getCollisionBox().left + s1->getCollisionBox().width < s2->getCollisionBox().left)
 		return false;
@@ -18,7 +18,7 @@ bool Collision::checkBoundingBox(SpriteBase* s1, SpriteBase* s2)
 	return true;
 }
 
-Collision::CollisionResponse Collision::checkBoundingBox_Sides(SpriteBase* s1, SpriteBase* s2)
+Collision::CollisionResponse Collision::checkBoundingBox_Sides(CollisionBox* s1, CollisionBox* s2)
 {
 	sf::FloatRect s1FR = s1->getCollisionBox();
 	sf::FloatRect s2FR = s2->getCollisionBox();

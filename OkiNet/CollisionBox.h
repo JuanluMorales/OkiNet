@@ -13,12 +13,22 @@ public:
 		HurtBox // The player receives damage on collision response
 	};
 
-	CollisionBox(ColliderType collType, sf::FloatRect collBox, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size);
+	CollisionBox();
+	CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size);
 	~CollisionBox();
 
-	ColliderType thisCollType;
+	void setCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
+	void setCollisionBox(sf::FloatRect fr) { collRect = fr; };
+	bool isColliderActive() { return collActive; };
+	void setColliderActive(bool b) { collActive = b; };
+
+	sf::FloatRect getCollisionBox();
+
+	ColliderType GetColliderType() { return thisCollType; };
 
 private:
-
+	sf::FloatRect collRect; // The rect that defines this collision box
+	bool collActive; // Whether the collider is active or not
+	ColliderType thisCollType; // Type of the collider for discrimination
 };
 

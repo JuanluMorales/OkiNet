@@ -68,17 +68,9 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	// Body collision
 	bodyCollOffset = sf::Vector2f(25 * PIXEL_SCALE_FACTOR, 5 * PIXEL_SCALE_FACTOR);
 	if (flipped) bodyCollOffset += sf::Vector2f(15, 0); // Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
-	bodyColl.setCollider(true);
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
 	sf::Vector2f bodycallSize = sf::Vector2f(25 * PIXEL_SCALE_FACTOR, 42 * PIXEL_SCALE_FACTOR);
-	bodyColl.setCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), bodycallSize));
-	bodyColl.setOutlineColor(sf::Color::Green);
-	bodyColl.setOutlineThickness(5.f);
-	bodyColl.setFillColor(sf::Color::Transparent);
-	bodyColl.setPosition(bodycallPos);
-	bodyColl.setSize(bodycallSize);
-
-
+	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
 
 	CharacterSetUp = true;
 }
@@ -92,7 +84,7 @@ void PlayerCharacter::update(float dt, sf::Window* wnd)
 {
 	// Update collider
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
-	bodyColl.setPosition(newPos);
+	bodyColl->setPosition(newPos);
 
 	HandleAnimation(dt);
 
@@ -143,7 +135,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		}
 		//-------------------
 		// Movement ---------
-		if (input->isKeyDown(sf::Keyboard::A)) // Left
+		if (input->isKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
 		{
 			if (b_dashTriggerL) // Dash 
 			{
@@ -157,7 +149,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 			}
 
 		}
-		else if (input->isKeyDown(sf::Keyboard::D)) // Right
+		else if (input->isKeyDown(sf::Keyboard::D) && CanGoRight) // Right
 		{
 			if (b_dashTriggerR) // Dash 
 			{
@@ -299,6 +291,16 @@ void PlayerCharacter::HandleAnimation(float dt)
 
 	// Set the animation state (startup, active, recovery...)
 	animState = currentAnim->getCurrentFrame().GetFrameType();
+}
+
+void PlayerCharacter::collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse)
+{
+	if (playerID == PlayerID::PlayerOne)
+	{
+	
+	}
+	
+
 }
 
 void PlayerCharacter::SetUpAnimations()

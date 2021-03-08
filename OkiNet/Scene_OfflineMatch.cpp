@@ -33,8 +33,8 @@ void Scene_OfflineMatch::OverrideRender()
 	// render something to test
 	//window->draw(platform);
 
-	window->draw(playerOne.bodyColl);
-	window->draw(playerTwo.bodyColl);
+	window->draw(*playerOne.bodyColl);
+	window->draw(*playerTwo.bodyColl);
 
 	window->draw(playerOne);
 	window->draw(playerTwo);
@@ -53,11 +53,11 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	playerTwo.update(dt, window);
 
 	// Check collision
-	// For player one
-
-	Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&playerOne.bodyColl, &playerTwo.bodyColl);
+	Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(playerOne.bodyColl, playerTwo.bodyColl);
 	if (newColl.None == false)
 	{
+		playerOne.collisionResponse(&playerTwo, &newColl);
+		playerTwo.collisionResponse(&playerOne, &newColl);
 		DebugText.setString("COLLISION");
 	}else DebugText.setString("NO COLLISION");
 

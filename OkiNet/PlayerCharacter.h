@@ -2,7 +2,7 @@
 #include "SpriteBase.h" // Sprite graphics
 #include "InputManager.h" // To enable input from this class for encapsulation
 #include "Animation.h"
-#include "CollisionBox.h"
+#include "Collision.h"
 
 class PlayerCharacter : public SpriteBase
 {
@@ -31,8 +31,10 @@ public:
 	Animation anim_defend;
 	
 
+	void collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse);
+
 	// Body collision
-	SpriteBase bodyColl;
+	CollisionBox* bodyColl;
 	sf::Vector2f bodyCollOffset;
 
 protected:
