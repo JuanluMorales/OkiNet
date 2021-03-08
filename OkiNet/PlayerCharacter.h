@@ -2,7 +2,6 @@
 #include "SpriteBase.h" // Sprite graphics
 #include "InputManager.h" // To enable input from this class for encapsulation
 #include "Animation.h"
-#include "Collision.h"
 #include "CollisionBox.h"
 
 class PlayerCharacter : public SpriteBase

@@ -1,6 +1,7 @@
 #pragma once
 #include "GameState.h"
 #include "PlayerCharacter.h"
+#include "Collision.h"
 
 // Scene that comprises the offline version of the game
 class Scene_OfflineMatch : public Scene
