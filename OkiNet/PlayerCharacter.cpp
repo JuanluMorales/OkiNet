@@ -24,8 +24,8 @@ PlayerCharacter::PlayerCharacter()
 	CanGoUp = true; //If theres a ceiling, doesnt allow to go up
 	maxHealthPoints = 50; //Total hit points the player can suffer before dying
 	currentHealthPoints = 50; //Current health 
-	MoveSpeed = 100; //Multiplier for the movement speed
-	dashDistance = 2500;
+	MoveSpeed = 180; //Multiplier for the movement speed
+	dashDistance = 5000;
 	currentAnim = NULL;
 	CharacterSetUp = false;
 
@@ -174,8 +174,18 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		else // idle
 		{
 			// if last move state was walking, check the dash relevant trigger
-			if (moveState == MoveState::Left) b_dashTriggerL = true;
-			if (moveState == MoveState::Right) b_dashTriggerR = true;
+			if (moveState == MoveState::Left)
+			{
+				b_dashTriggerL = true; 
+				b_dashTriggerR = false;
+				dashTimer = 0.0f;
+			}
+			if (moveState == MoveState::Right) 
+			{
+				b_dashTriggerL = false;
+				b_dashTriggerR = true;
+				dashTimer = 0.0f;
+			}
 
 			moveState = MoveState::Idle;
 		}
