@@ -6,6 +6,17 @@ PlayerCharacter::PlayerCharacter()
 	playerID = PlayerID::PlayerOne;
 	playerState = PlayerState::Alive; // Alive by default
 	moveState = MoveState::Idle; // Idle by default
+	attackState = AttackState::None;
+	animState = AnimationFrameType::Idle;
+
+	shouldAcceptInput = true;
+
+	b_dashTriggerL = false; // Helps checking if player can/wants to dash
+	b_dashTriggerR = false;
+	dashTimer = 0.0f; // Helper counter
+	dashTime = 0.7f;
+
+	b_fastPunch = false;
 
 	grounded = false; //Sets the player able to jump when true
 	CanGoLeft = true; //Allows the player to move left 
@@ -14,8 +25,10 @@ PlayerCharacter::PlayerCharacter()
 	maxHealthPoints = 50; //Total hit points the player can suffer before dying
 	currentHealthPoints = 50; //Current health 
 	MoveSpeed = 100; //Multiplier for the movement speed
+	dashDistance = 2500;
 	currentAnim = NULL;
 	CharacterSetUp = false;
+
 }
 
 /// <summary>
@@ -33,7 +46,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		texture.loadFromFile("Sprites/Player1_Sheet.png");
 		setSize(sf::Vector2f(78, 55));
 
-		setScale( PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
+		setScale(PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
 		setTexture(&texture);
 	}
 	else
@@ -115,31 +128,67 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 
 		if (!shouldAcceptInput) return;
 
+		// Defend ----------
 		if (input->isKeyDown(sf::Keyboard::S))
 		{
 			attackState = AttackState::Defend;
 			animState = AnimationFrameType::StartUp;
-		} 
-
+		}
+		//-------------------
+		// Attacks ----------
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
 			attackState = AttackState::FastPunch;
 			animState = AnimationFrameType::StartUp;
 		}
-
-		// Placeholder movement
-		if (input->isKeyDown(sf::Keyboard::A))
+		//-------------------
+		// Movement ---------
+		if (input->isKeyDown(sf::Keyboard::A)) // Left
 		{
-			setPosition(getPosition().x - MoveSpeed * dt, getPosition().y);
-			moveState = MoveState::Left;
+			if (b_dashTriggerL) // Dash 
+			{
+				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+				moveState = MoveState::DashL;
+			}
+			else // Walk
+			{
+				setPosition(getPosition().x - MoveSpeed * dt, getPosition().y);
+				moveState = MoveState::Left;
+			}
+
 		}
-		else
-			if (input->isKeyDown(sf::Keyboard::D))
+		else if (input->isKeyDown(sf::Keyboard::D)) // Right
+		{
+			if (b_dashTriggerR) // Dash 
+			{
+				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+				moveState = MoveState::DashR;
+			}
+			else // Walk
 			{
 				setPosition(getPosition().x + MoveSpeed * dt, getPosition().y);
 				moveState = MoveState::Right;
 			}
-			else moveState = MoveState::Idle;
+
+		}
+		else // idle
+		{
+			// if last move state was walking, check the dash relevant trigger
+			if (moveState == MoveState::Left) b_dashTriggerL = true;
+			if (moveState == MoveState::Right) b_dashTriggerR = true;
+
+			moveState = MoveState::Idle;
+		}
+		// -------------------
+		// Check timers and counters
+		if (dashTimer >= dashTime || moveState == MoveState::DashL || moveState == MoveState::DashR) // Check dashing timer
+		{
+			b_dashTriggerR = false;
+			b_dashTriggerL = false;
+			dashTimer = 0.0f;
+		}
+		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
 	}
 	else if (playerID == PlayerID::PlayerTwo)
 	{
@@ -176,16 +225,17 @@ void PlayerCharacter::HandleAnimation(float dt)
 		{
 			anim_fastPunch.reset();
 			currentAnim = &anim_fastPunch;
-		}else
-		if (currentAnim->isAnimationCompleted())
-		{
-			anim_fastPunch.reset();
-			attackState = AttackState::None;
 		}
 		else
-		{
-			currentAnim = &anim_fastPunch;
-		}
+			if (currentAnim->isAnimationCompleted())
+			{
+				anim_fastPunch.reset();
+				attackState = AttackState::None;
+			}
+			else
+			{
+				currentAnim = &anim_fastPunch;
+			}
 
 		break;
 	case AttackState::Defend:
@@ -203,6 +253,10 @@ void PlayerCharacter::HandleAnimation(float dt)
 		switch (moveState)
 		{
 		case MoveState::Idle:
+			// Reset non-looping anims
+			if (anim_dashBKW.isAnimationCompleted())	anim_dashBKW.reset();
+			if (anim_dashFWD.isAnimationCompleted())	anim_dashFWD.reset();
+
 			currentAnim = &anim_idle;
 			break;
 		case MoveState::Right:
@@ -210,6 +264,12 @@ void PlayerCharacter::HandleAnimation(float dt)
 			break;
 		case MoveState::Left:
 			currentAnim = &anim_walkFWD;
+			break;
+		case MoveState::DashL:
+			currentAnim = &anim_dashBKW;
+			break;
+		case MoveState::DashR:
+			currentAnim = &anim_dashFWD;
 			break;
 		default:
 			break;
@@ -258,6 +318,18 @@ void PlayerCharacter::SetUpAnimations()
 
 	anim_defend.addFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::StartUp);
 	anim_defend.setLooping(false);
+
+	anim_dashFWD.addFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashFWD.addFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashFWD.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
+	anim_dashFWD.setLooping(false);
+	anim_dashFWD.setFrameSpeed(0.15f);
+
+	anim_dashBKW.addFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashBKW.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashBKW.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
+	anim_dashBKW.setLooping(false);
+	anim_dashBKW.setFrameSpeed(0.15f);
 
 	currentAnim = &anim_idle;
 }

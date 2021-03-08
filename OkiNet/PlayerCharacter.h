@@ -9,7 +9,7 @@ class PlayerCharacter : public SpriteBase
 public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, };
-	enum class MoveState { Idle, Left, Right };
+	enum class MoveState { Idle, Left, Right, DashL, DashR };
 	enum class AttackState { None, FastPunch, Defend };
 
 	PlayerCharacter();
@@ -25,9 +25,11 @@ public:
 	Animation anim_idle; //when no input received for the player
 	Animation anim_walkFWD; // Right walk
 	Animation anim_walkBKW; // Left walk
+	Animation anim_dashFWD; // Forward dash
+	Animation anim_dashBKW; // Backward dash
 	Animation anim_fastPunch;
 	Animation anim_defend;
-	bool b_fastPunch = false; // Helper for triggering the animation on/off
+	
 
 	// Body collision
 	SpriteBase bodyColl;
@@ -37,12 +39,20 @@ protected:
 	sf::Texture texture; // The graphic component of the character
 
 	PlayerID playerID; // Is this the first or second player
-	PlayerState playerState = PlayerState::Alive; // Alive by default
-	MoveState moveState = MoveState::Idle; // Idle by default
-	AttackState attackState = AttackState::None; 
-	AnimationFrameType animState = AnimationFrameType::Idle;
+	PlayerState playerState; // Alive by default
+	MoveState moveState; // Idle by default
+	AttackState attackState; 
+	AnimationFrameType animState;
 
-	bool shouldAcceptInput = true;
+	bool shouldAcceptInput;
+
+	float dashDistance;
+	bool b_dashTriggerL; // Helps checking if player can/wants to dash
+	bool b_dashTriggerR;
+	float dashTime; // Time between consecutive presses of the move button to recognise as a dash 
+	float dashTimer; // Helper counter
+
+	bool b_fastPunch; // Helper for triggering the animation on/off
 
 	bool grounded; //Sets the player able to jump when true
 	bool CanGoLeft; //Allows the player to move left 
