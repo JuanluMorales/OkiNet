@@ -28,6 +28,7 @@ PlayerCharacter::PlayerCharacter()
 	dashDistance = 5000;
 	currentAnim = NULL;
 	CharacterSetUp = false;
+	bodyColl = new CollisionBox();
 
 }
 
@@ -139,6 +140,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		{
 			if (b_dashTriggerL) // Dash 
 			{
+				dashTimer = dashTime;
 				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
 				moveState = MoveState::DashL;
 			}
@@ -153,6 +155,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		{
 			if (b_dashTriggerR) // Dash 
 			{
+				dashTimer = dashTime;
 				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
 				moveState = MoveState::DashR;
 			}
@@ -168,13 +171,11 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 			// if last move state was walking, check the dash relevant trigger
 			if (moveState == MoveState::Left)
 			{
-				b_dashTriggerL = true; 
-				b_dashTriggerR = false;
+				b_dashTriggerL = true;
 				dashTimer = 0.0f;
 			}
-			if (moveState == MoveState::Right) 
+			if (moveState == MoveState::Right)
 			{
-				b_dashTriggerL = false;
 				b_dashTriggerR = true;
 				dashTimer = 0.0f;
 			}
@@ -183,7 +184,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		}
 		// -------------------
 		// Check timers and counters
-		if (dashTimer >= dashTime || moveState == MoveState::DashL || moveState == MoveState::DashR) // Check dashing timer
+		if (dashTimer >= dashTime) // Check dashing timer
 		{
 			b_dashTriggerR = false;
 			b_dashTriggerL = false;
@@ -297,9 +298,9 @@ void PlayerCharacter::collisionResponse(SpriteBase* sp, Collision::CollisionResp
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
-	
+
 	}
-	
+
 
 }
 
@@ -309,7 +310,7 @@ void PlayerCharacter::SetUpAnimations()
 	anim_idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.setFrameSpeed(0.15f);
+	anim_idle.setFrameSpeed(0.1f);
 
 	anim_walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
 	anim_walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
@@ -318,7 +319,7 @@ void PlayerCharacter::SetUpAnimations()
 	anim_walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
 	anim_walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
 	anim_walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.setFrameSpeed(0.15f);
+	anim_walkFWD.setFrameSpeed(0.1f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
 	anim_fastPunch.addFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
@@ -335,13 +336,13 @@ void PlayerCharacter::SetUpAnimations()
 	anim_dashFWD.addFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp);
 	anim_dashFWD.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
 	anim_dashFWD.setLooping(false);
-	anim_dashFWD.setFrameSpeed(0.15f);
+	anim_dashFWD.setFrameSpeed(0.1f);
 
 	anim_dashBKW.addFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp);
 	anim_dashBKW.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp);
 	anim_dashBKW.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
 	anim_dashBKW.setLooping(false);
-	anim_dashBKW.setFrameSpeed(0.15f);
+	anim_dashBKW.setFrameSpeed(0.1f);
 
 	currentAnim = &anim_idle;
 }
