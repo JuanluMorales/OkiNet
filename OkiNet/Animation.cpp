@@ -113,7 +113,7 @@ int Animation::GetAnimationFramesCount() {
 	return static_cast<int>(frames.size());
 }
 
-std::vector<CollisionBox>& Animation::GetBoxes()
+CollisionBox Animation::GetCurrentBox()
 {
-	return frames[currentFrame].GetCollisionBoxes();
+	return *frames[currentFrame].GetCollisionBox();
 }
