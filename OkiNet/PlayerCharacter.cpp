@@ -47,7 +47,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		texture.loadFromFile("Sprites/Player1_Sheet.png");
 		setSize(sf::Vector2f(78, 55));
 
-		setScale(PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
+		setScale(static_cast<float>(PIXEL_SCALE_FACTOR), static_cast<float>(PIXEL_SCALE_FACTOR));
 		setTexture(&texture);
 	}
 	else
@@ -55,7 +55,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		// Configure player two graphics
 		texture.loadFromFile("Sprites/Player2_Sheet.png");
 		setSize(sf::Vector2f(78, 55));
-		setScale(PIXEL_SCALE_FACTOR, PIXEL_SCALE_FACTOR);
+		setScale(static_cast<float>(PIXEL_SCALE_FACTOR), static_cast<float>(PIXEL_SCALE_FACTOR));
 		setTexture(&texture);
 		flipped = true;
 	}
@@ -67,10 +67,10 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 
 	// Setup collision
 	// Body collision
-	bodyCollOffset = sf::Vector2f(25 * PIXEL_SCALE_FACTOR, 5 * PIXEL_SCALE_FACTOR);
+	bodyCollOffset = sf::Vector2f(static_cast < float>(25 * PIXEL_SCALE_FACTOR), static_cast < float>(5 * PIXEL_SCALE_FACTOR));
 	if (flipped) bodyCollOffset += sf::Vector2f(15, 0); // Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
-	sf::Vector2f bodycallSize = sf::Vector2f(25 * PIXEL_SCALE_FACTOR, 42 * PIXEL_SCALE_FACTOR);
+	sf::Vector2f bodycallSize = sf::Vector2f(static_cast < float>(25 * PIXEL_SCALE_FACTOR), static_cast < float>(42 * PIXEL_SCALE_FACTOR));
 	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
 
 
@@ -133,6 +133,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 		// Attacks ----------
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
+			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
 			animState = AnimationFrameType::StartUp;
 		}

@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "AnimationFrame.h"
-#include "CollisionBox.h"
 
 // Contains an ensemble of sprites to convey animation
 class Animation

@@ -22,7 +22,7 @@ void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType)
 // Returns the size of the animation. The number of frames.
 int Animation::GetSize()
 {
-	return frames.size();
+	return static_cast<int>(frames.size());
 }
 
 // Get current frame from the animation. Flip the returning frame if required.
@@ -89,9 +89,5 @@ void Animation::SetFrameSpeed(float speed)
 
 //returns the number of frames this animation has
 int Animation::GetAnimationFramesCount() {
-	return frames.size();
-}
-
-void Animation::AddCollisionBox()
-{
+	return static_cast<int>(frames.size());
 }

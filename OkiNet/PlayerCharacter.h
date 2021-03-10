@@ -30,12 +30,14 @@ public:
 	Animation anim_fastPunch;
 	Animation anim_defend;
 	
-
-	void collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse);
-
+	// List of collision boxes
 	// Body collision
 	CollisionBox* bodyColl;
 	sf::Vector2f bodyCollOffset;
+	// Punch boxes
+
+
+	void collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse);
 
 protected:
 	sf::Texture texture; // The graphic component of the character
