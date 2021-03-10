@@ -18,14 +18,15 @@ public:
 	CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size);
 	~CollisionBox();
 
-	void SetCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
-	void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
-	bool IsActive() { return collActive; };
-	void SetActive(bool b) { collActive = b; };
+	inline void SetCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
+	inline void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
+	inline bool IsActive() { return collActive; };
+	inline void SetActive(bool b) { collActive = b; };
+	inline void ShouldBeDrawn(bool b) { if (b) SpriteBase::SetActive(b); }; // Set whether the collision box should be drawn or not
 
 	sf::FloatRect GetCollisionBox();
 
-	ColliderType GetType() { return thisCollType; };
+	ColliderType GetType() const { return thisCollType; };
 
 private:
 	sf::FloatRect collRect; // The rect that defines this collision box

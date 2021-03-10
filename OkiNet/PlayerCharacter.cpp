@@ -329,6 +329,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 
 void PlayerCharacter::NoCollisionRegistered()
 {
+	// Reset conditions based on collision
 	if (!CanGoRight) CanGoRight = true;
 	if (!CanGoLeft) CanGoLeft = true;
 

@@ -8,19 +8,20 @@ public:
 	SpriteBase();
 	~SpriteBase();
 
-	virtual void update(float dt);
+	virtual void Update(float dt);
 
 	// sprite speed and direction
-	void setVelocity(sf::Vector2f vel);
-	void setVelocity(float vx, float vy);
-	sf::Vector2f getVelocity();
+	void SetVelocity(sf::Vector2f vel);
+	void SetVelocity(float vx, float vy);
+	sf::Vector2f GetVelocity();
 
 	// sprite state
-	bool isAlive() { return alive; };
-	void setAlive(bool b) { alive = b; };
+	bool IsActive() { return active; };
+	void SetActive(bool b) { active = b; };
 
 	enum class SpriteType //Helps discriminate this sprite
 	{
+		Uninitialized,
 		Player,
 		Enemy,
 		Environment,
@@ -35,7 +36,7 @@ public:
 protected:
 	// Sprite properties
 	sf::Vector2f velocity;
-	bool alive;
+	bool active;
 	bool flipped = false; // Is the sprite flipped
 };
 

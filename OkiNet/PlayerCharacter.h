@@ -39,7 +39,7 @@ public:
 
 	// Collision methods
 	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
-	void NoCollisionRegistered(); // Called when no collision was registered to check statuses
+	void NoCollisionRegistered(); // Called when no collision was registered to check statuses based on collision such as movement
 
 protected:
 	sf::Texture texture; // The graphic component of the character
