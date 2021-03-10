@@ -27,11 +27,11 @@ public:
 
 	CollisionBox* GetCollisionBox(); // Returns the list of collision boxes in this frame
 
-
+private:
 
 	AnimationFrameType thisFrameType;
 	sf::IntRect frameRect;
-	CollisionBox* collisionBox; // A frame may have more than one box of different types
-
+	CollisionBox* collisionBox; 
+	std::vector<CollisionBox*> collisionBoxes; // A frame may have more than one box of different types
 };
 

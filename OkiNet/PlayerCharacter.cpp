@@ -98,13 +98,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
 
 	// Position the colliders in animation 
-	for (auto frames : GetCurrentAnimation()->frames)
-	{
-		frames.GetCollisionBox()->setPosition(newPos);
-		// Then activate it and make it drawable
-		frames.GetCollisionBox()->SetActive(true);
-		frames.GetCollisionBox()->SetDrawable(true);
-	}
+	GetCurrentAnimation()->GetCurrentFrame().GetCollisionBox()->setPosition(newPos);
 
 }
 
