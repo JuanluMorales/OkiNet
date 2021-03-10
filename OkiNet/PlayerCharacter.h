@@ -1,6 +1,6 @@
 #pragma once
 #include "SpriteBase.h" // Sprite graphics
-#include "InputManager.h" // To enable input from this class for encapsulation
+#include "InputManager.h" // To enable input from this class instead of from the scene class for encapsulation
 #include "Animation.h"
 #include "Collision.h"
 #include <vector>
@@ -44,6 +44,11 @@ private:
 	Animation anim_dashBKW; // Backward dash
 	Animation anim_fastPunch;
 	Animation anim_defend;
+
+	// Animation related variables
+	int hitStun; // Amount to be stunned when receiving a hit
+	int blockStun; // Amount to be stunned when receiving a hit while blocking
+	int frameAdvantage; // Can be positive or negative depending on the situation. Represents the speed advantage of an attack
 
 	// List of collision boxes
 	// Body collision

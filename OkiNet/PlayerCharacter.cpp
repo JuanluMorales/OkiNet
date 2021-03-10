@@ -27,7 +27,7 @@ PlayerCharacter::PlayerCharacter()
 	maxHealthPoints = 50; //Total hit points the player can suffer before dying
 	currentHealthPoints = 50; //Current health 
 
-	moveDistance = 180; 
+	moveDistance = 180;
 	dashDistance = 5000;
 
 	bodyColl = new CollisionBox();
@@ -79,7 +79,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	// Position character at designated start position
 	setPosition(startPos);
 	// Setup Animations
-	SetUpAnimations();	
+	SetUpAnimations();
 
 	// Setup collision
 	SetUpCollision();
@@ -98,34 +98,29 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 
 	HandleAnimation(dt);
 
-	switch (animState)
-	{
-	case AnimationFrameType::Idle:
-		shouldAcceptInput = true;
-		break;
-	case AnimationFrameType::StartUp:
-		shouldAcceptInput = false;
-		break;
-	case AnimationFrameType::Active:
-		shouldAcceptInput = false;
-		break;
-	case AnimationFrameType::Recovery:
-		shouldAcceptInput = true;
-		break;
-	default:
-		break;
-	}
-
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
-		if (!input->isKeyDown(sf::Keyboard::S) && currentAnim == &anim_defend)
+		// Check this frame's type to decide if input should be accepted
+		switch (animState)
 		{
+		case AnimationFrameType::Idle:
 			shouldAcceptInput = true;
-			attackState = AttackState::None;
+			break;
+		case AnimationFrameType::StartUp:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Active:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Recovery:
+			shouldAcceptInput = true;
+			break;
+		default:
+			break;
 		}
 
 		if (!shouldAcceptInput) return;
@@ -134,16 +129,14 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (input->isKeyDown(sf::Keyboard::S))
 		{
 			attackState = AttackState::Defend;
-			animState = AnimationFrameType::StartUp;
 		}
-		//-------------------
-		// Attacks ----------
+		else
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
-			animState = AnimationFrameType::StartUp;
 		}
+		else attackState = AttackState::None;
 		//-------------------
 		// Movement ---------
 		if (input->isKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
@@ -239,25 +232,11 @@ void PlayerCharacter::HandleAnimation(float dt)
 	switch (attackState)
 	{
 	case AttackState::None:
+		anim_fastPunch.ResetAnimation();
 		isAttacking = false;
 		break;
 	case AttackState::FastPunch:
-		if (currentAnim->IsAnimationCompleted() && animState == AnimationFrameType::StartUp) // TODO: modify condition so that it checks if this is the loop where we inputted the action
-		{
-			anim_fastPunch.ResetAnimation();
-			currentAnim = &anim_fastPunch;
-		}
-		else
-			if (currentAnim->IsAnimationCompleted())
-			{
-				anim_fastPunch.ResetAnimation();
-				attackState = AttackState::None;
-			}
-			else
-			{
-				currentAnim = &anim_fastPunch;
-			}
-
+		currentAnim = &anim_fastPunch;
 		break;
 	case AttackState::Defend:
 		currentAnim = &anim_defend;
@@ -274,8 +253,8 @@ void PlayerCharacter::HandleAnimation(float dt)
 		{
 		case MoveState::Idle:
 			// Reset non-looping anims
-			if (anim_dashBKW.IsAnimationCompleted())	anim_dashBKW.ResetAnimation();
-			if (anim_dashFWD.IsAnimationCompleted())	anim_dashFWD.ResetAnimation();
+			anim_dashBKW.ResetAnimation();
+			anim_dashFWD.ResetAnimation();
 			currentAnim = &anim_idle;
 			break;
 		case MoveState::Right:
@@ -294,7 +273,6 @@ void PlayerCharacter::HandleAnimation(float dt)
 			break;
 		}
 	}
-
 
 	setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw
 	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250)); // Set the color information of the rect to fill it
@@ -355,7 +333,7 @@ void PlayerCharacter::SetUpAnimations()
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
 
-	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::StartUp);
+	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Idle);
 	anim_defend.SetLooping(false);
 
 	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp);
