@@ -25,7 +25,7 @@ public:
 	sf::IntRect GetRect();
 	void SetRect(int left, int top, int width, int height);
 
-	std::vector<CollisionBox*> GetCollisionBox() { return collisionBoxes; };
+	std::vector<CollisionBox*> GetCollisionBox() { return collisionBoxes; }; // Returns the list of collision boxes in this frame
 
 private:
 	AnimationFrameType thisFrameType;

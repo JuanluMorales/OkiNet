@@ -94,8 +94,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	// Update collider
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
-	//for (auto coll : collisionBoxes) coll->setPosition(newPos);
-	//currentAnim->GetCurrentCollisionBox().setPosition(newPos);
+	for (auto coll : GetCurrentCollision()) coll->setPosition(newPos);
+
 
 	HandleAnimation(dt);
 
@@ -132,14 +132,17 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		default:
 			break;
 		}
-		if (!shouldAcceptInput) return;
 
 		// Defend
 		if (input->isKeyDown(sf::Keyboard::S))
 		{
 			attackState = AttackState::Defend;
+			shouldAcceptInput = false;
 		}
-		else // Attack
+
+		if (!shouldAcceptInput) return;
+
+		// Attack
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger

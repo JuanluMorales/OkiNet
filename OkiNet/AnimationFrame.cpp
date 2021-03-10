@@ -25,7 +25,8 @@ void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
 
 AnimationFrame::~AnimationFrame()
 {
-	for (auto coll : collisionBoxes) delete coll;
+	//for (auto coll : collisionBoxes) delete coll;
+	
 }
 
 AnimationFrameType AnimationFrame::GetFrameType()

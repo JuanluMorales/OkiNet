@@ -17,7 +17,6 @@ void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType)
 {
 	AnimationFrame* anim = new AnimationFrame(rect, animType);
 	frames.push_back(*anim);
-	//boxes.push_back(new CollisionBox());
 }
 
 //void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox* collBox)

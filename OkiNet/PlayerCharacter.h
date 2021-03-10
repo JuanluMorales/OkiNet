@@ -18,11 +18,13 @@ public:
 	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
 	void HandleInput(InputManager* input, float dt); // Register input
 
-	std::vector<CollisionBox*> collisionBoxes; // Collection of the hitboxes to be iterated by the scene 
+	Animation* GetCurrentAnimation() { return currentAnim; }; // Return the animation currently being played
+	std::vector<CollisionBox*> GetCurrentCollision() { return currentAnim->GetCurrentFrame().GetCollisionBox(); }; // Returns a vector of hitboxes for the frame
+
 	// Collision methods to be publicly available
 	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
 	void NoCollisionRegistered(); // Called when no collision was registered to check statuses based on collision such as movement
-	Animation* GetCurrentAnimation() { return currentAnim; };
+
 
 private:
 	
