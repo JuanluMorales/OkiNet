@@ -81,9 +81,6 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	// Setup Animations
 	SetUpAnimationFrames();
 
-	// Setup collision
-	//SetUpCollision();
-
 	CharacterSetUp = true;
 }
 
@@ -318,8 +315,6 @@ void PlayerCharacter::SetUpAnimationFrames()
 
 	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
 	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
-	// Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
-	//if (flipped) bodyCollOffset += sf::Vector2f(0, 0); 
 
 	// Body collision
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;

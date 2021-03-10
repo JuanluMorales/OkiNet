@@ -31,7 +31,7 @@ private:
 
 	AnimationFrameType thisFrameType;
 	sf::IntRect frameRect;
-	CollisionBox* collisionBox; 
+	CollisionBox* collisionBox; // If this frame only needs one collision box
 	std::vector<CollisionBox*> collisionBoxes; // A frame may have more than one box of different types
 };
 
