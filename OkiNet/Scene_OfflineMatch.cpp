@@ -31,8 +31,8 @@ void Scene_OfflineMatch::OverrideEarlyUpdate(float dt)
 void Scene_OfflineMatch::OverrideRender()
 {
 	// draw player collision
-	if (playerOne.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerOne.GetCurrentCollision());
-	if (playerTwo.GetCurrentCollision().GetDrawable() && playerTwo.GetCurrentCollision().IsActive()) window->draw(playerTwo.GetCurrentCollision());
+	if (playerOne.GetCurrentCollision()->GetDrawable() && playerOne.GetCurrentCollision()->IsActive()) window->draw(*playerOne.GetCurrentCollision());
+	if (playerTwo.GetCurrentCollision()->GetDrawable() && playerTwo.GetCurrentCollision()->IsActive()) window->draw(*playerTwo.GetCurrentCollision());
 
 	// draw players
 	if (playerOne.IsActive()) window->draw(playerOne);
@@ -53,9 +53,9 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	auto collA = playerOne.GetCurrentCollision();
 	auto collB = playerTwo.GetCurrentCollision();
 
-	if (collA.IsActive() && collB.IsActive())
+	if (collA->IsActive() && collB->IsActive())
 	{
-		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&collA, &collB);
+		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
 
 		if (newColl.None) // If there was no collision...
 		{

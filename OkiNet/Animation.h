@@ -37,10 +37,11 @@ public:
 	int GetAnimationFramesCount(); //returns the number of frames this animation has
 
 	// Collision box controls
-	CollisionBox GetCurrentBox();
+	CollisionBox* GetCurrentBox();
 
-	std::vector<AnimationFrame>frames; // The total of frames in the animation
+	
 protected:
+	std::vector<AnimationFrame>frames; // The total of frames in the animation
 	AnimationFrame frame;
 	int currentFrame;
 	float animationSpeed;	// in FPS

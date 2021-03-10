@@ -95,7 +95,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
 
 	// Position the colliders in animation 
-	GetCurrentAnimation()->GetCurrentFrame().GetCollisionBox()->setPosition(newPos);
+	GetCurrentCollision()->setPosition(newPos);
+	//GetCurrentAnimation()->GetCurrentFrame().GetCollisionBox()->setPosition(newPos);
 
 }
 

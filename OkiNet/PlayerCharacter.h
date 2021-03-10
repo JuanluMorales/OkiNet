@@ -19,7 +19,7 @@ public:
 	void HandleInput(InputManager* input, float dt); // Register input
 
 	Animation* GetCurrentAnimation() { return currentAnim; }; // Return the animation currently being played
-	CollisionBox GetCurrentCollision() { return currentAnim->GetCurrentBox(); }; // Returns a vector of hitboxes for the frame
+	CollisionBox* GetCurrentCollision() { return currentAnim->GetCurrentBox(); }; // Returns a vector of hitboxes for the frame
 
 	// Collision methods to be publicly available
 	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
