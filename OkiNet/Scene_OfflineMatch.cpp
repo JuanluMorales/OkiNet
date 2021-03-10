@@ -32,7 +32,7 @@ void Scene_OfflineMatch::OverrideRender()
 {
 	// draw player collision
 	if (playerOne.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerOne.GetCurrentCollision());
-	if (playerTwo.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerTwo.GetCurrentCollision());
+	if (playerTwo.GetCurrentCollision().GetDrawable() && playerTwo.GetCurrentCollision().IsActive()) window->draw(playerTwo.GetCurrentCollision());
 
 	// draw players
 	if (playerOne.IsActive()) window->draw(playerOne);
