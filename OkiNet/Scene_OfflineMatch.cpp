@@ -60,22 +60,28 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	playerTwo.Update(dt, window);
 
 	// Iterate all collision boxes for both players
-	for (auto collA : playerOne.collisionBoxes)
+	for (CollisionBox* collA : playerOne.collisionBoxes)
 	{
-		for (auto collB : playerTwo.collisionBoxes)
+		if (!collA->IsActive()) break; // break if collider is unactive
+
+		for (CollisionBox* collB : playerTwo.collisionBoxes)
 		{
+			if (!collA->IsActive()) break;
+
 			Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
 
 			if (newColl.None) // If there was no collision...
 			{
 				playerOne.NoCollisionRegistered();
 				playerTwo.NoCollisionRegistered();
+
 				DebugText.setString("NO COLLISION");
 			}
 			else
 			{
 				playerOne.CollisionResponseToPlayer(&newColl);
 				playerTwo.CollisionResponseToPlayer(&newColl);
+
 				DebugText.setString("COLLISION");
 			}
 

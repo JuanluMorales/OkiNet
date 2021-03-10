@@ -306,18 +306,21 @@ void PlayerCharacter::HandleAnimation(float dt)
 
 void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* collResponse)
 {
-	// Block movement depending on the side collided
-	if (collResponse->s1Right)
+	// Block movement on hurtbox collision depending on the side collided
+	if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
 	{
-		CanGoRight = false;
-	}
-	else CanGoRight = true;
+		if (collResponse->s1Right)
+		{
+			CanGoRight = false;
+		}
+		else CanGoRight = true;
 
-	if (collResponse->s1Left)
-	{
-		CanGoLeft = false;
+		if (collResponse->s1Left)
+		{
+			CanGoLeft = false;
+		}
+		else CanGoLeft = true;
 	}
-	else CanGoLeft = true;
 
 }
 
@@ -382,7 +385,7 @@ void PlayerCharacter::SetUpCollision()
 	// Body collision
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
 	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(23 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
-	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
+	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
 	collisionBoxes.push_back(bodyColl);
 
 	// Punch collision
