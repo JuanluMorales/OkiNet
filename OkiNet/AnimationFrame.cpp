@@ -3,7 +3,6 @@
 AnimationFrame::AnimationFrame()
 {
 	thisFrameType = AnimationFrameType::Idle;
-	thisCollisionBox = new CollisionBox();
 }
 
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)

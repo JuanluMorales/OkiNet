@@ -35,11 +35,11 @@ void Scene_OfflineMatch::OverrideRender()
 
 	for (auto coll : playerOne.collisionBoxes)
 	{
-		if (coll->ShouldBeDrawn()) window->draw(*coll);
+		if (coll->GetDrawable()) window->draw(*coll);
 	}
 	for (auto coll : playerTwo.collisionBoxes)
 	{
-		if (coll->ShouldBeDrawn()) window->draw(*coll);
+		if (coll->GetDrawable()) window->draw(*coll);
 	}
 
 	//if(playerOne.bodyColl->ShouldBeDrawn()) window->draw(*playerOne.bodyColl);
@@ -62,11 +62,11 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	// Iterate all collision boxes for both players
 	for (CollisionBox* collA : playerOne.collisionBoxes)
 	{
-		if (!collA->IsActive()) break; // break if collider is unactive
+		if (!collA->GetActive()) break; // break if collider is unactive
 
 		for (CollisionBox* collB : playerTwo.collisionBoxes)
 		{
-			if (!collA->IsActive()) break;
+			if (!collA->GetActive()) break;
 
 			Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
 

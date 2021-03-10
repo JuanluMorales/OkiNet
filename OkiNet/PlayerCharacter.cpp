@@ -79,7 +79,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	// Position character at designated start position
 	setPosition(startPos);
 	// Setup Animations
-	SetUpAnimations();
+	SetUpAnimationFrames();
 
 	// Setup collision
 	SetUpCollision();
@@ -308,7 +308,7 @@ void PlayerCharacter::NoCollisionRegistered()
 
 }
 
-void PlayerCharacter::SetUpAnimations()
+void PlayerCharacter::SetUpAnimationFrames()
 {
 	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);

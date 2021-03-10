@@ -19,21 +19,22 @@ public:
 	CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size);
 	~CollisionBox();
 
-	inline void SetCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
-	inline void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
+	void SetCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
+	void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
 
+	sf::FloatRect GetCollisionBox(); // Returns the rect properties of the collider
+	ColliderType GetType() const { return thisCollType; };
 	// Change the collision box to the new collision type along with its color properties
 	void SetType(ColliderType collType);
 
 	// Is the collider active for collision registering purposes?
-	inline bool IsActive() { return collActive; };
-	inline void SetActive(bool b) { collActive = b; };
+	bool GetActive() { return collActive; };
+	void SetActive(bool b) { collActive = b; };
 
-	inline void SetDrawable(bool b) { SpriteBase::SetActive(b); }; // Set whether the collision box should be drawn or not
-	bool ShouldBeDrawn() { return SpriteBase::IsActive(); }; // Returns whether the sprite is active or not
+	void SetDrawable(bool b) { SpriteBase::SetActive(b); }; // Set whether the collision box should be drawn or not
+	bool GetDrawable() { return SpriteBase::IsActive(); }; // Returns whether the sprite is active or not
 
-	sf::FloatRect GetCollisionBox(); // Returns the rect properties of the collider
-	ColliderType GetType() const { return thisCollType; };
+
 
 private:
 	sf::FloatRect collRect; // The rect that defines this collision box

@@ -26,7 +26,7 @@ public:
 private:
 	
 	void HandleAnimation(float dt); // Update animation state
-	void SetUpAnimations(); // Encapsulate the frame setup for the animations
+	void SetUpAnimationFrames(); // Encapsulate the frame setup for the animations (animation frames + collision boxes)
 	void SetUpCollision();
 
 	int moveDistance; // Amount of distance moved while walking
