@@ -52,14 +52,24 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	playerOne.update(dt, window);
 	playerTwo.update(dt, window);
 
-	// Check collision
-	Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(playerOne.bodyColl, playerTwo.bodyColl);
-	if (newColl.None == false)
+	// Check collision in the scene
+	if (playerOne.bodyColl->IsActive() && playerTwo.bodyColl->IsActive())
 	{
-		playerOne.collisionResponse(&playerTwo, &newColl);
-		playerTwo.collisionResponse(&playerOne, &newColl);
-		DebugText.setString("COLLISION");
-	}else DebugText.setString("NO COLLISION");
+		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(playerOne.bodyColl, playerTwo.bodyColl);
+		if (newColl.None)
+		{
+			playerOne.NoCollisionRegistered();
+			playerTwo.NoCollisionRegistered();
+			DebugText.setString("NO COLLISION");
+		}
+		else
+		{
+			playerOne.CollisionResponseToPlayer(&newColl);
+			playerTwo.CollisionResponseToPlayer(&newColl);
+			DebugText.setString("COLLISION");
+		}
+	}
+
 
 }
 

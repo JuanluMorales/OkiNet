@@ -81,10 +81,10 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 
 	// Setup collision
 	// Body collision
-	bodyCollOffset = sf::Vector2f(static_cast < float>(25 * PIXEL_SCALE_FACTOR), static_cast < float>(5 * PIXEL_SCALE_FACTOR));
+	bodyCollOffset = sf::Vector2f(static_cast <float>(25 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
 	if (flipped) bodyCollOffset += sf::Vector2f(15, 0); // Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
-	sf::Vector2f bodycallSize = sf::Vector2f(static_cast < float>(25 * PIXEL_SCALE_FACTOR), static_cast < float>(42 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(25 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
 	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
 	// Punch collision
 
@@ -310,13 +310,27 @@ void PlayerCharacter::HandleAnimation(float dt)
 	animState = currentAnim->GetCurrentFrame().GetFrameType();
 }
 
-void PlayerCharacter::collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse)
+void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* collResponse)
 {
-	if (playerID == PlayerID::PlayerOne)
+	// Block movement depending on the side collided
+	if (collResponse->s1Right)
 	{
-
+		CanGoRight = false;
 	}
+	else CanGoRight = true;
 
+	if (collResponse->s1Left)
+	{
+		CanGoLeft = false;
+	}
+	else CanGoLeft = true;
+
+}
+
+void PlayerCharacter::NoCollisionRegistered()
+{
+	if (!CanGoRight) CanGoRight = true;
+	if (!CanGoLeft) CanGoLeft = true;
 
 }
 

@@ -18,7 +18,7 @@ public:
 
 	void update(float dt, sf::Window* wnd); // Update states and apply transformations
 	void handleInput(InputManager* input, float dt); // Register input
-	void HandleAnimation(float dt);
+	void HandleAnimation(float dt); // Update animation state
 	int MoveSpeed; //Multiplier for the movement speed
 
 	//List of animations 
@@ -37,7 +37,9 @@ public:
 	// Punch boxes
 	CollisionBox* punchColl;
 
-	void collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse);
+	// Collision methods
+	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
+	void NoCollisionRegistered(); // Called when no collision was registered to check statuses
 
 protected:
 	sf::Texture texture; // The graphic component of the character
