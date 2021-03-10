@@ -17,6 +17,14 @@ void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType)
 {
 	AnimationFrame* anim = new AnimationFrame(rect, animType);
 	frames.push_back(*anim);
+	boxes.push_back(new CollisionBox());
+}
+
+void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox* collBox)
+{
+	AnimationFrame* anim = new AnimationFrame(rect, animType, *collBox);
+	frames.push_back(*anim);
+	boxes.push_back(collBox);
 }
 
 // Returns the size of the animation. The number of frames.

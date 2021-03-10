@@ -22,12 +22,13 @@ public:
 	// Collision methods to be publicly available
 	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
 	void NoCollisionRegistered(); // Called when no collision was registered to check statuses based on collision such as movement
+	Animation* GetCurrentAnimation() { return currentAnim; };
 
 private:
 	
 	void HandleAnimation(float dt); // Update animation state
 	void SetUpAnimationFrames(); // Encapsulate the frame setup for the animations (animation frames + collision boxes)
-	void SetUpCollision();
+	//void SetUpCollision();
 
 	int moveDistance; // Amount of distance moved while walking
 	int dashDistance; // Dash translation factor
@@ -48,12 +49,12 @@ private:
 	int blockStun; // Amount to be stunned when receiving a hit while blocking
 	int frameAdvantage; // Can be positive or negative depending on the situation. Represents the speed advantage of an attack
 
-	// List of collision boxes
-	// Body collision
-	CollisionBox* bodyColl;
+	//// List of collision boxes
+	//// Body collision
+	//CollisionBox* bodyColl;
 	sf::Vector2f bodyCollOffset;
-	// Punch boxes
-	CollisionBox* punchColl;
+	//// Punch boxes
+	//CollisionBox* punchColl;
 
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState; // Alive by default

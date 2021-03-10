@@ -30,8 +30,8 @@ PlayerCharacter::PlayerCharacter()
 	moveDistance = 180;
 	dashDistance = 5000;
 
-	bodyColl = new CollisionBox();
-	punchColl = new CollisionBox();
+	//bodyColl = new CollisionBox();
+	//punchColl = new CollisionBox();
 
 }
 
@@ -40,11 +40,11 @@ PlayerCharacter::~PlayerCharacter()
 	currentAnim = NULL;
 	delete currentAnim;
 
-	bodyColl = NULL;
-	delete bodyColl;
+	//bodyColl = NULL;
+	//delete bodyColl;
 
-	punchColl = NULL;
-	delete punchColl;
+	//punchColl = NULL;
+	//delete punchColl;
 }
 
 /// <summary>
@@ -82,7 +82,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	SetUpAnimationFrames();
 
 	// Setup collision
-	SetUpCollision();
+	//SetUpCollision();
 
 	CharacterSetUp = true;
 }
@@ -94,7 +94,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	// Update collider
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
-	bodyColl->setPosition(newPos);
+	//for (auto coll : collisionBoxes) coll->setPosition(newPos);
+	//currentAnim->GetCurrentCollisionBox().setPosition(newPos);
 
 	HandleAnimation(dt);
 
@@ -310,11 +311,23 @@ void PlayerCharacter::NoCollisionRegistered()
 
 void PlayerCharacter::SetUpAnimationFrames()
 {
+
+	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
+	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
+	// Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
+	//if (flipped) bodyCollOffset += sf::Vector2f(0, 0); 
+
+	// Body collision
+	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
+	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
+	CollisionBox* bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
+
 	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.AddFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
 	anim_idle.SetFrameSpeed(0.1f);
+
 
 	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
 	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
@@ -351,19 +364,19 @@ void PlayerCharacter::SetUpAnimationFrames()
 	currentAnim = &anim_idle;
 }
 
-void PlayerCharacter::SetUpCollision()
-{
-	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
-	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
-	// Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
-	//if (flipped) bodyCollOffset += sf::Vector2f(0, 0); 
-
-	// Body collision
-	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
-	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
-	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
-	collisionBoxes.push_back(bodyColl);
-
-	// Punch collision
-
-}
+//void PlayerCharacter::SetUpCollision()
+//{
+//	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
+//	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
+//	// Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
+//	//if (flipped) bodyCollOffset += sf::Vector2f(0, 0); 
+//
+//	// Body collision
+//	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
+//	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
+//	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
+//	collisionBoxes.push_back(bodyColl);
+//
+//	// Punch collision
+//
+//}

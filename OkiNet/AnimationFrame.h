@@ -18,22 +18,23 @@ public:
 	AnimationFrame();
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType);
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox& collBox);
+	void AddCollisionBox(CollisionBox& collBox);
 	~AnimationFrame();
 
 	AnimationFrameType GetFrameType();
 	sf::IntRect GetRect();
 	void SetRect(int left, int top, int width, int height);
 
-	CollisionBox* GetCollisionBox() { return thisCollisionBox; };
-	CollisionBox::ColliderType GetColliderType() { return thisCollisionBox->GetType(); };
-	bool GetColliderActive() { return thisCollisionBox->GetActive(); };
-	void SetColliderDrawable(bool b) { thisCollisionBox->SetDrawable(b); };
-	bool GetColliderDrawable() { return thisCollisionBox->GetDrawable(); };
+	//CollisionBox* GetCollisionBox() { return thisCollisionBox; };
+	//CollisionBox::ColliderType GetColliderType() { return thisCollisionBox->GetType(); };
+	//bool GetColliderActive() { return thisCollisionBox->GetActive(); };
+	//void SetColliderDrawable(bool b) { thisCollisionBox->SetDrawable(b); };
+	//bool GetColliderDrawable() { return thisCollisionBox->GetDrawable(); };
 
 private:
 	AnimationFrameType thisFrameType;
 	sf::IntRect frameRect;
-	CollisionBox* thisCollisionBox;
+	std::vector<CollisionBox> collisionBoxes; // A frame may have more than one box of different types
 
 };
 
