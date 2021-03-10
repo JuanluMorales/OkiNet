@@ -1,8 +1,6 @@
 #pragma once
-#include "SpriteBase.h" // Sprite graphics
 #include "InputManager.h" // To enable input from this class instead of from the scene class for encapsulation
 #include "Animation.h"
-#include "Collision.h"
 #include <vector>
 
 class PlayerCharacter : public SpriteBase

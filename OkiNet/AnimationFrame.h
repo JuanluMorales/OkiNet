@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Collision.h"
 
 // This animation's frames can be any of these types
 enum class AnimationFrameType

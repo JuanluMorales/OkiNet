@@ -1,6 +1,5 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "Animation.h"
 
 class SpriteBase : public sf::RectangleShape
 {
