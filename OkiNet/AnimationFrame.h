@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "Collision.h"
 
-// This animation's frames can be any of these types
+// This animation's frame type 
 enum class AnimationFrameType
 {
 	Idle, // A looping animation 
@@ -15,9 +15,9 @@ enum class AnimationFrameType
 class AnimationFrame
 {
 public:
-	
 	AnimationFrame();
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType);
+	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox& collBox);
 	~AnimationFrame();
 
 	AnimationFrameType GetFrameType();
@@ -27,7 +27,7 @@ public:
 private:
 	AnimationFrameType thisFrameType;
 	sf::IntRect frameRect;
-
+	CollisionBox* thisCollisionBox;
 
 };
 

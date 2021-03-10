@@ -4,6 +4,11 @@ CollisionBox::CollisionBox()
 {
 	collActive = false;
 	thisCollType = ColliderType::Uninitialized;
+	SetDrawable(false);
+	SetActive(false);
+	setFillColor(sf::Color(0, 0, 0, 100));
+	setOutlineColor(sf::Color::Black);
+	setOutlineThickness(1.0f);
 }
 
 CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vector2f size)
@@ -13,7 +18,7 @@ CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vec
 	switch (collType)
 	{
 	case CollisionBox::ColliderType::Uninitialized:
-		setFillColor(sf::Color(1, 1, 1, 100));
+		setFillColor(sf::Color(0, 0, 0, 100));
 		setOutlineColor(sf::Color::Black);
 		setOutlineThickness(1.0f);
 		break;

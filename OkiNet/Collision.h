@@ -1,6 +1,7 @@
 #pragma once
 #include "CollisionBox.h"
 
+// Class that contains the static methods with which collision can be check between two CollisionBox, SpriteBase or Rect objects
 class Collision
 {
 public:

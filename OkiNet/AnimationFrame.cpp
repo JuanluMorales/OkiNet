@@ -2,17 +2,28 @@
 
 AnimationFrame::AnimationFrame()
 {
+	thisFrameType = AnimationFrameType::Idle;
+	thisCollisionBox = new CollisionBox();
 }
 
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 {
 	frameRect = rect;
 	thisFrameType = frameType;
+	thisCollisionBox = new CollisionBox();
+}
+
+AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox& collBox)
+{
+	frameRect = rect;
+	thisFrameType = frameType;
+	thisCollisionBox = &collBox;
 }
 
 AnimationFrame::~AnimationFrame()
 {
-
+	thisCollisionBox = NULL;
+	delete thisCollisionBox;
 }
 
 AnimationFrameType AnimationFrame::GetFrameType()
