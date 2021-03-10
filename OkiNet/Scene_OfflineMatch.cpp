@@ -4,10 +4,6 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 {
 	stateManager = stateMan;
 
-	platform.setSize(sf::Vector2f(1500, 100));
-	platform.setPosition(-700, 300);
-	platform.setFillColor(sf::Color::Green);
-
 	// Setup debug font and text
 	DebugFont.loadFromFile("font/arial.ttf");
 	DebugText.setFont(DebugFont);
@@ -34,9 +30,6 @@ void Scene_OfflineMatch::OverrideEarlyUpdate(float dt)
 
 void Scene_OfflineMatch::OverrideRender()
 {
-	// render something to test
-	//window->draw(platform);
-
 	// draw player collision
 	if (playerOne.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerOne.GetCurrentCollision());
 	if (playerTwo.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerTwo.GetCurrentCollision());

@@ -27,6 +27,8 @@ void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
 
 AnimationFrame::~AnimationFrame()
 {	
+	collisionBox = NULL;
+	delete collisionBox;
 }
 
 AnimationFrameType AnimationFrame::GetFrameType()

@@ -19,7 +19,6 @@ public:
 private:
 	GameState* stateManager;
 
-	SpriteBase platform;
 	PlayerCharacter playerOne;
 	PlayerCharacter playerTwo;
 

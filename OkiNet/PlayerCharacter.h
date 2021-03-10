@@ -29,7 +29,6 @@ private:
 	
 	void HandleAnimation(float dt); // Update animation state
 	void SetUpAnimationFrames(); // Encapsulate the frame setup for the animations (animation frames + collision boxes)
-	//void SetUpCollision();
 
 	int moveDistance; // Amount of distance moved while walking
 	int dashDistance; // Dash translation factor
