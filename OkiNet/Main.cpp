@@ -46,7 +46,7 @@ int main()
 	onlineMatch.Init(scenesManager);
 
 
-	// GAME LOOP
+	// GAME EXECUTION LOOP
 	while (window.isOpen())
 	{
 		sf::Event event;

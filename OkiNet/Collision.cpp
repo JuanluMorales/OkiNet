@@ -25,6 +25,9 @@ Collision::CollisionResponse Collision::checkBoundingBox_Sides(CollisionBox* s1,
 
 	CollisionResponse newResponse;
 
+	newResponse.s1CollType = s1->GetType();
+	newResponse.s2CollType = s2->GetType();
+
 	if (s1->GetCollisionBox().left + s1->GetCollisionBox().width < s2->GetCollisionBox().left)
 		return newResponse;
 

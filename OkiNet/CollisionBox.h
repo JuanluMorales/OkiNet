@@ -22,15 +22,15 @@ public:
 	inline void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
 	inline bool IsActive() { return collActive; };
 	inline void SetActive(bool b) { collActive = b; };
-	inline void ShouldBeDrawn(bool b) { if (b) SpriteBase::SetActive(b); }; // Set whether the collision box should be drawn or not
-
+	inline void SetToBeDrawn(bool b) { SpriteBase::SetActive(b); }; // Set whether the collision box should be drawn or not
+	bool ShouldBeDrawn() { return SpriteBase::IsActive(); }; // Returns whether the sprite is active or not
 	sf::FloatRect GetCollisionBox();
 
 	ColliderType GetType() const { return thisCollType; };
 
 private:
 	sf::FloatRect collRect; // The rect that defines this collision box
-	bool collActive; // Whether the collider is active or not
+	bool collActive; // Whether the collider is active or not for collision check purposes
 	ColliderType thisCollType; // Type of the collider for discrimination
 };
 

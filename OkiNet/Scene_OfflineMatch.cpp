@@ -33,13 +33,20 @@ void Scene_OfflineMatch::OverrideRender()
 	// render something to test
 	//window->draw(platform);
 
-	window->draw(*playerOne.bodyColl);
-	window->draw(*playerTwo.bodyColl);
+	for (auto coll : playerOne.collisionBoxes)
+	{
+		if (coll->ShouldBeDrawn()) window->draw(*coll);
+	}
+	for (auto coll : playerTwo.collisionBoxes)
+	{
+		if (coll->ShouldBeDrawn()) window->draw(*coll);
+	}
 
-	window->draw(playerOne);
-	window->draw(playerTwo);
+	//if(playerOne.bodyColl->ShouldBeDrawn()) window->draw(*playerOne.bodyColl);
+	//if(playerTwo.bodyColl->ShouldBeDrawn()) window->draw(*playerTwo.bodyColl);
 
-
+	if (playerOne.IsActive()) window->draw(playerOne);
+	if (playerTwo.IsActive()) window->draw(playerTwo);
 
 	// Render font
 	window->draw(DebugText);
@@ -49,28 +56,31 @@ void Scene_OfflineMatch::OverrideRender()
 
 void Scene_OfflineMatch::OverrideUpdate(float dt)
 {
-	playerOne.update(dt, window);
-	playerTwo.update(dt, window);
+	playerOne.Update(dt, window);
+	playerTwo.Update(dt, window);
 
-	// Check collision in the scene
-	if (playerOne.bodyColl->IsActive() && playerTwo.bodyColl->IsActive())
+	// Iterate all collision boxes for both players
+	for (auto collA : playerOne.collisionBoxes)
 	{
-		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(playerOne.bodyColl, playerTwo.bodyColl);
-		if (newColl.None)
+		for (auto collB : playerTwo.collisionBoxes)
 		{
-			playerOne.NoCollisionRegistered();
-			playerTwo.NoCollisionRegistered();
-			DebugText.setString("NO COLLISION");
-		}
-		else
-		{
-			playerOne.CollisionResponseToPlayer(&newColl);
-			playerTwo.CollisionResponseToPlayer(&newColl);
-			DebugText.setString("COLLISION");
+			Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
+
+			if (newColl.None) // If there was no collision...
+			{
+				playerOne.NoCollisionRegistered();
+				playerTwo.NoCollisionRegistered();
+				DebugText.setString("NO COLLISION");
+			}
+			else
+			{
+				playerOne.CollisionResponseToPlayer(&newColl);
+				playerTwo.CollisionResponseToPlayer(&newColl);
+				DebugText.setString("COLLISION");
+			}
+
 		}
 	}
-
-
 }
 
 void Scene_OfflineMatch::OverrideHandleInput(float dt)
@@ -80,8 +90,8 @@ void Scene_OfflineMatch::OverrideHandleInput(float dt)
 		window->close();
 	}
 
-	playerOne.handleInput(input, dt);
-	playerTwo.handleInput(input, dt);
+	playerOne.HandleInput(input, dt);
+	playerTwo.HandleInput(input, dt);
 
 
 }

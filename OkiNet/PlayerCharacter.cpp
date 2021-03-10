@@ -10,24 +10,26 @@ PlayerCharacter::PlayerCharacter()
 	animState = AnimationFrameType::Idle;
 
 	shouldAcceptInput = true;
+	CharacterSetUp = false;
 
 	b_dashTriggerL = false; // Helps checking if player can/wants to dash
 	b_dashTriggerR = false;
 	dashTimer = 0.0f; // Helper counter
 	dashTime = 0.7f;
 
-	b_fastPunch = false;
-
 	grounded = false; //Sets the player able to jump when true
 	CanGoLeft = true; //Allows the player to move left 
 	CanGoRight = true;
-	CanGoUp = true; //If theres a ceiling, doesnt allow to go up
+
+	b_fastPunch = false;
+	currentAnim = NULL;
+
 	maxHealthPoints = 50; //Total hit points the player can suffer before dying
 	currentHealthPoints = 50; //Current health 
-	MoveSpeed = 180; //Multiplier for the movement speed
+
+	moveDistance = 180; 
 	dashDistance = 5000;
-	currentAnim = NULL;
-	CharacterSetUp = false;
+
 	bodyColl = new CollisionBox();
 	punchColl = new CollisionBox();
 
@@ -74,21 +76,13 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		flipped = true;
 	}
 
-	// Setup Animations
-	SetUpAnimations();
-
+	// Position character at designated start position
 	setPosition(startPos);
+	// Setup Animations
+	SetUpAnimations();	
 
 	// Setup collision
-	// Body collision
-	bodyCollOffset = sf::Vector2f(static_cast <float>(25 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
-	if (flipped) bodyCollOffset += sf::Vector2f(15, 0); // Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
-	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
-	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(25 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
-	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
-	// Punch collision
-
-
+	SetUpCollision();
 
 	CharacterSetUp = true;
 }
@@ -96,7 +90,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 
 
 //Manages the movement and animation of the player
-void PlayerCharacter::update(float dt, sf::Window* wnd)
+void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	// Update collider
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
@@ -124,7 +118,7 @@ void PlayerCharacter::update(float dt, sf::Window* wnd)
 
 }
 
-void PlayerCharacter::handleInput(InputManager* input, float dt)
+void PlayerCharacter::HandleInput(InputManager* input, float dt)
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
@@ -162,7 +156,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 			}
 			else // Walk
 			{
-				setPosition(getPosition().x - MoveSpeed * dt, getPosition().y);
+				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
 				moveState = MoveState::Left;
 			}
 
@@ -177,7 +171,7 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 			}
 			else // Walk
 			{
-				setPosition(getPosition().x + MoveSpeed * dt, getPosition().y);
+				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
 				moveState = MoveState::Right;
 			}
 
@@ -216,13 +210,13 @@ void PlayerCharacter::handleInput(InputManager* input, float dt)
 
 		if (input->isKeyDown(sf::Keyboard::Left))
 		{
-			setPosition(getPosition().x - MoveSpeed * dt, getPosition().y);
+			setPosition(getPosition().x - moveDistance * dt, getPosition().y);
 			moveState = MoveState::Left;
 		}
 		else
 			if (input->isKeyDown(sf::Keyboard::Right))
 			{
-				setPosition(getPosition().x + MoveSpeed * dt, getPosition().y);
+				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
 				moveState = MoveState::Right;
 			}
 			else moveState = MoveState::Idle;
@@ -376,4 +370,21 @@ void PlayerCharacter::SetUpAnimations()
 	anim_dashBKW.SetFrameSpeed(0.1f);
 
 	currentAnim = &anim_idle;
+}
+
+void PlayerCharacter::SetUpCollision()
+{
+	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
+	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
+	// Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
+	if (flipped) bodyCollOffset += sf::Vector2f(-29, 0); 
+
+	// Body collision
+	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
+	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(23 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
+	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
+	collisionBoxes.push_back(bodyColl);
+
+	// Punch collision
+
 }

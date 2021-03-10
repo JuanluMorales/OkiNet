@@ -7,13 +7,15 @@ public:
 	// In case of a collision, where is it colliding
 	struct CollisionResponse
 	{		
-		bool None = true;
+		bool None = true; // Variable that informs whether there was a collision or not as part of the response
 
+		CollisionBox::ColliderType s1CollType;
 		bool s1Top = false;
 		bool s1Down = false;
 		bool s1Left = false;
 		bool s1Right = false;
 
+		CollisionBox::ColliderType s2CollType;
 		bool s2Top = false;
 		bool s2Down = false;
 		bool s2Left = false;

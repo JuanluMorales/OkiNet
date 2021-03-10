@@ -142,14 +142,4 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	{
 		AttemptConnection();
 	}
-
-	// Placeholder movement
-	if (input->isKeyDown(sf::Keyboard::A))
-	{
-		playerOne.setPosition(playerOne.getPosition().x - playerOne.MoveSpeed * dt, playerOne.getPosition().y);
-	}
-	if (input->isKeyDown(sf::Keyboard::D))
-	{
-		playerOne.setPosition(playerOne.getPosition().x + playerOne.MoveSpeed * dt, playerOne.getPosition().y);
-	}
 }

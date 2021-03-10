@@ -3,6 +3,7 @@
 #include "InputManager.h" // To enable input from this class for encapsulation
 #include "Animation.h"
 #include "Collision.h"
+#include <vector>
 
 class PlayerCharacter : public SpriteBase
 {
@@ -16,12 +17,26 @@ public:
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);
 	~PlayerCharacter();
 
-	void update(float dt, sf::Window* wnd); // Update states and apply transformations
-	void handleInput(InputManager* input, float dt); // Register input
-	void HandleAnimation(float dt); // Update animation state
-	int MoveSpeed; //Multiplier for the movement speed
+	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
+	void HandleInput(InputManager* input, float dt); // Register input
 
+	std::vector<CollisionBox*> collisionBoxes; // Collection of the hitboxes to be iterated by the scene 
+	// Collision methods to be publicly available
+	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
+	void NoCollisionRegistered(); // Called when no collision was registered to check statuses based on collision such as movement
+
+private:
+	
+	void HandleAnimation(float dt); // Update animation state
+	void SetUpAnimations(); // Encapsulate the frame setup for the animations
+	void SetUpCollision();
+
+	int moveDistance; // Amount of distance moved while walking
+	int dashDistance; // Dash translation factor
+
+	sf::Texture texture; // Contains the graphics information from the sprite sheet to be extracted 
 	//List of animations 
+	Animation* currentAnim; //Holds current animation and is the one to be updated like currentAnim = &animation;
 	Animation anim_idle; //when no input received for the player
 	Animation anim_walkFWD; // Right walk
 	Animation anim_walkBKW; // Left walk
@@ -29,20 +44,13 @@ public:
 	Animation anim_dashBKW; // Backward dash
 	Animation anim_fastPunch;
 	Animation anim_defend;
-	
+
 	// List of collision boxes
 	// Body collision
 	CollisionBox* bodyColl;
 	sf::Vector2f bodyCollOffset;
 	// Punch boxes
 	CollisionBox* punchColl;
-
-	// Collision methods
-	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
-	void NoCollisionRegistered(); // Called when no collision was registered to check statuses based on collision such as movement
-
-protected:
-	sf::Texture texture; // The graphic component of the character
 
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState; // Alive by default
@@ -52,7 +60,6 @@ protected:
 
 	bool shouldAcceptInput;
 
-	float dashDistance;
 	bool b_dashTriggerL; // Helps checking if player can/wants to dash
 	bool b_dashTriggerR;
 	float dashTime; // Time between consecutive presses of the move button to recognise as a dash 
@@ -62,16 +69,13 @@ protected:
 
 	bool grounded; //Sets the player able to jump when true
 	bool CanGoLeft; //Allows the player to move left 
-	bool CanGoRight; // "   "    "     "		"	right
-	bool CanGoUp; //If theres a ceiling, doesnt allow to go up
+	bool CanGoRight;
 
 	int maxHealthPoints; //Total hit points the player can suffer before dying
 	int currentHealthPoints; //Current health 
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 
-	Animation* currentAnim; //Holds current animation and is the one to be updated like currentAnim = &animation;
 
-	void SetUpAnimations(); // Encapsulate the frame setup for the animations
 };
 
