@@ -36,13 +36,12 @@ public:
 	int GetAnimationFramesCount(); //returns the number of frames this animation has
 
 	// Collision box controls
-	CollisionBox* GetCurrentCollisionBox() { return boxes[currentFrame]; };
-	bool GetCurrentCollisionBoxActive() { return boxes[currentFrame]->GetActive(); };
-	std::vector<CollisionBox*> GetBoxes() { return boxes; };
+	//CollisionBox* GetCurrentCollisionBox() { return boxes[currentFrame]; };
+	//bool GetCurrentCollisionBoxActive() { return boxes[currentFrame]->GetActive(); };
+	//std::vector<CollisionBox*> GetBoxes() { return boxes; };
 
 protected:
 	std::vector<AnimationFrame>frames; // The total of frames in the animation
-	std::vector<CollisionBox*>boxes; // The ordered total of hitboxes in the animation
 	AnimationFrame frame;
 	int currentFrame;
 	float animationSpeed;	// in FPS

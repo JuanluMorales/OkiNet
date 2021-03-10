@@ -25,16 +25,12 @@ public:
 	sf::IntRect GetRect();
 	void SetRect(int left, int top, int width, int height);
 
-	//CollisionBox* GetCollisionBox() { return thisCollisionBox; };
-	//CollisionBox::ColliderType GetColliderType() { return thisCollisionBox->GetType(); };
-	//bool GetColliderActive() { return thisCollisionBox->GetActive(); };
-	//void SetColliderDrawable(bool b) { thisCollisionBox->SetDrawable(b); };
-	//bool GetColliderDrawable() { return thisCollisionBox->GetDrawable(); };
+	std::vector<CollisionBox*> GetCollisionBox() { return collisionBoxes; };
 
 private:
 	AnimationFrameType thisFrameType;
 	sf::IntRect frameRect;
-	std::vector<CollisionBox> collisionBoxes; // A frame may have more than one box of different types
+	std::vector<CollisionBox*> collisionBoxes; // A frame may have more than one box of different types
 
 };
 

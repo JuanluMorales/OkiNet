@@ -23,7 +23,7 @@ public:
 	void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
 
 	sf::FloatRect GetCollisionBox(); // Returns the rect properties of the collider
-	ColliderType GetType() const { return thisCollType; };
+	ColliderType GetType() { return thisCollType; };
 	// Change the collision box to the new collision type along with its color properties
 	void SetType(ColliderType collType);
 

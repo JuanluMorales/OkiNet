@@ -33,14 +33,14 @@ void Scene_OfflineMatch::OverrideRender()
 	// render something to test
 	//window->draw(platform);
 
-	for (auto coll : playerOne.collisionBoxes)
-	{
-		if(coll->GetDrawable()) window->draw(*coll);
-	}
-	for (auto coll : playerTwo.collisionBoxes)
-	{
-		if (coll->GetDrawable()) window->draw(*coll);
-	}
+	//for (auto coll : playerOne.collisionBoxes)
+	//{
+	//	if(coll->GetDrawable()) window->draw(*coll);
+	//}
+	//for (auto coll : playerTwo.collisionBoxes)
+	//{
+	//	if (coll->GetDrawable()) window->draw(*coll);
+	//}
 
 	if (playerOne.IsActive()) window->draw(playerOne);
 	if (playerTwo.IsActive()) window->draw(playerTwo);

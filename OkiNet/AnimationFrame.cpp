@@ -3,31 +3,29 @@
 AnimationFrame::AnimationFrame()
 {
 	thisFrameType = AnimationFrameType::Idle;
-	collisionBoxes.push_back(CollisionBox());
 }
 
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 {
 	frameRect = rect;
 	thisFrameType = frameType;
-	collisionBoxes.push_back(CollisionBox());
 }
 
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox& collBox)
 {
 	frameRect = rect;
 	thisFrameType = frameType; 
-	collisionBoxes.push_back(collBox);
+	collisionBoxes.push_back(&collBox);
 }
 
 void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
 {
-	collisionBoxes.push_back(collBox);
+	collisionBoxes.push_back(&collBox);
 }
 
 AnimationFrame::~AnimationFrame()
 {
-
+	for (auto coll : collisionBoxes) delete coll;
 }
 
 AnimationFrameType AnimationFrame::GetFrameType()
