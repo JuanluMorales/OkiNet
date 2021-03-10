@@ -104,6 +104,15 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 {
 	if (playerID == PlayerID::PlayerOne)
 	{
+		// Check timers and counters
+		if (dashTimer >= dashTime) // Check dashing timer
+		{
+			b_dashTriggerR = false;
+			b_dashTriggerL = false;
+			dashTimer = 0.0f;
+		}
+		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
 		{
@@ -122,15 +131,14 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		default:
 			break;
 		}
-
 		if (!shouldAcceptInput) return;
 
-		// Defend ----------
+		// Defend
 		if (input->isKeyDown(sf::Keyboard::S))
 		{
 			attackState = AttackState::Defend;
 		}
-		else
+		else // Attack
 		if (input->isKeyDown(sf::Keyboard::Q))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
@@ -186,14 +194,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			moveState = MoveState::Idle;
 		}
 		// -------------------
-		// Check timers and counters
-		if (dashTimer >= dashTime) // Check dashing timer
-		{
-			b_dashTriggerR = false;
-			b_dashTriggerL = false;
-			dashTimer = 0.0f;
-		}
-		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
 
 	}
 	else if (playerID == PlayerID::PlayerTwo)
@@ -245,7 +245,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 		break;
 	}
 
-	// Calculate the move state if we are not attacking
+	// MOVE - Calculate the move state if we are not attacking
 	if (!isAttacking)
 	{
 		// Update movement animation
@@ -302,7 +302,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 
 void PlayerCharacter::NoCollisionRegistered()
 {
-	// Reset conditions based on collision
+	// Reset conditions based on absence of collision
 	if (!CanGoRight) CanGoRight = true;
 	if (!CanGoLeft) CanGoLeft = true;
 
