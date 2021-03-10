@@ -227,11 +227,19 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 void PlayerCharacter::HandleAnimation(float dt)
 {
-	bool isAttacking = false; // track if the character is attacking this frame
+	// Remember the animation class of the flip state of the sprite
+	if (flipped)
+	{
+		currentAnim->SetFlipped(true);
+	}
 
+	// ATTACK --------------------------------------------------------
+	bool isAttacking = true;
+	// Check the attack state, if any
 	switch (attackState)
 	{
 	case AttackState::None:
+		isAttacking = false;
 		break;
 	case AttackState::FastPunch:
 		if (currentAnim->IsAnimationCompleted() && animState == AnimationFrameType::StartUp) // TODO: modify condition so that it checks if this is the loop where we inputted the action
@@ -258,8 +266,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 		break;
 	}
 
-	if (attackState != AttackState::None) isAttacking = true;
-
+	// Calculate the move state if we are not attacking
 	if (!isAttacking)
 	{
 		// Update movement animation
@@ -269,7 +276,6 @@ void PlayerCharacter::HandleAnimation(float dt)
 			// Reset non-looping anims
 			if (anim_dashBKW.IsAnimationCompleted())	anim_dashBKW.ResetAnimation();
 			if (anim_dashFWD.IsAnimationCompleted())	anim_dashFWD.ResetAnimation();
-
 			currentAnim = &anim_idle;
 			break;
 		case MoveState::Right:
@@ -289,19 +295,11 @@ void PlayerCharacter::HandleAnimation(float dt)
 		}
 	}
 
-	// Remember the animation class of the flip state of the sprite
-	if (flipped)
-	{
-		currentAnim->SetFlipped(true);
-	}
 
-
-	currentAnim->Animate(dt);
-	setTextureRect(currentAnim->GetCurrentFrame().GetRect());
-	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250));
-
-	// Set the animation state (startup, active, recovery...)
-	animState = currentAnim->GetCurrentFrame().GetFrameType();
+	setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw
+	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250)); // Set the color information of the rect to fill it
+	animState = currentAnim->GetCurrentFrame().GetFrameType(); // Set the animation state (startup, active, recovery...)
+	currentAnim->Animate(dt); // Set to advance frames
 }
 
 void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* collResponse)
@@ -380,11 +378,11 @@ void PlayerCharacter::SetUpCollision()
 	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
 	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
 	// Theres an issue when flipping the colliders that will offset them for an amount, correct it adding this to the flip colliders
-	if (flipped) bodyCollOffset += sf::Vector2f(-29, 0); 
+	//if (flipped) bodyCollOffset += sf::Vector2f(0, 0); 
 
 	// Body collision
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
-	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(23 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
 	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
 	collisionBoxes.push_back(bodyColl);
 

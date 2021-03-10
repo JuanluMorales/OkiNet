@@ -58,7 +58,7 @@ CollisionBox::~CollisionBox()
 {
 }
 
-void CollisionBox::ChangeCollisionBox(ColliderType collType)
+void CollisionBox::SetType(ColliderType collType)
 {
 	thisCollType = collType;
 
@@ -87,9 +87,6 @@ void CollisionBox::ChangeCollisionBox(ColliderType collType)
 	default:
 		break;
 	}
-	//SetCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), size));
-	//setPosition(position);
-	//setSize(size);
 }
 
 // Returns collision box + position, giving the collision box in the correct position
