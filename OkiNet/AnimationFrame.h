@@ -26,7 +26,7 @@ public:
 	void SetRect(int left, int top, int width, int height);
 
 	CollisionBox* GetCollisionBox(); // Returns the list of collision boxes in this frame
-	void SetCurrentColliderPos(sf::Vector2f newPos);
+
 
 
 	AnimationFrameType thisFrameType;

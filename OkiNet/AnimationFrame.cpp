@@ -51,8 +51,3 @@ CollisionBox* AnimationFrame::GetCollisionBox()
 {
 	return collisionBox;
 }
-
-void AnimationFrame::SetCurrentColliderPos(sf::Vector2f newPos)
-{
-	collisionBox->setPosition(newPos);
-}
