@@ -20,6 +20,10 @@ void Scene::Init()
 {
 }
 
+void Scene::OverrideEarlyUpdate(float dt)
+{
+}
+
 void Scene::OverrideRender()
 {
 }
@@ -37,6 +41,11 @@ void Scene::RunScene(float dt)
 	HandleInput(dt);
 	Update(dt);
 	Render();
+}
+
+void Scene::EarlyUpdate(float dt)
+{
+	OverrideEarlyUpdate(dt);
 }
 
 void Scene::HandleInput(float dt)

@@ -25,7 +25,6 @@ public:
 	void CollisionResponseToPlayer(Collision::CollisionResponse* collResponse); // Response to collision initial contact, it is assumed the local player will always be s1 in the collResponse
 	void NoCollisionRegistered(); // Called when no collision was registered to check statuses based on collision such as movement
 
-
 private:
 	
 	void HandleAnimation(float dt); // Update animation state

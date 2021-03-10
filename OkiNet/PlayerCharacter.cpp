@@ -92,16 +92,19 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
+	HandleAnimation(dt);
+
 	// Update collider
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
 
-	for (int i = 0; i < GetCurrentAnimation()->GetSize(); i++)
+	// Position the colliders in animation 
+	for (auto frames : GetCurrentAnimation()->frames)
 	{
-		GetCurrentAnimation()->frames[i].GetCollisionBox()->setPosition(newPos);
+		frames.GetCollisionBox()->setPosition(newPos);
+		// Then activate it and make it drawable
+		frames.GetCollisionBox()->SetActive(true);
+		frames.GetCollisionBox()->SetDrawable(true);
 	}
-	//GetCurrentAnimation()->GetCurrentFrame().GetCollisionBox()->setPosition(newPos);
-
-	HandleAnimation(dt);
 
 }
 

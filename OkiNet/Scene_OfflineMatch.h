@@ -11,9 +11,10 @@ public:
 	using Scene::Scene;
 
 	void Init(GameState* stateManager);
-	void OverrideRender();
-	void OverrideUpdate(float dt);
-	void OverrideHandleInput(float dt);
+	void OverrideEarlyUpdate(float dt) override;
+	void OverrideRender() override;
+	void OverrideUpdate(float dt) override;
+	void OverrideHandleInput(float dt) override;
 
 private:
 	GameState* stateManager;

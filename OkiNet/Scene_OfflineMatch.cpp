@@ -28,15 +28,18 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 
 }
 
+void Scene_OfflineMatch::OverrideEarlyUpdate(float dt)
+{
+}
+
 void Scene_OfflineMatch::OverrideRender()
 {
 	// render something to test
 	//window->draw(platform);
 
 	// draw player collision
-	if (playerOne.GetCurrentCollision().GetDrawable()) window->draw(playerOne.GetCurrentCollision());
-	if (playerTwo.GetCurrentCollision().GetDrawable()) window->draw(playerTwo.GetCurrentCollision());
-
+	if (playerOne.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerOne.GetCurrentCollision());
+	if (playerTwo.GetCurrentCollision().GetDrawable() && playerOne.GetCurrentCollision().IsActive()) window->draw(playerTwo.GetCurrentCollision());
 
 	// draw players
 	if (playerOne.IsActive()) window->draw(playerOne);
@@ -57,49 +60,25 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	auto collA = playerOne.GetCurrentCollision();
 	auto collB = playerTwo.GetCurrentCollision();
 
-	Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&collA, &collB);
-
-	if (newColl.None) // If there was no collision...
+	if (collA.IsActive() && collB.IsActive())
 	{
-		playerOne.NoCollisionRegistered();
-		playerTwo.NoCollisionRegistered();
+		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&collA, &collB);
 
-		DebugText.setString("NO COLLISION");
+		if (newColl.None) // If there was no collision...
+		{
+			playerOne.NoCollisionRegistered();
+			playerTwo.NoCollisionRegistered();
+
+			DebugText.setString("NO COLLISION");
+		}
+		else
+		{
+			playerOne.CollisionResponseToPlayer(&newColl);
+			playerTwo.CollisionResponseToPlayer(&newColl);
+
+			DebugText.setString("COLLISION");
+		}
 	}
-	else
-	{
-		playerOne.CollisionResponseToPlayer(&newColl);
-		playerTwo.CollisionResponseToPlayer(&newColl);
-
-		DebugText.setString("COLLISION");
-	}
-	//for (auto collA : playerOne.GetCurrentCollision())
-	//{
-	//	if (!collA.GetActive()) break; // break if collider is unactive
-
-	//	for (auto collB : playerTwo.GetCurrentCollision())
-	//	{
-	//		if (!collA.GetActive()) break;
-
-	//		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&collA, &collB);
-
-	//		if (newColl.None) // If there was no collision...
-	//		{
-	//			playerOne.NoCollisionRegistered();
-	//			playerTwo.NoCollisionRegistered();
-
-	//			DebugText.setString("NO COLLISION");
-	//		}
-	//		else
-	//		{
-	//			playerOne.CollisionResponseToPlayer(&newColl);
-	//			playerTwo.CollisionResponseToPlayer(&newColl);
-
-	//			DebugText.setString("COLLISION");
-	//		}
-
-	//	}
-	//}
 }
 
 void Scene_OfflineMatch::OverrideHandleInput(float dt)

@@ -17,6 +17,7 @@ public:
 	// Override if necessary to add initialization of variables and object or other functionality
 	virtual void Init();
 	// Methods called as overrides on child class to add functionality to each 
+	virtual void OverrideEarlyUpdate(float dt);
 	virtual void OverrideRender();
 	virtual void OverrideUpdate(float dt);
 	virtual void OverrideHandleInput(float dt);
@@ -24,6 +25,7 @@ public:
 	void CreateRectShape(sf::RectangleShape rectShape, float sizeX, float sizeY, float posX, float posY, sf::Color color);
 
 private:
+	void EarlyUpdate(float dt);
 	void HandleInput(float dt);
 	void Update(float dt);
 	void Render();
