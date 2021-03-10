@@ -3,16 +3,16 @@
 // check AABB
 bool Collision::checkBoundingBox(CollisionBox* s1, CollisionBox* s2)
 {
-	if (s1->getCollisionBox().left + s1->getCollisionBox().width < s2->getCollisionBox().left)
+	if (s1->GetCollisionBox().left + s1->GetCollisionBox().width < s2->GetCollisionBox().left)
 		return false;
 
-	if (s1->getCollisionBox().left > s2->getCollisionBox().left + s2->getCollisionBox().width)
+	if (s1->GetCollisionBox().left > s2->GetCollisionBox().left + s2->GetCollisionBox().width)
 		return false;
 
-	if (s1->getCollisionBox().top + s1->getCollisionBox().height < s2->getCollisionBox().top)
+	if (s1->GetCollisionBox().top + s1->GetCollisionBox().height < s2->GetCollisionBox().top)
 		return false;
 
-	if (s1->getCollisionBox().top > s2->getCollisionBox().top + s2->getCollisionBox().height)
+	if (s1->GetCollisionBox().top > s2->GetCollisionBox().top + s2->GetCollisionBox().height)
 		return false;
 
 	return true;
@@ -20,21 +20,21 @@ bool Collision::checkBoundingBox(CollisionBox* s1, CollisionBox* s2)
 
 Collision::CollisionResponse Collision::checkBoundingBox_Sides(CollisionBox* s1, CollisionBox* s2)
 {
-	sf::FloatRect s1FR = s1->getCollisionBox();
-	sf::FloatRect s2FR = s2->getCollisionBox();
+	sf::FloatRect s1FR = s1->GetCollisionBox();
+	sf::FloatRect s2FR = s2->GetCollisionBox();
 
 	CollisionResponse newResponse;
 
-	if (s1->getCollisionBox().left + s1->getCollisionBox().width < s2->getCollisionBox().left)
+	if (s1->GetCollisionBox().left + s1->GetCollisionBox().width < s2->GetCollisionBox().left)
 		return newResponse;
 
-	if (s1->getCollisionBox().left > s2->getCollisionBox().left + s2->getCollisionBox().width)
+	if (s1->GetCollisionBox().left > s2->GetCollisionBox().left + s2->GetCollisionBox().width)
 		return newResponse;
 
-	if (s1->getCollisionBox().top + s1->getCollisionBox().height < s2->getCollisionBox().top)
+	if (s1->GetCollisionBox().top + s1->GetCollisionBox().height < s2->GetCollisionBox().top)
 		return newResponse;
 
-	if (s1->getCollisionBox().top > s2->getCollisionBox().top + s2->getCollisionBox().height)
+	if (s1->GetCollisionBox().top > s2->GetCollisionBox().top + s2->GetCollisionBox().height)
 		return newResponse;
 
 	// If checks passed, a collision must have occurred

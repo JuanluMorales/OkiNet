@@ -9,7 +9,7 @@ Animation::Animation()
 	isPlaying = true;
 	isLooping = true;
 	animationSpeed = 1;
-	
+
 }
 
 // Adds animation frame. Rect object represent a single sprite frame
@@ -46,6 +46,15 @@ bool Animation::IsAnimationCompleted()
 	else return false;
 
 
+}
+
+bool Animation::HasAnimationReachedFrame(int frameNumber)
+{
+	if (frameNumber == currentFrame)
+	{
+		return true;
+	}
+	else return false;
 }
 
 // Check if the animation should progress, if so move to next frame, or loop back to the start

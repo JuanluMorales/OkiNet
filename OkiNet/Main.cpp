@@ -21,6 +21,7 @@ int main()
 	// Window to render on
 	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), WindowName);
 	window.setFramerateLimit(FrameRateCap);
+	window.setKeyRepeatEnabled(false); // Disable repeat keys so it is possible to have buttons as triggers
 	// View (center, size) --> Acts as a "2D camera" or viewport
 	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(WindowWidth, WindowHeight));
 	// Input
@@ -49,8 +50,8 @@ int main()
 	while (window.isOpen())
 	{
 		sf::Event event;
-
-		// Listen to window events 
+		
+		// Listen to window and input events 
 		while (window.pollEvent(event))
 		{
 			switch (event.type)

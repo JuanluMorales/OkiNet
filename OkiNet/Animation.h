@@ -22,7 +22,7 @@ public:
 	// Returns whether the animation finished looping through all its frames
 	bool IsAnimationCompleted();
 	// Returns whether or not the animation has reached N frame, useful for checking if we are over the active frames and we are in recover frames
-	bool HasAnimationReachedFrame(int frameNumber); 
+	bool HasAnimationReachedFrame(int frameNumber);
 
 	// Animation controls
 	float GetFrameSpeed() { return animationSpeed; };

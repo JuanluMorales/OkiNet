@@ -35,7 +35,7 @@ public:
 	CollisionBox* bodyColl;
 	sf::Vector2f bodyCollOffset;
 	// Punch boxes
-
+	CollisionBox* punchColl;
 
 	void collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse);
 

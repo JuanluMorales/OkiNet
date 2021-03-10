@@ -8,6 +8,7 @@ class CollisionBox : public SpriteBase
 public:
 	enum class ColliderType
 	{
+		Uninitialized,
 		HitBox, // The enemy will receive damage on collision with this collider
 		GuardBox, // The player does not receive damage on collision response
 		HurtBox // The player receives damage on collision response
@@ -17,14 +18,14 @@ public:
 	CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size);
 	~CollisionBox();
 
-	void setCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
-	void setCollisionBox(sf::FloatRect fr) { collRect = fr; };
-	bool isColliderActive() { return collActive; };
-	void setColliderActive(bool b) { collActive = b; };
+	void SetCollisionBox(float x, float y, float width, float height) { collRect = sf::FloatRect(x, y, width, height); };
+	void SetCollisionBox(sf::FloatRect fr) { collRect = fr; };
+	bool IsActive() { return collActive; };
+	void SetActive(bool b) { collActive = b; };
 
-	sf::FloatRect getCollisionBox();
+	sf::FloatRect GetCollisionBox();
 
-	ColliderType GetColliderType() { return thisCollType; };
+	ColliderType GetType() { return thisCollType; };
 
 private:
 	sf::FloatRect collRect; // The rect that defines this collision box

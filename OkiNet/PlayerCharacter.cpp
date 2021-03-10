@@ -29,7 +29,20 @@ PlayerCharacter::PlayerCharacter()
 	currentAnim = NULL;
 	CharacterSetUp = false;
 	bodyColl = new CollisionBox();
+	punchColl = new CollisionBox();
 
+}
+
+PlayerCharacter::~PlayerCharacter()
+{
+	currentAnim = NULL;
+	delete currentAnim;
+
+	bodyColl = NULL;
+	delete bodyColl;
+
+	punchColl = NULL;
+	delete punchColl;
 }
 
 /// <summary>
@@ -41,6 +54,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 {
 	playerID = id;
 
+	// Assign the corresponding graphics to each player 
 	if (id == PlayerID::PlayerOne)
 	{
 		// Configure player one graphics
@@ -72,15 +86,14 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
 	sf::Vector2f bodycallSize = sf::Vector2f(static_cast < float>(25 * PIXEL_SCALE_FACTOR), static_cast < float>(42 * PIXEL_SCALE_FACTOR));
 	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
+	// Punch collision
 
 
 
 	CharacterSetUp = true;
 }
 
-PlayerCharacter::~PlayerCharacter()
-{
-}
+
 
 //Manages the movement and animation of the player
 void PlayerCharacter::update(float dt, sf::Window* wnd)
