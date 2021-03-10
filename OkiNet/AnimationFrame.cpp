@@ -11,16 +11,17 @@ AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 	thisFrameType = frameType;
 }
 
-AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox& collBox)
+AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox)
 {
 	frameRect = rect;
 	thisFrameType = frameType; 
-	collisionBoxes.push_back(&collBox);
+	collisionBoxes.push_back(collBox);
 }
 
-void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
+void AnimationFrame::AddCollisionBox(CollisionBox collBox)
 {
-	collisionBoxes.push_back(&collBox);
+	//CollisionBox* newColl = new CollisionBox(collBox);
+	//collisionBoxes.push_back(newColl);
 }
 
 AnimationFrame::~AnimationFrame()
@@ -45,4 +46,17 @@ void AnimationFrame::SetRect(int left, int top, int width, int height)
 	frameRect.top = top;
 	frameRect.width = width;
 	frameRect.height = height;
+}
+
+std::vector<CollisionBox>& AnimationFrame::GetCollisionBoxes()
+{
+	return collisionBoxes;
+}
+
+void AnimationFrame::SetCurrentColliderPos(sf::Vector2f newPos)
+{
+	for (auto coll : collisionBoxes)
+	{
+		coll.setPosition(newPos);
+	}
 }

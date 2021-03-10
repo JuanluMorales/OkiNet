@@ -4,6 +4,7 @@ CollisionBox::CollisionBox()
 {
 	collActive = false;
 	thisCollType = ColliderType::Uninitialized;
+	thisSpriteType = SpriteType::Collider;
 	SetDrawable(false);
 	SetActive(false);
 	setFillColor(sf::Color(0, 0, 0, 100));
@@ -14,6 +15,7 @@ CollisionBox::CollisionBox()
 CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vector2f size)
 {
 	thisCollType = collType;
+	thisSpriteType = SpriteType::Collider;
 	SetActive(true);
 	switch (collType)
 	{
@@ -49,6 +51,7 @@ CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vec
 CollisionBox::CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size)
 {
 	thisCollType = collType;
+	thisSpriteType = SpriteType::Collider;
 	SetActive(true);
 	SetCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), size));
 	setPosition(position);

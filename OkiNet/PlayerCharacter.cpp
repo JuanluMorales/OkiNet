@@ -94,7 +94,16 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	// Update collider
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
-	for (auto coll : GetCurrentCollision()) coll->setPosition(newPos);
+
+	//anim_idle.GetCurrentFrame().SetCurrentColliderPos(newPos);
+	currentAnim->GetBoxes().at(0).setPosition(newPos);
+
+	
+
+	//for (auto coll : GetCurrentCollision())
+	//{
+	//	coll.setPosition(newPos);
+	//}
 
 
 	HandleAnimation(dt);
@@ -323,22 +332,22 @@ void PlayerCharacter::SetUpAnimationFrames()
 	// Body collision
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
 	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
-	CollisionBox* bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
+	CollisionBox bodyColl = CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
 
-	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.AddFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_idle.AddFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle, bodyColl);
 	anim_idle.SetFrameSpeed(0.1f);
 
 
-	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.AddFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.AddFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.AddFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.AddFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.AddFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_walkFWD.AddFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_walkFWD.AddFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_walkFWD.AddFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_walkFWD.AddFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle, bodyColl);
+	anim_walkFWD.AddFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle, bodyColl);
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);

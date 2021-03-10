@@ -12,6 +12,11 @@ Animation::Animation()
 
 }
 
+void Animation::AddFrame(AnimationFrame animFrame)
+{
+	frames.push_back(animFrame);
+}
+
 // Adds animation frame. Rect object represent a single sprite frame
 void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType)
 {
@@ -19,12 +24,12 @@ void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType)
 	frames.push_back(*anim);
 }
 
-//void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox* collBox)
-//{
-//	AnimationFrame* anim = new AnimationFrame(rect, animType, *collBox);
-//	frames.push_back(*anim);
-//	boxes.push_back(collBox);
-//}
+void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox collBox)
+{
+	CollisionBox newColl = collBox;
+	AnimationFrame* anim = new AnimationFrame(rect, animType, newColl);
+	frames.push_back(*anim);
+}
 
 // Returns the size of the animation. The number of frames.
 int Animation::GetSize()
@@ -106,4 +111,9 @@ void Animation::SetFrameSpeed(float speed)
 //returns the number of frames this animation has
 int Animation::GetAnimationFramesCount() {
 	return static_cast<int>(frames.size());
+}
+
+std::vector<CollisionBox>& Animation::GetBoxes()
+{
+	return frames[currentFrame].GetCollisionBoxes();
 }

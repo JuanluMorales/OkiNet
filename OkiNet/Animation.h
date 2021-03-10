@@ -9,8 +9,9 @@ public:
 	Animation();
 
 	// Create animation
+	void AddFrame(AnimationFrame animFrame);
 	void AddFrame(sf::IntRect rect, AnimationFrameType animType);
-	void AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox* collBox);
+	void AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox collBox);
 	void SetFrameSpeed(float speed);
 	int GetSize();
 
@@ -36,9 +37,7 @@ public:
 	int GetAnimationFramesCount(); //returns the number of frames this animation has
 
 	// Collision box controls
-	//CollisionBox* GetCurrentCollisionBox() { return boxes[currentFrame]; };
-	//bool GetCurrentCollisionBoxActive() { return boxes[currentFrame]->GetActive(); };
-	//std::vector<CollisionBox*> GetBoxes() { return boxes; };
+	std::vector<CollisionBox>& GetBoxes();
 
 protected:
 	std::vector<AnimationFrame>frames; // The total of frames in the animation

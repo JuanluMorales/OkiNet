@@ -36,11 +36,11 @@ void Scene_OfflineMatch::OverrideRender()
 	// draw player collision
 	for (auto coll : playerOne.GetCurrentCollision())
 	{
-		if(coll->GetDrawable()) window->draw(*coll);
+		if(coll.GetDrawable()) window->draw(coll);
 	}
 	for (auto coll : playerTwo.GetCurrentCollision())
 	{
-		if (coll->GetDrawable()) window->draw(*coll);
+		if (coll.GetDrawable()) window->draw(coll);
 	}
 
 	// draw players
@@ -58,34 +58,34 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	playerOne.Update(dt, window);
 	playerTwo.Update(dt, window);
 
-	//// Iterate all collision boxes for both players
-	//for (CollisionBox* collA : playerOne.collisionBoxes)
-	//{
-	//	if (!collA->GetActive()) break; // break if collider is unactive
+	// Iterate all collision boxes for both players
+	for (auto collA : playerOne.GetCurrentCollision())
+	{
+		if (!collA.GetActive()) break; // break if collider is unactive
 
-	//	for (CollisionBox* collB : playerTwo.collisionBoxes)
-	//	{
-	//		if (!collA->GetActive()) break;
+		for (auto collB : playerTwo.GetCurrentCollision())
+		{
+			if (!collA.GetActive()) break;
 
-	//		Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
+			Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(&collA, &collB);
 
-	//		if (newColl.None) // If there was no collision...
-	//		{
-	//			playerOne.NoCollisionRegistered();
-	//			playerTwo.NoCollisionRegistered();
+			if (newColl.None) // If there was no collision...
+			{
+				playerOne.NoCollisionRegistered();
+				playerTwo.NoCollisionRegistered();
 
-	//			DebugText.setString("NO COLLISION");
-	//		}
-	//		else
-	//		{
-	//			playerOne.CollisionResponseToPlayer(&newColl);
-	//			playerTwo.CollisionResponseToPlayer(&newColl);
+				DebugText.setString("NO COLLISION");
+			}
+			else
+			{
+				playerOne.CollisionResponseToPlayer(&newColl);
+				playerTwo.CollisionResponseToPlayer(&newColl);
 
-	//			DebugText.setString("COLLISION");
-	//		}
+				DebugText.setString("COLLISION");
+			}
 
-	//	}
-	//}
+		}
+	}
 }
 
 void Scene_OfflineMatch::OverrideHandleInput(float dt)
