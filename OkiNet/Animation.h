@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "AnimationFrame.h"
+#include "CollisionBox.h"
 
 // Contains an ensemble of sprites to convey animation
 class Animation
@@ -9,29 +10,29 @@ public:
 	Animation();
 
 	// Create animation
-	void addFrame(sf::IntRect rect, AnimationFrameType animType);
-	void setFrameSpeed(float speed);
-	int getSize();
+	void AddFrame(sf::IntRect rect, AnimationFrameType animType);
+	void SetFrameSpeed(float speed);
+	int GetSize();
 
 	// update/reset animation
-	void animate(float dt);
-	void reset();
+	void Animate(float dt);
+	void ResetAnimation();
 
 	// get current frame of animation
-	AnimationFrame getCurrentFrame();
+	AnimationFrame GetCurrentFrame();
 	// Returns whether the animation finished looping through all its frames
-	bool isAnimationCompleted();
+	bool IsAnimationCompleted();
 	// Returns whether or not the animation has reached N frame, useful for checking if we are over the active frames and we are in recover frames
-	bool hasAnimationReachedFrame(int frameNumber); 
+	bool HasAnimationReachedFrame(int frameNumber); 
 
 	// Animation controls
-	float getFrameSpeed() { return animationSpeed; };
-	void setFlipped(bool flip) { flipped = flip; };
-	bool getFlipped() { return flipped; };
-	void setLooping(bool loop) { isLooping = loop; };
-	bool getLooping() { return isLooping; };
-	void setPlaying(bool play) { isPlaying = play; };
-	bool getPlaying() { return isPlaying; };
+	float GetFrameSpeed() { return animationSpeed; };
+	void SetFlipped(bool flip) { flipped = flip; };
+	bool IsAimationFlipped() { return flipped; };
+	void SetLooping(bool loop) { isLooping = loop; };
+	bool IsAnimationLooping() { return isLooping; };
+	void SetPlaying(bool play) { isPlaying = play; };
+	bool IsAnimationPlaying() { return isPlaying; };
 	int GetAnimationFramesCount(); //returns the number of frames this animation has
 
 protected:

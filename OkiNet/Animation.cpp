@@ -13,20 +13,20 @@ Animation::Animation()
 }
 
 // Adds animation frame. Rect object represent a single sprite frame
-void Animation::addFrame(sf::IntRect rect, AnimationFrameType animType)
+void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType)
 {
 	AnimationFrame* anim = new AnimationFrame(rect, animType);
 	frames.push_back(*anim);
 }
 
 // Returns the size of the animation. The number of frames.
-int Animation::getSize()
+int Animation::GetSize()
 {
 	return frames.size();
 }
 
 // Get current frame from the animation. Flip the returning frame if required.
-AnimationFrame Animation::getCurrentFrame()
+AnimationFrame Animation::GetCurrentFrame()
 {
 	frame = frames[currentFrame];
 	if (flipped)
@@ -37,7 +37,7 @@ AnimationFrame Animation::getCurrentFrame()
 	return frame;
 }
 
-bool Animation::isAnimationCompleted()
+bool Animation::IsAnimationCompleted()
 {
 	if (currentFrame == frames.size() - 1)
 	{
@@ -49,7 +49,7 @@ bool Animation::isAnimationCompleted()
 }
 
 // Check if the animation should progress, if so move to next frame, or loop back to the start
-void Animation::animate(float dt)
+void Animation::Animate(float dt)
 {
 	if (isPlaying)
 	{
@@ -75,14 +75,14 @@ void Animation::animate(float dt)
 }
 
 // Reset animation.
-void Animation::reset()
+void Animation::ResetAnimation()
 {
 	currentFrame = 0;
 	elapsedTime = 0;
 }
 
 // Set animation speed, in Frames per Second.
-void Animation::setFrameSpeed(float speed)
+void Animation::SetFrameSpeed(float speed)
 {
 	animationSpeed = speed;
 }
@@ -90,4 +90,8 @@ void Animation::setFrameSpeed(float speed)
 //returns the number of frames this animation has
 int Animation::GetAnimationFramesCount() {
 	return frames.size();
+}
+
+void Animation::AddCollisionBox()
+{
 }

@@ -73,6 +73,8 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	sf::Vector2f bodycallSize = sf::Vector2f(25 * PIXEL_SCALE_FACTOR, 42 * PIXEL_SCALE_FACTOR);
 	bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, sf::Color::Transparent, sf::Color::Green, 5.0f, bodycallPos, bodycallSize);
 
+
+
 	CharacterSetUp = true;
 }
 
@@ -224,15 +226,15 @@ void PlayerCharacter::HandleAnimation(float dt)
 	case AttackState::None:
 		break;
 	case AttackState::FastPunch:
-		if (currentAnim->isAnimationCompleted() && animState == AnimationFrameType::StartUp) // TODO: modify condition so that it checks if this is the loop where we inputted the action
+		if (currentAnim->IsAnimationCompleted() && animState == AnimationFrameType::StartUp) // TODO: modify condition so that it checks if this is the loop where we inputted the action
 		{
-			anim_fastPunch.reset();
+			anim_fastPunch.ResetAnimation();
 			currentAnim = &anim_fastPunch;
 		}
 		else
-			if (currentAnim->isAnimationCompleted())
+			if (currentAnim->IsAnimationCompleted())
 			{
-				anim_fastPunch.reset();
+				anim_fastPunch.ResetAnimation();
 				attackState = AttackState::None;
 			}
 			else
@@ -257,8 +259,8 @@ void PlayerCharacter::HandleAnimation(float dt)
 		{
 		case MoveState::Idle:
 			// Reset non-looping anims
-			if (anim_dashBKW.isAnimationCompleted())	anim_dashBKW.reset();
-			if (anim_dashFWD.isAnimationCompleted())	anim_dashFWD.reset();
+			if (anim_dashBKW.IsAnimationCompleted())	anim_dashBKW.ResetAnimation();
+			if (anim_dashFWD.IsAnimationCompleted())	anim_dashFWD.ResetAnimation();
 
 			currentAnim = &anim_idle;
 			break;
@@ -282,16 +284,16 @@ void PlayerCharacter::HandleAnimation(float dt)
 	// Remember the animation class of the flip state of the sprite
 	if (flipped)
 	{
-		currentAnim->setFlipped(true);
+		currentAnim->SetFlipped(true);
 	}
 
 
-	currentAnim->animate(dt);
-	setTextureRect(currentAnim->getCurrentFrame().GetRect());
+	currentAnim->Animate(dt);
+	setTextureRect(currentAnim->GetCurrentFrame().GetRect());
 	setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250));
 
 	// Set the animation state (startup, active, recovery...)
-	animState = currentAnim->getCurrentFrame().GetFrameType();
+	animState = currentAnim->GetCurrentFrame().GetFrameType();
 }
 
 void PlayerCharacter::collisionResponse(SpriteBase* sp, Collision::CollisionResponse* collResponse)
@@ -306,43 +308,43 @@ void PlayerCharacter::collisionResponse(SpriteBase* sp, Collision::CollisionResp
 
 void PlayerCharacter::SetUpAnimations()
 {
-	anim_idle.addFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.addFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.addFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.addFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
-	anim_idle.setFrameSpeed(0.1f);
+	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.AddFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle);
+	anim_idle.SetFrameSpeed(0.1f);
 
-	anim_walkFWD.addFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.addFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.addFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.addFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.addFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.addFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.addFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
-	anim_walkFWD.setFrameSpeed(0.1f);
+	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(234, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(312, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.AddFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle);
+	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_fastPunch.addFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
-	anim_fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
-	anim_fastPunch.addFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery);
-	anim_fastPunch.setFrameSpeed(0.1f);
-	anim_fastPunch.setLooping(false);
+	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery);
+	anim_fastPunch.SetFrameSpeed(0.1f);
+	anim_fastPunch.SetLooping(false);
 
-	anim_defend.addFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_defend.setLooping(false);
+	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::StartUp);
+	anim_defend.SetLooping(false);
 
-	anim_dashFWD.addFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashFWD.addFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashFWD.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
-	anim_dashFWD.setLooping(false);
-	anim_dashFWD.setFrameSpeed(0.1f);
+	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
+	anim_dashFWD.SetLooping(false);
+	anim_dashFWD.SetFrameSpeed(0.1f);
 
-	anim_dashBKW.addFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashBKW.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashBKW.addFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
-	anim_dashBKW.setLooping(false);
-	anim_dashBKW.setFrameSpeed(0.1f);
+	anim_dashBKW.AddFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
+	anim_dashBKW.SetLooping(false);
+	anim_dashBKW.SetFrameSpeed(0.1f);
 
 	currentAnim = &anim_idle;
 }
