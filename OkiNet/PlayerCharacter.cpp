@@ -95,7 +95,11 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	sf::Vector2f newPos = getPosition() + bodyCollOffset;
 
 	// Position the colliders in animation 
-	GetCurrentCollision()->setPosition(newPos);
+	for (auto coll : GetCurrentCollision())
+	{
+		coll->setPosition(newPos);
+	}
+	//GetCurrentCollision()->setPosition(newPos);
 	//GetCurrentAnimation()->GetCurrentFrame().GetCollisionBox()->setPosition(newPos);
 
 }
@@ -339,10 +343,12 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery);
+	std::vector<CollisionBox*> punchColl;
+	punchColl.push_back(bodyColl);
+	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp, punchColl);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchColl);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchColl);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery, punchColl);
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
 
