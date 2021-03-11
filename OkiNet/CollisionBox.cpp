@@ -101,14 +101,16 @@ void CollisionBox::SetType(ColliderType collType)
 
 void CollisionBox::SetCollisionBoxPosition(sf::Vector2f newPos)
 {
-	if (flipped)
+	if (flipped && thisCollType == ColliderType::HitBox)
 	{
-		setPosition(newPos + offsetValue);
+		sf::Vector2f finalPos = newPos + offsetValue;
+		finalPos += sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), 0); // Add an X offset if flipped for hitboxes only
+		setPosition(finalPos); 
 	}else setPosition(newPos + offsetValue);
 }
 
 // Returns collision box + position, giving the collision box in the correct position
 sf::FloatRect CollisionBox::GetCollisionBox() {
 
-	return sf::FloatRect(collRect.left + getPosition().x, collRect.top + getPosition().y, collRect.width, collRect.height);
+	return sf::FloatRect(collRect.left + getPosition().x , collRect.top + getPosition().y, collRect.width, collRect.height);
 }

@@ -428,8 +428,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	// Punch attack
-
-	sf::Vector2f punchCollOffset = bodyCollOffset + sf::Vector2f(200, 5);
+	sf::Vector2f  punchCollOffset = bodyCollOffset + sf::Vector2f(static_cast < float>(0 * PIXEL_SCALE_FACTOR), static_cast <float>(0 * PIXEL_SCALE_FACTOR));
 	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
 	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
 	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);
@@ -446,7 +445,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
 
-	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize);
+	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize, bodyCollOffset);
 	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Idle, *GuardColl);
 	anim_defend.SetLooping(false);
 
