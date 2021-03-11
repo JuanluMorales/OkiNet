@@ -99,9 +99,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		coll->setPosition(newPos);
 	}
-	//GetCurrentCollision()->setPosition(newPos);
-	//GetCurrentAnimation()->GetCurrentFrame().GetCollisionBox()->setPosition(newPos);
-
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
@@ -205,21 +202,99 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	}
 	else if (playerID == PlayerID::PlayerTwo)
 	{
+		// Check timers and counters
+		if (dashTimer >= dashTime) // Check dashing timer
+		{
+			b_dashTriggerR = false;
+			b_dashTriggerL = false;
+			dashTimer = 0.0f;
+		}
+		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
+		// Check this frame's type to decide if input should be accepted
+		switch (animState)
+		{
+		case AnimationFrameType::Idle:
+			shouldAcceptInput = true;
+			break;
+		case AnimationFrameType::StartUp:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Active:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Recovery:
+			shouldAcceptInput = true;
+			break;
+		default:
+			break;
+		}
+
+		// Defend
+		if (input->isKeyDown(sf::Keyboard::Down))
+		{
+			attackState = AttackState::Defend;
+			shouldAcceptInput = false;
+		}
 
 		if (!shouldAcceptInput) return;
 
-		if (input->isKeyDown(sf::Keyboard::Left))
+		// Attack
+		if (input->isKeyDown(sf::Keyboard::Numpad0))
 		{
-			setPosition(getPosition().x - moveDistance * dt, getPosition().y);
-			moveState = MoveState::Left;
+			input->SetKeyUp(sf::Keyboard::Numpad0); // Lift key so it acts as trigger
+			attackState = AttackState::FastPunch;
 		}
-		else
-			if (input->isKeyDown(sf::Keyboard::Right))
+		else attackState = AttackState::None;
+		//-------------------
+		// Movement ---------
+		if (input->isKeyDown(sf::Keyboard::Left) && CanGoLeft) // Left
+		{
+			if (b_dashTriggerL) // Dash 
+			{
+				dashTimer = dashTime;
+				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+				moveState = MoveState::DashL;
+			}
+			else // Walk
+			{
+				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+				moveState = MoveState::Left;
+			}
+
+		}
+		else if (input->isKeyDown(sf::Keyboard::Right) && CanGoRight) // Right
+		{
+			if (b_dashTriggerR) // Dash 
+			{
+				dashTimer = dashTime;
+				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+				moveState = MoveState::DashR;
+			}
+			else // Walk
 			{
 				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
 				moveState = MoveState::Right;
 			}
-			else moveState = MoveState::Idle;
+
+		}
+		else // idle
+		{
+			// if last move state was walking, check the dash relevant trigger
+			if (moveState == MoveState::Left)
+			{
+				b_dashTriggerL = true;
+				dashTimer = 0.0f;
+			}
+			if (moveState == MoveState::Right)
+			{
+				b_dashTriggerR = true;
+				dashTimer = 0.0f;
+			}
+
+			moveState = MoveState::Idle;
+		}
+		// -------------------
 	}
 
 
@@ -289,22 +364,46 @@ void PlayerCharacter::HandleAnimation(float dt)
 
 void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* collResponse)
 {
-	// Block movement on hurtbox collision depending on the side collided
-	if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
+	if (playerID == PlayerID::PlayerOne)
 	{
-		if (collResponse->s1Right)
+		// Block movement on hurtbox collision depending on the side collided
+		// Check movement against a guard
+		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox
+			|| collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::GuardBox)
 		{
-			CanGoRight = false;
-		}
-		else CanGoRight = true;
+			if (collResponse->s1Right)
+			{
+				CanGoRight = false;
+			}
+			else CanGoRight = true;
 
-		if (collResponse->s1Left)
-		{
-			CanGoLeft = false;
+			if (collResponse->s1Left)
+			{
+				CanGoLeft = false;
+			}
+			else CanGoLeft = true;
 		}
-		else CanGoLeft = true;
 	}
+	else
+	{
+		// Block movement on hurtbox collision depending on the side collided
+		// Check movement against a guard
+		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox
+			|| collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::GuardBox)
+		{
+			if (collResponse->s2Right)
+			{
+				CanGoRight = false;
+			}
+			else CanGoRight = true;
 
+			if (collResponse->s2Left)
+			{
+				CanGoLeft = false;
+			}
+			else CanGoLeft = true;
+		}
+	}
 }
 
 void PlayerCharacter::NoCollisionRegistered()
@@ -343,27 +442,29 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
-	std::vector<CollisionBox*> punchColl;
-	punchColl.push_back(bodyColl);
-	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp, punchColl);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchColl);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchColl);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery, punchColl);
+	std::vector<CollisionBox*> punchCollVector;
+	punchCollVector.push_back(bodyColl);
+
+	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery, punchCollVector);
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
 
-	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Idle);
+	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize);
+	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Idle, *GuardColl);
 	anim_defend.SetLooping(false);
 
-	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
+	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dashFWD.SetLooping(false);
 	anim_dashFWD.SetFrameSpeed(0.1f);
 
-	anim_dashBKW.AddFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp);
-	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery);
+	anim_dashBKW.AddFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dashBKW.SetLooping(false);
 	anim_dashBKW.SetFrameSpeed(0.1f);
 

@@ -55,7 +55,7 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	playerOne.Update(dt, window);
 	playerTwo.Update(dt, window);
 
-	// Iterate all collision boxes for both players
+	// Iterate all current's frame collision boxes for both players
 	for (auto collA : playerOne.GetCurrentCollision())
 	{
 		for (auto collB : playerTwo.GetCurrentCollision()) 

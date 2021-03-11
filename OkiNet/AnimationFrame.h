@@ -16,8 +16,8 @@ class AnimationFrame
 {
 public:
 	AnimationFrame();
-	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType);
-	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox);
+	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType); // If no collider needed
+	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox); // Overload for a single collider
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, std::vector<CollisionBox*> &collBox);
 	void AddCollisionBox(CollisionBox& collBox);
 	~AnimationFrame();
@@ -26,14 +26,12 @@ public:
 	sf::IntRect GetRect();
 	void SetRect(int left, int top, int width, int height);
 
-	CollisionBox* GetCollisionBox(); 
 	std::vector<CollisionBox*> GetCollisionBoxes(); // Returns the list of collision boxes in this frame
 
 private:
 
 	AnimationFrameType thisFrameType;
 	sf::IntRect frameRect;
-	CollisionBox* collisionBox; // If this frame only needs one collision box
 	std::vector<CollisionBox*> collisionBoxes; // A frame may have more than one box of different types
 };
 
