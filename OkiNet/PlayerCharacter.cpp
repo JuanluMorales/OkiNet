@@ -30,21 +30,12 @@ PlayerCharacter::PlayerCharacter()
 	moveDistance = 180;
 	dashDistance = 5000;
 
-	//bodyColl = new CollisionBox();
-	//punchColl = new CollisionBox();
-
 }
 
 PlayerCharacter::~PlayerCharacter()
 {
 	currentAnim = NULL;
 	delete currentAnim;
-
-	//bodyColl = NULL;
-	//delete bodyColl;
-
-	//punchColl = NULL;
-	//delete punchColl;
 }
 
 /// <summary>
@@ -91,13 +82,10 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	HandleAnimation(dt);
 
-	// Update collider
-	sf::Vector2f newPos = getPosition() + bodyCollOffset;
-
 	// Position the colliders in animation 
 	for (auto coll : GetCurrentCollision())
 	{
-		coll->setPosition(newPos);
+		coll->SetCollisionBoxPosition(getPosition());
 	}
 }
 
@@ -416,14 +404,12 @@ void PlayerCharacter::NoCollisionRegistered()
 
 void PlayerCharacter::SetUpAnimationFrames()
 {
-
-	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
-	bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
-
 	// Body collision
+	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
+	sf::Vector2f bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
 	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
-	CollisionBox* bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize);
+	CollisionBox* bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize, bodyCollOffset);
 
 	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
@@ -441,10 +427,18 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.AddFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
-	//fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
+	// Punch attack
+
+	sf::Vector2f punchCollOffset = bodyCollOffset + sf::Vector2f(10, 5);
+	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
+	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);
+
 	std::vector<CollisionBox*> punchCollVector;
 	punchCollVector.push_back(bodyColl);
+	punchCollVector.push_back(punchColl);
 
+	// fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
 	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp, punchCollVector);
 	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchCollVector);
 	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchCollVector);

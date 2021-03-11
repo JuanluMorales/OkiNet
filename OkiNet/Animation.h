@@ -9,10 +9,10 @@ public:
 	Animation();
 
 	// Create animation
-	void AddFrame(AnimationFrame animFrame);
-	void AddFrame(sf::IntRect rect, AnimationFrameType animType);
-	void AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox collBox);
-	void AddFrame(sf::IntRect rect, AnimationFrameType animType, std::vector<CollisionBox*> &collBoxes);
+	void AddFrame(AnimationFrame animFrame); // Not stable/tested
+	void AddFrame(sf::IntRect rect, AnimationFrameType animType); // Add an animation without collision
+	void AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox collBox); // Add animation with a single collision box
+	void AddFrame(sf::IntRect rect, AnimationFrameType animType, std::vector<CollisionBox*>& collBoxes); // Add animation with composite collision
 	void SetFrameSpeed(float speed);
 	int GetSize();
 

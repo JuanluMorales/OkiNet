@@ -14,8 +14,9 @@ AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox)
 {
 	frameRect = rect;
-	thisFrameType = frameType; 
+	thisFrameType = frameType;
 	CollisionBox* newColl = new CollisionBox(collBox.GetType(), collBox.getPosition(), collBox.getSize());
+	newColl->SetPositionOffset(collBox.GetPositionOffset());
 	collisionBoxes.push_back(newColl);
 }
 
@@ -33,7 +34,7 @@ void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
 }
 
 AnimationFrame::~AnimationFrame()
-{	
+{
 	for (auto coll : collisionBoxes)
 	{
 		coll = NULL;

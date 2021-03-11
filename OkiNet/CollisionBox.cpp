@@ -12,10 +12,11 @@ CollisionBox::CollisionBox()
 	setOutlineThickness(1.0f);
 }
 
-CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vector2f size)
+CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vector2f size, sf::Vector2f posOffset)
 {
 	thisCollType = collType;
 	thisSpriteType = SpriteType::Collider;
+	SetPositionOffset(posOffset);
 	SetActive(true);
 	switch (collType)
 	{
@@ -48,9 +49,10 @@ CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vec
 
 }
 
-CollisionBox::CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size)
+CollisionBox::CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size, sf::Vector2f posOffset)
 {
 	thisCollType = collType;
+	SetPositionOffset(posOffset);
 	thisSpriteType = SpriteType::Collider;
 	SetActive(true);
 	SetCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), size));
@@ -95,6 +97,11 @@ void CollisionBox::SetType(ColliderType collType)
 	default:
 		break;
 	}
+}
+
+void CollisionBox::SetCollisionBoxPosition(sf::Vector2f newPos)
+{
+	setPosition(newPos + offsetValue);
 }
 
 // Returns collision box + position, giving the collision box in the correct position

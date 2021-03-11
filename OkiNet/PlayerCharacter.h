@@ -45,16 +45,9 @@ private:
 	Animation anim_defend;
 
 	// Animation related variables
-	int hitStun; // Amount to be stunned when receiving a hit
-	int blockStun; // Amount to be stunned when receiving a hit while blocking
-	int frameAdvantage; // Can be positive or negative depending on the situation. Represents the speed advantage of an attack
-
-	//// List of collision boxes
-	//// Body collision
-	//CollisionBox* bodyColl;
-	sf::Vector2f bodyCollOffset;
-	//// Punch boxes
-	//CollisionBox* punchColl;
+	//int hitStun; // Amount to be stunned when receiving a hit
+	//int blockStun; // Amount to be stunned when receiving a hit while blocking
+	//int frameAdvantage; // Can be positive or negative depending on the situation. Represents the speed advantage of an attack
 
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState; // Alive by default
