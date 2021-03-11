@@ -29,7 +29,7 @@ public:
 
 	// Animation controls
 	float GetFrameSpeed() { return animationSpeed; };
-	void SetFlipped(bool flip) { flipped = flip; };
+	void SetFlipped(bool flip);
 	bool IsAimationFlipped() { return flipped; };
 	void SetLooping(bool loop) { isLooping = loop; };
 	bool IsAnimationLooping() { return isLooping; };

@@ -18,7 +18,7 @@ public:
 	AnimationFrame();
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType); // If no collider needed
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox); // Overload for a single collider
-	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, std::vector<CollisionBox*>& collBox);
+	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, std::vector<CollisionBox*>& collBox); // Overload for multiple 
 	void AddCollisionBox(CollisionBox& collBox);
 	~AnimationFrame();
 

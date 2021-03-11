@@ -75,6 +75,15 @@ bool Animation::HasAnimationReachedFrame(int frameNumber)
 	else return false;
 }
 
+void Animation::SetFlipped(bool flip)
+{
+	 flipped = flip;
+	 for (auto coll : GetCurrentBoxes())
+	 {
+		 coll->SetFlipped(flip);
+	 }
+}
+
 // Check if the animation should progress, if so move to next frame, or loop back to the start
 void Animation::Animate(float dt)
 {

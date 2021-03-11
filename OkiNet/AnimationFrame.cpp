@@ -30,6 +30,7 @@ AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, s
 void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
 {
 	CollisionBox* newColl = new CollisionBox(collBox.GetType(), collBox.getPosition(), collBox.getSize());
+	newColl->SetPositionOffset(collBox.GetPositionOffset());
 	collisionBoxes.push_back(newColl);
 }
 

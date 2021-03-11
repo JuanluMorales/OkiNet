@@ -101,7 +101,10 @@ void CollisionBox::SetType(ColliderType collType)
 
 void CollisionBox::SetCollisionBoxPosition(sf::Vector2f newPos)
 {
-	setPosition(newPos + offsetValue);
+	if (flipped)
+	{
+		setPosition(newPos + offsetValue);
+	}else setPosition(newPos + offsetValue);
 }
 
 // Returns collision box + position, giving the collision box in the correct position

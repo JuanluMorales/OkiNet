@@ -31,6 +31,9 @@ public:
 
 	int PIXEL_SCALE_FACTOR = 10; //Scale factor applied to the sprites to upscale them
 
+	void SetFlipped(bool b) { flipped = b; };
+	bool GetFlipped() { return flipped; };
+
 protected:
 	// Sprite properties
 	sf::Vector2f velocity;
