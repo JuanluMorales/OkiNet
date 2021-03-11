@@ -7,9 +7,9 @@ class PlayerCharacter : public SpriteBase
 {
 public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
-	enum class PlayerState { Alive, Dead, };
+	enum class PlayerState { Alive, Dead };
 	enum class MoveState { Idle, Left, Right, DashL, DashR };
-	enum class AttackState { None, FastPunch, Defend };
+	enum class AttackState { None, FastPunch, Defend, HitStun, BlockStun };
 
 	PlayerCharacter();
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);
@@ -30,6 +30,8 @@ private:
 	void HandleAnimation(float dt); // Update animation state
 	void SetUpAnimationFrames(); // Encapsulate the frame setup for the animations (animation frames + collision boxes)
 
+	void PushPlayer(sf::Vector2f distance);
+
 	int moveDistance; // Amount of distance moved while walking
 	int dashDistance; // Dash translation factor
 
@@ -43,11 +45,7 @@ private:
 	Animation anim_dashBKW; // Backward dash
 	Animation anim_fastPunch;
 	Animation anim_defend;
-
-	// Animation related variables
-	//int hitStun; // Amount to be stunned when receiving a hit
-	//int blockStun; // Amount to be stunned when receiving a hit while blocking
-	//int frameAdvantage; // Can be positive or negative depending on the situation. Represents the speed advantage of an attack
+	Animation anim_hurt;
 
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState; // Alive by default
@@ -56,6 +54,10 @@ private:
 	AnimationFrameType animState;
 
 	bool shouldAcceptInput;
+
+	// Helpers for collision and state updating
+	bool receivedDamage;
+	bool inflictedDamage;
 
 	bool b_dashTriggerL; // Helps checking if player can/wants to dash
 	bool b_dashTriggerR;
