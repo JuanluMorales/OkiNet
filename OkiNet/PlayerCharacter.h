@@ -30,10 +30,11 @@ private:
 	void HandleAnimation(float dt); // Update animation state
 	void SetUpAnimationFrames(); // Encapsulate the frame setup for the animations (animation frames + collision boxes)
 
-	void PushPlayer(sf::Vector2f distance);
+	void PushPlayer(sf::Vector2f distance, float dt);
 
 	int moveDistance; // Amount of distance moved while walking
 	int dashDistance; // Dash translation factor
+	int smallPushDistance;
 
 	sf::Texture texture; // Contains the graphics information from the sprite sheet to be extracted 
 	//List of animations 
@@ -58,6 +59,7 @@ private:
 	// Helpers for collision and state updating
 	bool receivedDamage;
 	bool inflictedDamage;
+	bool hitGuardBox;
 
 	bool b_dashTriggerL; // Helps checking if player can/wants to dash
 	bool b_dashTriggerR;

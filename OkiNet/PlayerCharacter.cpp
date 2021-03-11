@@ -21,6 +21,10 @@ PlayerCharacter::PlayerCharacter()
 	CanGoLeft = true; //Allows the player to move left 
 	CanGoRight = true;
 
+	hitGuardBox = false;
+	inflictedDamage = false;
+	receivedDamage = false;
+
 	b_fastPunch = false;
 	currentAnim = NULL;
 
@@ -29,6 +33,7 @@ PlayerCharacter::PlayerCharacter()
 
 	moveDistance = 180;
 	dashDistance = 5000;
+	smallPushDistance = 180;
 
 }
 
@@ -81,6 +86,12 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
+	if (receivedDamage)
+	{
+		PushPlayer(sf::Vector2f(smallPushDistance, 0), dt);
+		attackState = AttackState::HitStun;
+	}
+
 	HandleAnimation(dt);
 
 	// Position the colliders in animation 
@@ -312,6 +323,12 @@ void PlayerCharacter::HandleAnimation(float dt)
 	case AttackState::Defend:
 		currentAnim = &anim_defend;
 		break;
+	case AttackState::HitStun:
+		currentAnim = &anim_hurt;
+		break;
+	case AttackState::BlockStun:
+		currentAnim = &anim_defend;
+		break;
 	default:
 		break;
 	}
@@ -371,19 +388,27 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				CanGoLeft = false;
 			}
 			else CanGoLeft = true;
-
-			// Check for inflict damage collision
-			if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
-			{
-				inflictedDamage = true;
-			}
-
-			// Check for suffering damage
-			if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)
-			{
-				receivedDamage = true;
-			}
 		}
+
+		// Check for inflict damage collision
+		if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
+		{
+			inflictedDamage = true;
+		}else inflictedDamage = false;
+
+		// Check for suffering damage
+		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)
+		{
+			receivedDamage = true;
+		}
+		else receivedDamage = false;
+
+		// Check hitting guard box
+		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::GuardBox)
+		{
+			hitGuardBox = true;
+		}
+		else hitGuardBox = false;
 	}
 	else
 	{
@@ -404,6 +429,26 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			}
 			else CanGoLeft = true;
 		}
+		// Check for inflict damage collision
+		if (collResponse->s2CollType == CollisionBox::ColliderType::HitBox && collResponse->s1CollType == CollisionBox::ColliderType::HurtBox)
+		{
+			inflictedDamage = true;
+		}
+		else inflictedDamage = false;
+
+		// Check for suffering damage
+		if (collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::HitBox)
+		{
+			receivedDamage = true;
+		}
+		else receivedDamage = false;
+
+		// Check hitting guard box
+		if (collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::GuardBox)
+		{
+			hitGuardBox = true;
+		}
+		else hitGuardBox = false;
 	}
 }
 
@@ -414,6 +459,7 @@ void PlayerCharacter::NoCollisionRegistered()
 	if (!CanGoLeft) CanGoLeft = true;
 	if (receivedDamage) receivedDamage = false;
 	if (inflictedDamage) inflictedDamage = false;
+	if (hitGuardBox) hitGuardBox = false;
 
 }
 
@@ -477,15 +523,21 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dashBKW.SetFrameSpeed(0.1f);
 
 	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
-
+	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_hurt.SetFrameSpeed(0.1f);
 	currentAnim = &anim_idle;
 }
 
-void PlayerCharacter::PushPlayer(sf::Vector2f distance)
+void PlayerCharacter::PushPlayer(sf::Vector2f distance, float dt)
 {
 	if (flipped)
 	{
-		setPosition(getPosition() + distance);
-	}else setPosition(getPosition() - distance);
-	
+		setPosition(getPosition() + distance * dt);
+	}
+	else setPosition(getPosition() - distance * dt);
+
 }
