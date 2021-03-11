@@ -19,12 +19,12 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 
 
 	// Setup player one
-	playerOneStartPos = sf::Vector2f(-500, 52);
+	playerOneStartPos = sf::Vector2f(-200, 0);
 	playerOne.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
 
-	// Setup player two in await mode
+	// Setup player two
 	PlayerTwoConnected = false;
-	playerTwoStartPos = sf::Vector2f(350, 8);
+	playerTwoStartPos = sf::Vector2f(200, 0);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
 }
@@ -110,14 +110,18 @@ void Scene_OnlineMatch::GrabSomeData(asio::ip::tcp::socket& socket)
 
 void Scene_OnlineMatch::OverrideRender()
 {
-	// render something to test
-	window->draw(platform);
+	// draw players
+	if (playerOne.IsActive()) window->draw(playerOne);
+	if(PlayerTwoConnected) if (playerTwo.IsActive()) window->draw(playerTwo);
 
-	window->draw(playerOne);
-
-	if (PlayerTwoConnected) 
+	// draw player collision
+	for (auto coll : playerOne.GetCurrentCollision())
 	{
-		window->draw(playerTwo);
+		if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+	}
+	for (auto coll : playerTwo.GetCurrentCollision())
+	{
+		if (PlayerTwoConnected) if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 	}
 
 	// Render font
@@ -128,6 +132,36 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
+
+	playerOne.Update(dt, window);
+	if (PlayerTwoConnected) playerTwo.Update(dt, window);
+
+	// Iterate all current's frame collision boxes for both players
+	for (auto collA : playerOne.GetCurrentCollision())
+	{
+		for (auto collB : playerTwo.GetCurrentCollision())
+		{
+			if (collA->IsActive() && collB->IsActive())
+			{
+				Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
+
+				if (newColl.None) // If there was no collision...
+				{
+					playerOne.NoCollisionRegistered();
+					playerTwo.NoCollisionRegistered();
+
+					DebugText.setString("NO COLLISION");
+				}
+				else
+				{
+					playerOne.CollisionResponseToPlayer(&newColl);
+					playerTwo.CollisionResponseToPlayer(&newColl);
+
+					DebugText.setString("COLLISION");
+				}
+			}
+		}
+	}
 }
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)
@@ -142,4 +176,7 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	{
 		AttemptConnection();
 	}
+
+	playerOne.HandleInput(input, dt);
+
 }
