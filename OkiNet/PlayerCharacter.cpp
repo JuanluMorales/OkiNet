@@ -53,7 +53,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		// Configure player one graphics
 		texture.loadFromFile("Sprites/Player1_Sheet.png");
 		setSize(sf::Vector2f(78, 55));
-
+		setOrigin(sf::Vector2f(78 / 2, 55 / 2));
 		setScale(static_cast<float>(PIXEL_SCALE_FACTOR), static_cast<float>(PIXEL_SCALE_FACTOR));
 		setTexture(&texture);
 	}
@@ -62,6 +62,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 		// Configure player two graphics
 		texture.loadFromFile("Sprites/Player2_Sheet.png");
 		setSize(sf::Vector2f(78, 55));
+		setOrigin(sf::Vector2f(78 / 2, 55 / 2));
 		setScale(static_cast<float>(PIXEL_SCALE_FACTOR), static_cast<float>(PIXEL_SCALE_FACTOR));
 		setTexture(&texture);
 		flipped = true;
@@ -406,9 +407,9 @@ void PlayerCharacter::SetUpAnimationFrames()
 {
 	// Body collision
 	// Add an offset to account for the extra space not used as we start on the top left 0,0 corner
-	sf::Vector2f bodyCollOffset = sf::Vector2f(static_cast <float>(29 * PIXEL_SCALE_FACTOR), static_cast <float>(5 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f bodyCollOffset = sf::Vector2f(static_cast <float>(0 * PIXEL_SCALE_FACTOR), static_cast <float>(0 * PIXEL_SCALE_FACTOR));
 	sf::Vector2f bodycallPos = getPosition() + bodyCollOffset;
-	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
 	CollisionBox* bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize, bodyCollOffset);
 
 	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
@@ -428,7 +429,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	// Punch attack
-	sf::Vector2f  punchCollOffset = bodyCollOffset + sf::Vector2f(static_cast < float>(0 * PIXEL_SCALE_FACTOR), static_cast <float>(0 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f  punchCollOffset;
 	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
 	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
 	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);

@@ -44,9 +44,10 @@ CollisionBox::CollisionBox(ColliderType collType, sf::Vector2f position, sf::Vec
 		break;
 	}
 	SetCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), size));
-	setPosition(position);
-	setSize(size);
 
+	setSize(size);
+	setOrigin(sf::Vector2f(size.x / 2, size.y / 2));
+	setPosition(position);
 }
 
 CollisionBox::CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color outlineColor, float outlineThickness, sf::Vector2f position, sf::Vector2f size, sf::Vector2f posOffset)
@@ -56,8 +57,10 @@ CollisionBox::CollisionBox(ColliderType collType, sf::Color fillColor, sf::Color
 	thisSpriteType = SpriteType::Collider;
 	SetActive(true);
 	SetCollisionBox(sf::FloatRect(sf::Vector2f(0, 0), size));
-	setPosition(position);
+	setOrigin(sf::Vector2f(size.x / 2, size.y / 2));
 	setSize(size);
+	setPosition(position);
+
 	setFillColor(fillColor);
 	setOutlineColor(outlineColor);
 	setOutlineThickness(outlineThickness);
@@ -101,11 +104,9 @@ void CollisionBox::SetType(ColliderType collType)
 
 void CollisionBox::SetCollisionBoxPosition(sf::Vector2f newPos)
 {
-	if (flipped && thisCollType == ColliderType::HitBox)
+	if (flipped && GetType() == ColliderType::HitBox)
 	{
-		sf::Vector2f finalPos = newPos + offsetValue;
-		finalPos += sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), 0); // Add an X offset if flipped for hitboxes only
-		setPosition(finalPos); 
+		setPosition(newPos + sf::Vector2f(offsetValue.x, offsetValue.y));
 	}else setPosition(newPos + offsetValue);
 }
 

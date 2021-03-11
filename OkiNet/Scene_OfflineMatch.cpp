@@ -15,11 +15,11 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 
 
 	// Setup player one
-	playerOneStartPos = sf::Vector2f(-600, -200);
+	playerOneStartPos = sf::Vector2f(-200, 0);
 	playerOne.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
 
 	// Setup player two
-	playerTwoStartPos = sf::Vector2f(-150, -200);
+	playerTwoStartPos = sf::Vector2f(200, 0);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
 }
@@ -30,6 +30,10 @@ void Scene_OfflineMatch::OverrideEarlyUpdate(float dt)
 
 void Scene_OfflineMatch::OverrideRender()
 {
+	// draw players
+	if (playerOne.IsActive()) window->draw(playerOne);
+	if (playerTwo.IsActive()) window->draw(playerTwo);
+
 	// draw player collision
 	for (auto coll : playerOne.GetCurrentCollision())
 	{
@@ -39,10 +43,6 @@ void Scene_OfflineMatch::OverrideRender()
 	{
 		if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 	}
-
-	// draw players
-	if (playerOne.IsActive()) window->draw(playerOne);
-	if (playerTwo.IsActive()) window->draw(playerTwo);
 
 	// Render font
 	window->draw(DebugText);
