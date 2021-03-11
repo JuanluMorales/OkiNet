@@ -31,6 +31,12 @@ void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType, Collisio
 	frames.push_back(*anim);
 }
 
+void Animation::AddFrame(sf::IntRect rect, AnimationFrameType animType, std::vector<CollisionBox*>& collBoxes)
+{
+	AnimationFrame* anim = new AnimationFrame(rect, animType, collBoxes);
+	frames.push_back(*anim);
+}
+
 // Returns the size of the animation. The number of frames.
 int Animation::GetSize()
 {
@@ -116,4 +122,9 @@ int Animation::GetAnimationFramesCount() {
 CollisionBox* Animation::GetCurrentBox()
 {
 	return GetCurrentFrame().GetCollisionBox();
+}
+
+std::vector<CollisionBox*> Animation::GetCurrentBoxes()
+{
+	return GetCurrentFrame().GetCollisionBoxes();
 }

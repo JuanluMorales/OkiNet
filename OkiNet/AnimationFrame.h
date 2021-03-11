@@ -18,6 +18,7 @@ public:
 	AnimationFrame();
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType);
 	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox);
+	AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, std::vector<CollisionBox*> &collBox);
 	void AddCollisionBox(CollisionBox& collBox);
 	~AnimationFrame();
 
@@ -25,7 +26,8 @@ public:
 	sf::IntRect GetRect();
 	void SetRect(int left, int top, int width, int height);
 
-	CollisionBox* GetCollisionBox(); // Returns the list of collision boxes in this frame
+	CollisionBox* GetCollisionBox(); 
+	std::vector<CollisionBox*> GetCollisionBoxes(); // Returns the list of collision boxes in this frame
 
 private:
 

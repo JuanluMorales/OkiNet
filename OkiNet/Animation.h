@@ -12,6 +12,7 @@ public:
 	void AddFrame(AnimationFrame animFrame);
 	void AddFrame(sf::IntRect rect, AnimationFrameType animType);
 	void AddFrame(sf::IntRect rect, AnimationFrameType animType, CollisionBox collBox);
+	void AddFrame(sf::IntRect rect, AnimationFrameType animType, std::vector<CollisionBox*> &collBoxes);
 	void SetFrameSpeed(float speed);
 	int GetSize();
 
@@ -38,8 +39,8 @@ public:
 
 	// Collision box controls
 	CollisionBox* GetCurrentBox();
+	std::vector<CollisionBox*> GetCurrentBoxes(); // return a vector of the current collision boxes for the frame
 
-	
 protected:
 	std::vector<AnimationFrame>frames; // The total of frames in the animation
 	AnimationFrame frame;

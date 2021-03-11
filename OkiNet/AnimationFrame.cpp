@@ -4,6 +4,7 @@ AnimationFrame::AnimationFrame()
 {
 	thisFrameType = AnimationFrameType::Idle;
 	collisionBox = new CollisionBox();
+	collisionBoxes.push_back(collisionBox);
 }
 
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
@@ -11,6 +12,7 @@ AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType)
 	frameRect = rect;
 	thisFrameType = frameType;
 	collisionBox = new CollisionBox();
+	collisionBoxes.push_back(collisionBox);
 }
 
 AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, CollisionBox collBox)
@@ -18,17 +20,31 @@ AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, C
 	frameRect = rect;
 	thisFrameType = frameType; 
 	collisionBox = new CollisionBox(collBox.GetType(), collBox.getPosition(), collBox.getSize());
+	collisionBoxes.push_back(collisionBox);
+}
+
+AnimationFrame::AnimationFrame(sf::IntRect rect, AnimationFrameType frameType, std::vector<CollisionBox*>& collBox)
+{
+	frameRect = rect;
+	thisFrameType = frameType;
+	collisionBoxes = collBox;
 }
 
 void AnimationFrame::AddCollisionBox(CollisionBox& collBox)
 {
 	collisionBox = new CollisionBox(collBox);
+	collisionBoxes.push_back(collisionBox);
 }
 
 AnimationFrame::~AnimationFrame()
 {	
-	collisionBox = NULL;
-	delete collisionBox;
+	for (auto coll : collisionBoxes)
+	{
+		coll = NULL;
+		delete coll;
+	}
+	//collisionBox = NULL;
+	//delete collisionBox;
 }
 
 AnimationFrameType AnimationFrame::GetFrameType()
@@ -52,4 +68,9 @@ void AnimationFrame::SetRect(int left, int top, int width, int height)
 CollisionBox* AnimationFrame::GetCollisionBox()
 {
 	return collisionBox;
+}
+
+std::vector<CollisionBox*> AnimationFrame::GetCollisionBoxes()
+{
+	return collisionBoxes;
 }
