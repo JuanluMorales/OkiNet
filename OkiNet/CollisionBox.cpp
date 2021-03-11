@@ -106,7 +106,7 @@ void CollisionBox::SetCollisionBoxPosition(sf::Vector2f newPos)
 {
 	if (flipped && GetType() == ColliderType::HitBox)
 	{
-		setPosition(newPos + sf::Vector2f(offsetValue.x, offsetValue.y));
+		setPosition(newPos + sf::Vector2f(-offsetValue.x, offsetValue.y));
 	}else setPosition(newPos + offsetValue);
 }
 

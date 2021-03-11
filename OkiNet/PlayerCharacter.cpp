@@ -429,9 +429,9 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
 	// Punch attack
-	sf::Vector2f  punchCollOffset;
+	sf::Vector2f  punchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
 	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
-	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
 	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);
 
 	std::vector<CollisionBox*> punchCollVector;
