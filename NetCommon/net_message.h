@@ -4,7 +4,7 @@
 // - A message header that contains a template ID for identification and a size 
 // - A message body that contains a vector of bytes
 
-namespace net 
+namespace net
 {
 
 	// Message header sent at the start of all messages
@@ -78,6 +78,25 @@ namespace net
 
 		}
 
+	};
+
+	// forward declare the connection class
+	template <typename T>
+	class connection{};
+
+	// Pointer to the connection the message came from
+	template <typename T>
+	struct message_owner
+	{
+		std::shared_ptr<connection<T>> remote = nullptr;
+		message<T> msg;
+
+		// Overload the output operator again for better visualization of the string
+		friend std::ostream& operator<<(std::ostream& os, const message_owner<T>& msg)
+		{
+			os << msg.msg;
+			return os;
+		}
 	};
 
 }

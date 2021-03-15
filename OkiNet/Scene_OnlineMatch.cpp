@@ -38,7 +38,7 @@ bool Scene_OnlineMatch::AttemptConnection()
 	asio::io_context context;
 
 	// Create a tcp endpoint to connect to (PLACEHOLDER HTTTP EXAMMPLE PAGE)
-	asio::ip::tcp::endpoint endpoint(asio::ip::make_address("93.184.216.31", ec), 80);
+	asio::ip::tcp::endpoint endpoint(asio::ip::make_address("127.0.0.1", ec), 80);
 
 
 	// Create socket, the context delivers the implementation

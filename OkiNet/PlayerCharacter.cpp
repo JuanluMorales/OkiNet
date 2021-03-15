@@ -91,6 +91,12 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		PushPlayer(sf::Vector2f(smallPushDistance, 0), dt);
 		attackState = AttackState::HitStun;
 	}
+	else if (hitGuardBox)
+	{
+		PushPlayer(sf::Vector2f(smallPushDistance, 0), dt);
+	}
+
+
 
 	HandleAnimation(dt);
 

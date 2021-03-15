@@ -1,6 +1,6 @@
 #pragma once
 #include "net_common.h"
-// Thread safe queue is needed for the queue of messages from and to the connections 
+// Thread safe queue is needed for the queue of messages from and to the clients
 // to be only written once at a time because of the asynchronous nature of the ASIO library
 
 namespace net
