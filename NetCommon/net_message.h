@@ -6,7 +6,6 @@
 
 namespace net
 {
-
 	// Message header sent at the start of all messages
 	template <typename T>
 	struct message_header
@@ -80,15 +79,15 @@ namespace net
 
 	};
 
-	// forward declare the connection class
-	template <typename T>
-	class connection{};
+	// Forward declare
+	template<typename T>
+	class Connection;
 
-	// Pointer to the connection the message came from
+	// Message that also contains a shared pointer to the connection the message came from
 	template <typename T>
 	struct message_owner
 	{
-		std::shared_ptr<connection<T>> remote = nullptr;
+		std::shared_ptr<Connection<T>> remote = nullptr;
 		message<T> msg;
 
 		// Overload the output operator again for better visualization of the string

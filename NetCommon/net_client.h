@@ -2,20 +2,20 @@
 #include "net_common.h"
 #include "net_message.h"
 #include "net_threadSafeQueue.h"
+#include "net_connection.h"
 
 namespace net
 {
 	// Responsible for setting up the asio interface/context and its own connection class
 	// Responsible for the game's network communication tasks
 	template<typename T>
-	class client
+	class Client
 	{
-		client() : socket_tcp(context) // Initialise the socket with the io context 
+		Client() : socket_tcp(context) // Initialise the socket with default client type and the io context assigned to a tcp socket
 		{
-			
 		}
 
-		virtual ~client()
+		virtual ~Client()
 		{
 			// Attempt to disconnect if the client is destroyed
 			Disconnect();
@@ -39,17 +39,24 @@ namespace net
 			return false;
 		}
 
-	protected:
+		// Return the queue of messages received
+		TQueue<message_owner<T>>& GetIncomingMessages()
+		{
+			return messagesIn;
+		}
 
+		// Return the type of client (join or host)
+		ClientType GetClientType() { return thisClientType; }
+
+	protected:
+		// Context for asio
 		asio::io_context context;
 		// Thread that enables the context to execute its own commands
 		std::thread thrContext;
-
 		// Socket of connection
 		asio::ip::tcp::socket socket_tcp;
-
 		// Pointer to the connection once there was a succesful "tcp handshake"
-		std::unique_ptr<connection<T>> connection;
+		std::unique_ptr<Connection<T>> connection;
 
 	private:
 		// Incoming messages from remote connection
