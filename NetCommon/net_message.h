@@ -3,6 +3,25 @@
 // Class that comprises a network message composed of:
 // - A message header that contains a template ID for identification and a size 
 // - A message body that contains a vector of bytes
+// The use of templating has the purpose of allowing the pass of any enum classes as the message id to define the information to be passed
+// Templating the message header has the knock-on effect of requiring all classes that make use of the message to also be templated T
+
+/*
+Usage:
+
+- Create an enum class defining the message:
+	enum class GameMessage
+	{
+		FireBullet,
+		MovePlayer
+	}
+- Create a message of that type:
+	net::message<GameMessage> gmMsg;
+
+
+
+
+*/
 
 namespace net
 {
@@ -10,10 +29,12 @@ namespace net
 	template <typename T>
 	struct message_header
 	{
-		T id{}; // Templated class to allow enum classes to be used as ID
+		T id{}; // Templated class to allow any type of enum classes to be used as a message identifier
 		uint32_t size = 0; // use unit32 instead of size_t to reduce byte issues
 	};
 
+	// Network packet message structure with a header and a body of the message actual content
+	// 
 	template <typename T>
 	struct message
 	{
@@ -23,7 +44,7 @@ namespace net
 		// Return the size of the entire message packet in bytes
 		size_t size() const
 		{
-			return sizeof(message_header<T>) + body.size();
+			return sizeof(message_header<T>) + body.size(); // return header and body size
 		}
 
 		// Override std::cout for friendlier description of the packet contents
@@ -34,7 +55,8 @@ namespace net
 			return os;
 		}
 
-		// Push data into the message buffer (as long as it is trivial to do so)
+		// Serialization
+		// Push data into the message buffer (as long as it is possible to do)
 		template<typename DataType>
 		friend message<T>& operator << (message<T>& msg, const DataType& data)
 		{
@@ -53,6 +75,7 @@ namespace net
 			return msg;
 		}
 
+		// Deserialization
 		// Override the >> operator to improve readability when outputting the message contents
 		// Use like "Message >> Content"
 		template<typename DataType>
@@ -88,8 +111,8 @@ namespace net
 	struct message_owner
 	{
 		std::shared_ptr<Connection<T>> remote = nullptr;
-		message<T> msg;
-
+		message<T> msg; // Regular message object
+		
 		// Overload the output operator again for better visualization of the string
 		friend std::ostream& operator<<(std::ostream& os, const message_owner<T>& msg)
 		{

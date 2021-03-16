@@ -1,7 +1,5 @@
 ﻿#pragma once
-
 // Common libraries and procesor defines
-
 #include <memory>
 #include <thread>
 #include <mutex>
@@ -24,5 +22,3 @@
 #include <asio/ts/buffer.hpp>
 #include <asio/ts/internet.hpp>
 
-#include "net_message.h"
-#include "net_threadSafeQueue.h"

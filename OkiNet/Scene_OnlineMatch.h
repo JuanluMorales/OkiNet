@@ -1,5 +1,5 @@
 #pragma once
-#include <net_common.h> // Network static libraries
+#include <net_common_headers.h> // Network static libraries
 #include "GameState.h"
 #include "PlayerCharacter.h"
 
@@ -37,5 +37,6 @@ private:
 
 	// network variables
 	std::vector<char> vBuffer; // Large buffer to store messages
+	
 };
 

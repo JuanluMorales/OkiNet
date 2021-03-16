@@ -6,22 +6,22 @@
 namespace net
 {
 	// A connection identifies one entity/user relation to another connection (endpoint)
+	// Connection will be handled by their respective client so the class needs to be a shared_ptr
 	template<typename T>
-	class Connection : public std::enable_shared_from_this<Connection<T>> // public inheritance to get a shared ptr from this
+	class Connection : public std::enable_shared_from_this<Connection<T>> // public inheritance to get a shared ptr from shared_from_this()
 	{
 	public:
 		Connection()
 		{}
 
-		virtual ~Connection()
+		virtual ~Connection() 
 		{}
 
-		bool ConnectToClient();
-		bool ConnectToServer(); // In case a future server were to be implemented
-		bool Disconnect();
-		bool IsConnected() const {}
+		bool ConnectToClient() {};
+		bool Disconnect() {};
+		bool IsConnected() const {};
 
-		bool Send(const message<T>& msg);
+		bool Send(const message<T>& msg) {}
 
 	protected:
 		// Connection socket to remote connection
@@ -35,6 +35,6 @@ namespace net
 		TQueue<message<T>> messagesOut;
 		// Queue that holds messages received from remote side
 		// Stored as a reference, as the remote connection must provide the queue
-		TQueue<message_owner>& messagesIn;
+		//TQueue<message_owner>& messagesIn;
 	};
 }

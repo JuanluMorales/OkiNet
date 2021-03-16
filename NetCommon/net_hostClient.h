@@ -43,15 +43,44 @@ namespace net
 			return true;
 		}
 
+		// Attempts to close the asio context
 		bool StopListening()
 		{
+			asioContext.stop();
 
+			// clear the context thread if it was opened
+			if (threadContext.joinable()) threadContext.join();
+
+			std::cout << "[Host Client] Stopped\n";
 		}
 
 		// ASYNC - Tell asio to wait for connection
 		void WaitForClientConnection()
 		{
+			// Call a lambda function asynchronously
+			asioAcceptor.async_accept([this](/*method params*/ std::error_code ec, asio::ip::tcp::socket socket)
+			{
+				/*Function body*/
+				if(!ec)
+				{ 
+					// Print out address
+					std::cout << "[Host Client] Incoming new connection: " << socket.remote_endpoint() << "\n";
 
+					// Create the new connection as a shared ptr
+					connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);
+
+
+					
+				}
+				else
+				{
+					// Error while accepting a client
+					std::cout << "[Host Client] Incoming new connection error: " << ec.message() << "\n";
+				}
+
+				// Make sure asio does not run out of tasks so it does not close
+				WaitForClientConnection();
+			});
 		}
 
 		// Send message to a specific client
@@ -85,18 +114,16 @@ namespace net
 			
 		}
 
+		// Reference to the connection
+		std::shared_ptr<Connection<T>> connection;
+
 		// Queue for incoming message packets
 		TQueue<message_owner<T>> messagesIn;
 
 		// Declared in order of initialization:
 		asio::io_context asioContext;
 		std::thread threadContext;
-
 		asio::ip::tcp::acceptor asioAcceptor;
-
-		// Client identifier for this host 
-		uint32_t IDCounter = 100;
-
 	};
 }
 

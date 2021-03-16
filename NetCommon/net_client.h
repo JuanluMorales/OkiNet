@@ -51,7 +51,10 @@ namespace net
 		// Disconnect from the connection
 		void Disconnect()
 		{
-
+			if (IsConnected())
+			{
+				connection->Disconnect();
+			}
 		}
 
 		bool IsConnected()
@@ -77,8 +80,6 @@ namespace net
 		asio::ip::tcp::socket socket_tcp;
 		// Pointer to the connection once there was a succesful "tcp handshake"
 		std::unique_ptr<Connection<T>> connection;
-
-		asio::
 
 	private:
 		// Incoming messages from remote connection

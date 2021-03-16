@@ -27,6 +27,8 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	playerTwoStartPos = sf::Vector2f(200, 0);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
+
+
 }
 
 bool Scene_OnlineMatch::AttemptConnection()
