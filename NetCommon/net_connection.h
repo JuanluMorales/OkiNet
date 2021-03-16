@@ -11,7 +11,7 @@ namespace net
 	class Connection : public std::enable_shared_from_this<Connection<T>> // public inheritance to get a shared ptr from shared_from_this()
 	{
 	public:
-		Connection()
+		Connection(asio::io_context& _asioContext, asio::ip::tcp::socket _socketTCP, TQueue<message_owner<T>>& _qIn) : asioContext(_asioContext), socket_tcp(_socketTCP), messagesIn(_qIn)
 		{}
 		virtual ~Connection() 
 		{}
@@ -22,7 +22,8 @@ namespace net
 		bool IsConnected() const 
 		{}
 
-		bool Send(const message<T>& msg) {}
+		bool Send(const message<T>& msg) 
+		{}
 
 	protected:
 		// Connection sockets to remote connection

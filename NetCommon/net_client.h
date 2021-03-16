@@ -8,6 +8,7 @@ namespace net
 {
 	// Responsible for setting up the asio interface/context and its own connection class
 	// Responsible for the game's network communication tasks
+	// A Client or Peer encapsulates the functionality needed to connect and disconnect to a host client 
 	template<typename T>
 	class Client
 	{

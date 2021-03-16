@@ -6,7 +6,8 @@ private:
 	//Structure to represent the Mouse
 	struct Mouse
 	{
-		int x, y = 0;
+		int x = 0;
+		int y = 0;
 		bool left = false; //Initialize on false as predetermined
 		bool right = false;
 
