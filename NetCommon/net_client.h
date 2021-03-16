@@ -11,8 +11,10 @@ namespace net
 	template<typename T>
 	class Client
 	{
-		Client() : socket_tcp(context) // Initialise the socket with default client type and the io context assigned to a tcp socket
+		Client() : socket_tcp(context)
 		{
+			// Initialise the socket with default client type and the io context assigned to a tcp socket
+
 		}
 
 		virtual ~Client()
@@ -25,16 +27,17 @@ namespace net
 		// Connection method that receives a host and a port number 
 		bool Connect(const std::string& host, const uint16_t port)
 		{
-			try 
+			try
 			{
-				
-
 				// Resolve hostname/ip into address
 				asio::ip::tcp::resolver resolver(context);
 				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
 
 				// Create connection
 				//connection = std::make_unique<Connection<T>>(); // TODO
+
+				// Create the thread to run the context
+				thrContext = std::thread([this]() { context.run(); });
 
 			}
 			catch (std::exception& e)
@@ -45,7 +48,7 @@ namespace net
 
 			std::cout << "[Client] Succesful connection to host!\n";
 			return true;
-		
+
 		}
 
 		// Disconnect from the connection
@@ -57,9 +60,14 @@ namespace net
 			}
 		}
 
+		// Is the connection active?
 		bool IsConnected()
 		{
-			return false;
+			if (connection)
+			{
+				return connection->IsConnected();
+			}
+			else return false;
 		}
 
 		// Return the queue of messages received
@@ -68,9 +76,6 @@ namespace net
 			return messagesIn;
 		}
 
-		// Return the type of client (join or host)
-		ClientType GetClientType() { return thisClientType; }
-
 	protected:
 		// Context for asio
 		asio::io_context context;
@@ -78,6 +83,7 @@ namespace net
 		std::thread thrContext;
 		// Socket of connection
 		asio::ip::tcp::socket socket_tcp;
+		asio::ip::udp::socket socket_udp;
 		// Pointer to the connection once there was a succesful "tcp handshake"
 		std::unique_ptr<Connection<T>> connection;
 

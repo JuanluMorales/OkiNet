@@ -13,18 +13,19 @@ namespace net
 	public:
 		Connection()
 		{}
-
 		virtual ~Connection() 
 		{}
-
-		bool ConnectToClient() {};
-		bool Disconnect() {};
-		bool IsConnected() const {};
+		bool ConnectToClient() 
+		{}
+		bool Disconnect() 
+		{}
+		bool IsConnected() const 
+		{}
 
 		bool Send(const message<T>& msg) {}
 
 	protected:
-		// Connection socket to remote connection
+		// Connection sockets to remote connection
 		asio::ip::tcp::socket socket_tcp;
 		asio::ip::udp::socket socket_udp;
 
@@ -33,8 +34,9 @@ namespace net
 
 		// Messages to be sent to remote side
 		TQueue<message<T>> messagesOut;
+
 		// Queue that holds messages received from remote side
 		// Stored as a reference, as the remote connection must provide the queue
-		//TQueue<message_owner>& messagesIn;
+		TQueue<message_owner<T>>& messagesIn;
 	};
 }

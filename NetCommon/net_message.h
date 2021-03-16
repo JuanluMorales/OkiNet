@@ -8,18 +8,24 @@
 
 /*
 Usage:
-
 - Create an enum class defining the message:
-	enum class GameMessage
+	enum class GameMessage : uint32_t
 	{
 		FireBullet,
 		MovePlayer
 	}
 - Create a message of that type:
 	net::message<GameMessage> gmMsg;
+	gmMsg.header.id = GameMessage::FireBullet
 
+	int a = 1;
+	bool b = true;
 
+- Push data in:
+	gmMsg << a << b;
 
+- Get data out:
+	gmMsg >> b >> a;	// Must be done in the opposite write order
 
 */
 

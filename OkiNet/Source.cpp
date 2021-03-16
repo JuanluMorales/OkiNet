@@ -2,9 +2,30 @@
 
 enum class CustomMsgTypes : uint32_t
 {
-	Fire,
 	Move,
+	Punch,
+	Defend
 };
+
+//class TestClient : public net::Client<CustomMsgTypes>
+//{
+//public:
+//	bool Move(float x)
+//	{
+//		net::message<CustomMsgTypes> msg;
+//		msg.header.id = CustomMsgTypes::Move;
+//		msg << x;
+//		Send(msg);
+//	}
+//};
+//
+//int main()
+//{
+//	TestClient c;
+//	c.Connect(ip, port);
+//	c.Move(player.getPosition().x);
+//	return;
+//}
 
 std::vector<char> vBuffer(20 * 1024); // Large buffer to store messages
 
@@ -32,7 +53,7 @@ void GrabSomeData(asio::ip::tcp::socket& socket)
 int asioTest()
 {
 	net::message<CustomMsgTypes> msg;
-	msg.header.id = CustomMsgTypes::Fire;
+	msg.header.id = CustomMsgTypes::Move;
 	float x = 5;
 
 	asio::error_code ec; 
