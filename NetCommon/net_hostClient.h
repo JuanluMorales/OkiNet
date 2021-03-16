@@ -43,7 +43,7 @@ namespace net
 		}
 
 		// Attempts to close the asio context
-		bool StopListening()
+		void StopListening()
 		{
 			asioContext.stop();
 
@@ -65,9 +65,9 @@ namespace net
 					// Print out address
 					std::cout << "[Host Client] Incoming new connection: " << socket.remote_endpoint() << "\n";
 
-					// Create the new connection as a shared ptr
-					connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
-					return; // Stop listening for new connections
+					//// Create the new connection as a shared ptr
+					//connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
+					//return; // Stop listening for new connections
 				}
 				else
 				{
@@ -90,7 +90,7 @@ namespace net
 			else
 			{
 				// Client probably disconnected
-				OnClientDisconnect(client);
+				OnClientDisconnect(connection);
 				connection.reset();
 			}
 		}
@@ -118,9 +118,9 @@ namespace net
 			return false;
 		}
 		// Called when a peer disconnects
-		virtual bool OnClientDisconnect(std::shared_ptr<Connection<T>> client)
+		virtual void OnClientDisconnect(std::shared_ptr<Connection<T>> client)
 		{
-			return false;
+
 		}
 		// Called when a message from the peer arrives
 		virtual void OnMessageReceived(std::shared_ptr<Connection<T>> client, message<T>& msg)

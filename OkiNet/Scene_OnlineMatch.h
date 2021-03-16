@@ -33,10 +33,10 @@ private:
 	sf::Font DebugFont;
 	sf::Text DebugText;
 
-
-
 	// network variables
 	std::vector<char> vBuffer; // Large buffer to store messages
+
+	bool listening = false;
 	
 };
 

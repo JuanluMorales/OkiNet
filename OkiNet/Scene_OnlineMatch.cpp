@@ -1,5 +1,35 @@
 #include "Scene_OnlineMatch.h"
 
+
+enum class MsgTypes : uint32_t
+{
+	HostClientAccept
+};
+
+class CustomHostClient : public net::HostClient<MsgTypes>
+{
+public:
+	CustomHostClient(uint16_t port) : net::HostClient<MsgTypes>(port)
+	{
+
+	}
+
+protected:
+	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
+	{
+		return true;
+	}
+
+	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
+	{
+	}
+
+	virtual void OnMessage(std::shared_ptr<net::Connection<MsgTypes>> client, net::message<MsgTypes>& msg)
+	{
+	}
+};
+
+
 void Scene_OnlineMatch::Init(GameState* stateMan)
 {
 	stateManager = stateMan;
@@ -26,8 +56,6 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	PlayerTwoConnected = false;
 	playerTwoStartPos = sf::Vector2f(200, 0);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
-
-
 
 }
 
@@ -93,20 +121,20 @@ void Scene_OnlineMatch::GrabSomeData(asio::ip::tcp::socket& socket)
 {
 	socket.async_read_some(asio::buffer(vBuffer.data(), vBuffer.size()),
 		[&](std::error_code ec, std::size_t length)
+	{
+		if (!ec) // if theres no error code 
 		{
-			if (!ec) // if theres no error code 
-			{
-				// Display the amount of bytes
-				std::cout << "\n\nRead " << length << " bytes\n\n";
+			// Display the amount of bytes
+			std::cout << "\n\nRead " << length << " bytes\n\n";
 
-				for (int i = 0; i < length; i++)
-					std::cout << vBuffer[i];
+			for (int i = 0; i < length; i++)
+				std::cout << vBuffer[i];
 
 
-				// Call back the method asynchronously, which will wait until theres something to read
-				GrabSomeData(socket);
-			}
+			// Call back the method asynchronously, which will wait until theres something to read
+			GrabSomeData(socket);
 		}
+	}
 	);
 }
 
@@ -114,7 +142,7 @@ void Scene_OnlineMatch::OverrideRender()
 {
 	// draw players
 	if (playerOne.IsActive()) window->draw(playerOne);
-	if(PlayerTwoConnected) if (playerTwo.IsActive()) window->draw(playerTwo);
+	if (PlayerTwoConnected) if (playerTwo.IsActive()) window->draw(playerTwo);
 
 	// draw player collision
 	for (auto coll : playerOne.GetCurrentCollision())
@@ -134,6 +162,7 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
+
 
 	playerOne.Update(dt, window);
 	if (PlayerTwoConnected) playerTwo.Update(dt, window);
@@ -164,6 +193,18 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 			}
 		}
 	}
+
+
+	CustomHostClient host(60000);
+	host.StartListening();
+	while (1)
+	{
+		host.Update();
+	}
+
+
+
+
 }
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)
