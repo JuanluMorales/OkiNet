@@ -214,19 +214,24 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 		}
 		else
 		{
-			// TODO: INDICATE HOST OR JOIN TO THE SCENE + ADD INPUT FOR IP AND PORT TO HOST SELECTION
 			if (currentOnlineSelection == onlineSelection::Host)
 			{
-				stateManager->GoToScene(scenes::OnlineMatch);
+				stateManager->GoToScene(scenes::OnlineMatchHost);
 			}
 			else if (currentOnlineSelection == onlineSelection::Join)
 			{
 				if (!input->IsTextInputFieldActive())
 				{
+					currentHostSelection = hostSelection::IP;
 					input->ClearInputField();
 					input->SetTextInputFieldActive(true);
 				}
-				currentHostSelection = hostSelection::IP;
+				else
+				{
+					// TODO: Pass the IP and Port info to client for joining
+					stateManager->GoToScene(scenes::OnlineMatchClient);
+				}
+				
 			}
 
 		}

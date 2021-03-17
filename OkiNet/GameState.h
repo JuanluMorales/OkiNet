@@ -6,7 +6,8 @@ enum class scenes
 {
 	MainMenu,
 	OfflineMatch,
-	OnlineMatch
+	OnlineMatchClient,
+	OnlineMatchHost
 };
 
 class GameState

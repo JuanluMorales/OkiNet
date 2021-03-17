@@ -39,24 +39,25 @@ int main()
 	mainMenu.Init(scenesManager);
 
 	// Create and initialize offline test scene
-	Scene_OfflineMatch offlineMatch(&window, &inputManager, &view);
-	offlineMatch.Init(scenesManager);
+	Scene_OfflineMatch* offlineMatch = nullptr;
 
-	Scene_OnlineMatch onlineMatch(&window, &inputManager, &view);
-	onlineMatch.Init(scenesManager);
+	// Create and initialize online scene
+	Scene_OnlineMatch* onlineMatchHost = nullptr;
+	Scene_OnlineMatch* onlineMatchClient = nullptr;
+
 
 
 	// GAME EXECUTION LOOP
 	while (window.isOpen())
 	{
 		sf::Event event;
-		
+
 		// Listen to window and input events 
 		while (window.pollEvent(event))
 		{
 			switch (event.type)
 			{
-			case sf::Event::Closed: 
+			case sf::Event::Closed:
 				window.close();
 				break;
 
@@ -102,10 +103,9 @@ int main()
 					if (!inputManager.GetCurrentInputText().empty() && static_cast<char>(event.text.unicode) == *backspace)
 					{
 						inputManager.RemoveLetterFromInputField();
-					}else inputManager.WriteInputField(event.text.unicode);
+					}
+					else inputManager.WriteInputField(event.text.unicode);
 				}
-			
-				
 				break;
 			default:
 				//dont handle other events
@@ -117,21 +117,46 @@ int main()
 		//it was last calculated (in seconds) and restart the clock
 		deltaTime = clock.restart().asSeconds();
 
-		// FakeSwitch on the scenes to select which one to update
-		if (scenesManager->currentScene == scenes::MainMenu)
+		// Switch on the scenes to select which one to update
+		switch (scenesManager->currentScene)
 		{
+			// MAIN MENU
+		case scenes::MainMenu:
 			mainMenu.RunScene(deltaTime);
-		}else
-		if (scenesManager->currentScene == scenes::OfflineMatch)
-		{
-			offlineMatch.RunScene(deltaTime);
-		}else if (scenesManager->currentScene == scenes::OnlineMatch)
-		{
-			onlineMatch.RunScene(deltaTime);
-		}
-		
-	
+			break;
 
+			// OFFLINE
+		case scenes::OfflineMatch:
+			// Initialize scene
+			if (offlineMatch == nullptr)
+			{
+				offlineMatch = new Scene_OfflineMatch(&window, &inputManager, &view);
+				offlineMatch->Init(scenesManager);
+			}
+
+			offlineMatch->RunScene(deltaTime);
+
+			break;
+
+			//ONLINE - AS HOST
+		case scenes::OnlineMatchHost:
+			if (onlineMatchHost == nullptr)
+			{
+				onlineMatchHost = new Scene_OnlineMatch(&window, &inputManager, &view);
+				onlineMatchHost->Init(scenesManager);
+			}
+			
+			onlineMatchHost->RunScene(deltaTime);
+			
+			break;
+
+			//ONLINE - AS CLIENT
+		case scenes::OnlineMatchClient:
+
+			break;
+		default:
+			break;
+		}
 	}
 
 	return 0;

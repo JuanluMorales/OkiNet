@@ -1,35 +1,5 @@
 #include "Scene_OnlineMatch.h"
 
-
-enum class MsgTypes : uint32_t
-{
-	HostClientAccept
-};
-
-class CustomHostClient : public net::HostClient<MsgTypes>
-{
-public:
-	CustomHostClient(uint16_t port) : net::HostClient<MsgTypes>(port)
-	{
-
-	}
-
-protected:
-	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
-	{
-		return true;
-	}
-
-	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
-	{
-	}
-
-	virtual void OnMessage(std::shared_ptr<net::Connection<MsgTypes>> client, net::message<MsgTypes>& msg)
-	{
-	}
-};
-
-
 void Scene_OnlineMatch::Init(GameState* stateMan)
 {
 	stateManager = stateMan;
@@ -56,6 +26,19 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	PlayerTwoConnected = false;
 	playerTwoStartPos = sf::Vector2f(200, 0);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
+
+}
+
+void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::string& port)
+{
+	Init(stateMan); // Initialize normally
+	isHost = false;
+
+	bool connSuccesful = false;
+	// Attempt connection
+
+	// if failed go back to main menu
+	if (!connSuccesful) stateMan->GoToScene(scenes::MainMenu);
 
 }
 
