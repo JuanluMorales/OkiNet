@@ -163,7 +163,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlayerCharacter.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Scene_Lobby.cpp" />
     <ClCompile Include="Scene_MainMenu.cpp" />
     <ClCompile Include="Scene_OfflineMatch.cpp" />
     <ClCompile Include="Scene_OnlineMatch.cpp" />
@@ -179,7 +178,6 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="PlayerCharacter.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="Scene_Lobby.h" />
     <ClInclude Include="Scene_MainMenu.h" />
     <ClInclude Include="Scene_OfflineMatch.h" />
     <ClInclude Include="Scene_OnlineMatch.h" />

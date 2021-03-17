@@ -94,7 +94,7 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 		joinText.setFillColor(sf::Color::White);
 		hostText.setFillColor(sf::Color::White);
 	}
-	else if (currentSelection == menuSelection::OnlineMatch)
+	if (currentSelection == menuSelection::OnlineMatch)
 	{
 		offlineMatchText.setFillColor(sf::Color::Black);
 		onlineMatchText.setFillColor(sf::Color::Red);
@@ -118,14 +118,14 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 				ipBox.setFillColor(sf::Color(1, 1, 1, 70));
 				portBox.setFillColor(sf::Color(1, 1, 1, 70));
 			}
+		}else if (currentOnlineSelection == onlineSelection::Host)
+		{
+			joinText.setFillColor(sf::Color::Black);
+			hostText.setFillColor(sf::Color::Red);
 		}
 
 	}
-	else if (currentOnlineSelection == onlineSelection::Host)
-	{
-		joinText.setFillColor(sf::Color::Black);
-		hostText.setFillColor(sf::Color::Red);
-	}
+
 
 	if (input->IsTextInputFieldActive())
 	{

@@ -21,7 +21,7 @@ namespace net
 			StopListening();
 		}
 
-		// Waits for a connection
+		// Waits for a connection, returns true on succesful start
 		bool StartListening()
 		{
 			try
@@ -67,7 +67,6 @@ namespace net
 
 					// Create the new connection as a shared ptr
 					connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
-					return; // Stop listening for new connections
 
 					std::cout << "[Host Client] Connection succesful: " << socket.remote_endpoint() << "\n";
 				}
