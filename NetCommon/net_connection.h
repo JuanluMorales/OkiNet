@@ -17,9 +17,24 @@ namespace net
 		virtual ~Connection()
 		{}
 
-		// When the connection links to a Client, be it the host or the joiner
-		void  ConnectToClient()
+		// When the connection links to a Client
+		void ConnectToClient()
 		{
+			// Start the asynchronous read to work on the background
+			ReadHeader();
+		}
+		// When the connection links to a Host Client
+		void ConnectToHostClient(const asio::ip::tcp::resolver::results_type& endpoints)
+		{
+			asio::async_connect(socket_tcp, endpoints,
+				[this](std::error_code ec, asio::ip::tcp::endpoint endpoint)
+			{
+				if (!ec)
+				{
+					ReadHeader();
+				}
+			});
+
 			// Start the asynchronous read to work on the background
 			ReadHeader();
 		}
@@ -85,7 +100,7 @@ namespace net
 		// ASYNC - Read body information
 		void ReadBody()
 		{
-			asio::async_read(socket_tcp, asio::buffer(&tempIn.body.data(), tempIn.body.size())),
+			asio::async_read(socket_tcp, asio::buffer(&tempIn.body.data(), tempIn.body.size()),
 				[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)
@@ -103,7 +118,7 @@ namespace net
 		// ASYNC - Asynchronous write operation of the header
 		void WriteHeader()
 		{
-			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().header, sizeof(message_header<T>)),
+			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().header, sizeof(message_header<T>),
 				[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)
@@ -127,13 +142,13 @@ namespace net
 					std::cout << "Writing message header failed.\n";
 					socket_tcp.close();
 				}
-			});
+			}));
 		}
 
 		// ASYNC
 		void WriteBody()
 		{
-			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().body.data(), messagesOut.body.size())),
+			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().body.data(), messagesOut.body.size()),
 				[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)

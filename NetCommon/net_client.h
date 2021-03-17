@@ -32,10 +32,14 @@ namespace net
 			{
 				// Resolve hostname/ip into address
 				asio::ip::tcp::resolver resolver(context);
-				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port));
+				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port)); // url magic
 
 				// Create connection
-				//connection = std::make_unique<Connection<T>>(); // TODO
+				connection = std::make_unique<Connection<T>>(
+					context, asio::ip::tcp::socket(context), messagesIn); 
+
+				// Connect to host client
+				connection->ConnectToClient(endpoints);
 
 				// Create the thread to run the context
 				thrContext = std::thread([this]() { context.run(); });

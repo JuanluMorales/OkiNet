@@ -5,7 +5,7 @@
 namespace net
 {
 	// Base class that implements "Listen" functionalities so that two clients may form a connection
-	// Effectively a client that also acts as server
+	// Effectively a client that also acts as listen "enabler" of a match 
 	template<typename T>
 	class HostClient
 	{
