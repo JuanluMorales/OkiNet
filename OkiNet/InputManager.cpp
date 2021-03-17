@@ -15,43 +15,58 @@ void InputManager::SetKeyUp(int key) {
 	}
 }
 
-bool InputManager::isKeyDown(int key) {
+bool InputManager::IsKeyDown(int key) {
 	return keys[key];
 }
 
-void InputManager::setMouseX(int lx) {
+void InputManager::SetMouseX(int lx) {
 	mouse.x = lx;
 }
 
-void InputManager::setMouseY(int ly) {
+void InputManager::SetMouseY(int ly) {
 	mouse.y = ly;
 }
 
-void InputManager::setMousePosition(int lx, int ly) {
-	setMouseX(lx);
-	setMouseY(ly);
+void InputManager::SetMousePosition(int lx, int ly) {
+	SetMouseX(lx);
+	SetMouseY(ly);
 }
 
-int InputManager::getMouseX() {
+int InputManager::GetMouseX() {
 	return mouse.x;
 }
 
-int InputManager::getMouseY() {
+int InputManager::GetMouseY() {
 	return mouse.y;
 }
 
-void InputManager::setMouseLeftDown(bool down) {
+void InputManager::SetMouseLeftDown(bool down) {
 	mouse.left = down;
 }
 
-bool InputManager::isMouseLeftDown() {
+bool InputManager::IsMouseLeftDown() {
 	return mouse.left;
 }
 
-void InputManager::setMouseRightDown(bool down) {
+void InputManager::SetMouseRightDown(bool down) {
 	mouse.right = down;
 }
-bool InputManager::isMouseRightDown() {
+bool InputManager::IsMouseRightDown() {
 	return mouse.right;
+}
+
+void InputManager::WriteInputField(char newText)
+{
+	inputText += newText;
+}
+
+void InputManager::ClearInputField()
+{
+	inputText.clear();
+}
+
+void InputManager::RemoveLetterFromInputField()
+{
+	inputText.pop_back();
 }
 

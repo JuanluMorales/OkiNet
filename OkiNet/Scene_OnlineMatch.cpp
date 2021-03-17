@@ -209,13 +209,13 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)
 {
-	if (input->isKeyDown(sf::Keyboard::Escape)) {
+	if (input->IsKeyDown(sf::Keyboard::Escape)) {
 		input->SetKeyUp(sf::Keyboard::Escape);
 		window->close();
 	}
 
 	// Press C to attempt connection
-	if (input->isKeyDown(sf::Keyboard::C))
+	if (input->IsKeyDown(sf::Keyboard::C))
 	{
 		AttemptConnection();
 	}

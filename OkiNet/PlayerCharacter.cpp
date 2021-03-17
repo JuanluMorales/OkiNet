@@ -140,7 +140,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 
 		// Defend
-		if (input->isKeyDown(sf::Keyboard::S))
+		if (input->IsKeyDown(sf::Keyboard::S))
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
@@ -149,7 +149,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (!shouldAcceptInput) return;
 
 		// Attack
-		if (input->isKeyDown(sf::Keyboard::Q))
+		if (input->IsKeyDown(sf::Keyboard::Q))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
@@ -157,7 +157,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		else attackState = AttackState::None;
 		//-------------------
 		// Movement ---------
-		if (input->isKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+		if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
 		{
 			if (b_dashTriggerL) // Dash 
 			{
@@ -172,7 +172,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			}
 
 		}
-		else if (input->isKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+		else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
 		{
 			if (b_dashTriggerR) // Dash 
 			{
@@ -237,7 +237,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 
 		// Defend
-		if (input->isKeyDown(sf::Keyboard::Down))
+		if (input->IsKeyDown(sf::Keyboard::Down))
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
@@ -246,7 +246,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (!shouldAcceptInput) return;
 
 		// Attack
-		if (input->isKeyDown(sf::Keyboard::Numpad0))
+		if (input->IsKeyDown(sf::Keyboard::Numpad0))
 		{
 			input->SetKeyUp(sf::Keyboard::Numpad0); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
@@ -254,7 +254,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		else attackState = AttackState::None;
 		//-------------------
 		// Movement ---------
-		if (input->isKeyDown(sf::Keyboard::Left) && CanGoLeft) // Left
+		if (input->IsKeyDown(sf::Keyboard::Left) && CanGoLeft) // Left
 		{
 			if (b_dashTriggerL) // Dash 
 			{
@@ -269,7 +269,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			}
 
 		}
-		else if (input->isKeyDown(sf::Keyboard::Right) && CanGoRight) // Right
+		else if (input->IsKeyDown(sf::Keyboard::Right) && CanGoRight) // Right
 		{
 			if (b_dashTriggerR) // Dash 
 			{

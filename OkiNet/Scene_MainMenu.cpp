@@ -82,13 +82,13 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 
 void Scene_MainMenu::OverrideHandleInput(float dt)
 {
-	if (input->isKeyDown(sf::Keyboard::Escape)) {
+	if (input->IsKeyDown(sf::Keyboard::Escape)) {
 		input->SetKeyUp(sf::Keyboard::Escape);
 		window->close();
 	}
 
 	// Allow movement 
-	if (input->isKeyDown(sf::Keyboard::W) || input->isKeyDown(sf::Keyboard::Up) || input->isKeyDown(sf::Keyboard::S) || input->isKeyDown(sf::Keyboard::Down))
+	if (input->IsKeyDown(sf::Keyboard::W) || input->IsKeyDown(sf::Keyboard::Up) || input->IsKeyDown(sf::Keyboard::S) || input->IsKeyDown(sf::Keyboard::Down))
 	{
 		// Lift buttons so it acts as a trigger instead of constant press
 		input->SetKeyUp(sf::Keyboard::W);
@@ -108,7 +108,7 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 
 	}
 
-	if (currentSelection == menuSelection::OnlineMatch && input->isKeyDown(sf::Keyboard::A) || input->isKeyDown(sf::Keyboard::Left) || input->isKeyDown(sf::Keyboard::D) || input->isKeyDown(sf::Keyboard::Right))
+	if (currentSelection == menuSelection::OnlineMatch && input->IsKeyDown(sf::Keyboard::A) || input->IsKeyDown(sf::Keyboard::Left) || input->IsKeyDown(sf::Keyboard::D) || input->IsKeyDown(sf::Keyboard::Right))
 	{
 		// Lift buttons so it acts as a trigger instead of constant press
 		input->SetKeyUp(sf::Keyboard::A);
@@ -125,7 +125,7 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 	}
 
 	// Allow selection
-	if (input->isKeyDown(sf::Keyboard::Return))
+	if (input->IsKeyDown(sf::Keyboard::Return))
 	{
 		input->SetKeyUp(sf::Keyboard::Return);
 

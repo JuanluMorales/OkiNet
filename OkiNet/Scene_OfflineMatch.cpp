@@ -85,7 +85,7 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 
 void Scene_OfflineMatch::OverrideHandleInput(float dt)
 {
-	if (input->isKeyDown(sf::Keyboard::Escape)) {
+	if (input->IsKeyDown(sf::Keyboard::Escape)) {
 		input->SetKeyUp(sf::Keyboard::Escape);
 		window->close();
 	}

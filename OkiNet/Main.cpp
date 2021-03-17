@@ -75,27 +75,37 @@ int main()
 				break;
 
 			case sf::Event::MouseMoved:
-				inputManager.setMousePosition(event.mouseMove.x, event.mouseMove.y);
+				inputManager.SetMousePosition(event.mouseMove.x, event.mouseMove.y);
 				break;
 
 			case sf::Event::MouseButtonPressed:
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					inputManager.setMouseLeftDown(true);
+					inputManager.SetMouseLeftDown(true);
 				}
 				if (event.mouseButton.button == sf::Mouse::Right) {
-					inputManager.setMouseRightDown(true);
+					inputManager.SetMouseRightDown(true);
 				}
 				break;
 
 			case sf::Event::MouseButtonReleased:
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					inputManager.setMouseLeftDown(false);
+					inputManager.SetMouseLeftDown(false);
 				}
 				if (event.mouseButton.button == sf::Mouse::Right) {
-					inputManager.setMouseRightDown(false);
+					inputManager.SetMouseRightDown(false);
 				}
 				break;
+			case sf::Event::TextEntered:
+				if (inputManager.IsTextInputFieldActive() && event.text.unicode < 128)
+				{
+					if (event.key.code == sf::Keyboard::BackSpace)
+					{
 
+					}else inputManager.WriteInputField(event.text.unicode);
+				}
+			
+				
+				break;
 			default:
 				//dont handle other events
 				break;
