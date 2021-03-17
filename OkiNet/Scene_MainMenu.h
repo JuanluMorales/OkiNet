@@ -15,14 +15,17 @@ public:
 	void OverrideHandleInput(float dt);
 
 	enum class menuSelection { OfflineMatch, OnlineMatch };
-
+	enum class onlineSelection { Host, Join };
 private:
 	GameState* stateManager;
 
 	sf::Font menuFont;
 	sf::Text onlineMatchText;
 	sf::Text offlineMatchText;
+	sf::Text hostText;
+	sf::Text joinText;
 
 	menuSelection currentSelection;
+	onlineSelection currentOnlineSelection;
 };
 
