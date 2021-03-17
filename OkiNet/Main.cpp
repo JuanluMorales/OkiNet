@@ -98,9 +98,10 @@ int main()
 			case sf::Event::TextEntered:
 				if (inputManager.IsTextInputFieldActive() && event.text.unicode < 128)
 				{
-					if (event.key.code == sf::Keyboard::BackSpace)
+					const char* backspace = "\b";
+					if (!inputManager.GetCurrentInputText().empty() && static_cast<char>(event.text.unicode) == *backspace)
 					{
-
+						inputManager.RemoveLetterFromInputField();
 					}else inputManager.WriteInputField(event.text.unicode);
 				}
 			

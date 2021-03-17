@@ -1,5 +1,6 @@
 #pragma once
 #include "GameState.h"
+#include <string>
 
 // Scene that allows the main menu to be used to select scene
 class Scene_MainMenu : public Scene
@@ -16,6 +17,7 @@ public:
 
 	enum class menuSelection { OfflineMatch, OnlineMatch };
 	enum class onlineSelection { Host, Join };
+	enum class hostSelection { NONE,  IP, PORT };
 private:
 	GameState* stateManager;
 
@@ -25,7 +27,16 @@ private:
 	sf::Text hostText;
 	sf::Text joinText;
 
+	std::string ipString;
+	std::string portString;
+	sf::Text ipText;
+	sf::Text portText;
+	sf::RectangleShape ipBox;
+	sf::RectangleShape portBox;
+
+
 	menuSelection currentSelection;
 	onlineSelection currentOnlineSelection;
+	hostSelection currentHostSelection;
 };
 

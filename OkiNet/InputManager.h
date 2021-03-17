@@ -28,6 +28,7 @@ public:
 	void SetMouseRightDown(bool down);
 	bool IsMouseRightDown();
 
+	void SetTextInputFieldActive(bool b) { isAcceptingInputText = b; };
 	bool IsTextInputFieldActive() { return isAcceptingInputText; };
 	void WriteInputField(char newText);
 	void ClearInputField();
