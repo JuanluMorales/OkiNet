@@ -65,9 +65,11 @@ namespace net
 					// Print out address
 					std::cout << "[Host Client] Incoming new connection: " << socket.remote_endpoint() << "\n";
 
-					//// Create the new connection as a shared ptr
-					//connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
-					//return; // Stop listening for new connections
+					// Create the new connection as a shared ptr
+					connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
+					return; // Stop listening for new connections
+
+					std::cout << "[Host Client] Connection succesful: " << socket.remote_endpoint() << "\n";
 				}
 				else
 				{
@@ -80,7 +82,7 @@ namespace net
 			});
 		}
 
-		// Send message to the peer
+		// Send message to the peer client
 		void MessageClient(const message<T>& msg)
 		{
 			if (connection && connection->IsConnected())
