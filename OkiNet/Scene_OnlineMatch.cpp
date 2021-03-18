@@ -29,12 +29,12 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 
 }
 
-void Scene_OnlineMatch::InitAsHost(GameState* stateMan)
+void Scene_OnlineMatch::InitAsHost(GameState* stateMan, std::string& port)
 {
 	Init(stateMan); // Initialize normally
 	isHost = true;
-
-	client = new CustomHostClient(60000);
+	int strPort = std::stoi(port); // convert string to int
+	client = new CustomHostClient(strPort);
 	client->StartListening();
 
 

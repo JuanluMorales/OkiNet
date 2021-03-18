@@ -26,6 +26,7 @@ private:
 	GameState* stateManager;
 
 	sf::Font menuFont;
+	sf::Font inputFont;
 	sf::Text onlineMatchText;
 	sf::Text offlineMatchText;
 	sf::Text hostText;

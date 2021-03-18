@@ -9,6 +9,7 @@ void Scene_MainMenu::Init(GameState* stateMan)
 
 	// Setup debug font and text
 	menuFont.loadFromFile("font/8-BIT WONDER.ttf");
+	inputFont.loadFromFile("font/OpenSans-Regular.ttf");
 
 	offlineMatchText.setFont(menuFont);
 	offlineMatchText.setString("OFFLINE MATCH");
@@ -44,7 +45,7 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	ipBox.setFillColor(sf::Color::Transparent);
 
 	ipString = "Enter IP";
-	ipText.setFont(menuFont);
+	ipText.setFont(inputFont);
 	ipText.setString(ipString);
 	ipText.setCharacterSize(20);
 	ipText.setOrigin(sf::Vector2f(onlineMatchText.getGlobalBounds().width / 2, onlineMatchText.getGlobalBounds().height / 2));
@@ -57,7 +58,7 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	portBox.setFillColor(sf::Color::Transparent);
 
 	portString = "Enter Port";
-	portText.setFont(menuFont);
+	portText.setFont(inputFont);
 	portText.setString(portString);
 	portText.setCharacterSize(20);
 	portText.setOrigin(sf::Vector2f(onlineMatchText.getGlobalBounds().width / 2, onlineMatchText.getGlobalBounds().height / 2));

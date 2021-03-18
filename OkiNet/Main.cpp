@@ -143,7 +143,7 @@ int main()
 			if (onlineMatchHost == nullptr)
 			{
 				onlineMatchHost = new Scene_OnlineMatch(&window, &inputManager, &view);
-				onlineMatchHost->InitAsHost(scenesManager);
+				onlineMatchHost->InitAsHost(scenesManager, mainMenu.portString);
 			}
 			
 			onlineMatchHost->RunScene(deltaTime);

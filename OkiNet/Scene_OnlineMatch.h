@@ -41,7 +41,7 @@ public:
 	using Scene::Scene;
 
 	void Init(GameState* stateMan); // Initialize gameplay variables needed for any client
-	void InitAsHost(GameState* stateMan); // Initialize as host client TODO:: ADD PORT INPUT
+	void InitAsHost(GameState* stateMan, std::string& port); // Initialize as host client TODO:: ADD PORT INPUT
 	void InitAsClient(GameState* stateMan, std::string& ip, std::string& port); // Initialize attempting to join the address provided
 	void OverrideRender();
 	void OverrideUpdate(float dt);
