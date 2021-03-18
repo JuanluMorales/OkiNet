@@ -54,12 +54,14 @@ namespace net
 			return socket_tcp.is_open();
 		}
 
+		// ASYNC - Send/post a message to the connection
 		void Send(const message<T>& msg)
 		{
 			asio::post(asioContext,
 				[this, msg]()
 			{
-				// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO
+				// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO:
+				// Assume if the out queue is not empty, ASIO is working on sending
 				bool empty = messagesOut.empty();
 				messagesOut.push_back(msg);
 				if (!empty)

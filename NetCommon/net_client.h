@@ -83,6 +83,7 @@ namespace net
 		}
 
 	public :
+		// Send message to connection
 		void Send(const message<T>& msg)
 		{
 			if (IsConnected())

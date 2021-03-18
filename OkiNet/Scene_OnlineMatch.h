@@ -7,7 +7,9 @@
 // Holds the IDs to interpret the messages
 enum class MsgTypes : uint32_t
 {
-	HostClientAccept
+	Move,
+	Dash,
+	FastPunch,
 };
 
 // Create a host client with overridden methods 
@@ -22,7 +24,7 @@ public:
 protected:
 	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
 	{
-		return false;
+		return true;
 	}
 
 	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
@@ -32,6 +34,9 @@ protected:
 	virtual void OnMessage(std::shared_ptr<net::Connection<MsgTypes>> client, net::message<MsgTypes>& msg)
 	{
 	}
+
+public:
+	
 };
 
 class CustomClient : public net::Client<MsgTypes>
@@ -73,8 +78,7 @@ private:
 	CustomClient* client = nullptr;
 
 	bool isHost = false; 
-	bool PlayerTwoConnected = false;
-
+	bool playerTwoConnected = false;
 
 
 

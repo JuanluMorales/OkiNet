@@ -75,6 +75,7 @@ namespace net
 					connection->ConnectToClient();
 
 					std::cout << "[Host Client] Connection succesful." << "\n";
+					OnClientConnect(connection);
 					succesfulCon = true;
 
 					// Close as theres no need to listen for more connections

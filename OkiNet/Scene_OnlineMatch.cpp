@@ -23,7 +23,6 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	playerOne.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
 
 	// Setup player two
-	PlayerTwoConnected = false;
 	playerTwoStartPos = sf::Vector2f(200, 0);
 	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
@@ -60,7 +59,7 @@ void Scene_OnlineMatch::OverrideRender()
 {
 	// draw players
 	if (playerOne.IsActive()) window->draw(playerOne);
-	if (PlayerTwoConnected) if (playerTwo.IsActive()) window->draw(playerTwo);
+	if (playerTwoConnected) if (playerTwo.IsActive()) window->draw(playerTwo);
 
 	// draw player collision
 	for (auto coll : playerOne.GetCurrentCollision())
@@ -69,7 +68,7 @@ void Scene_OnlineMatch::OverrideRender()
 	}
 	for (auto coll : playerTwo.GetCurrentCollision())
 	{
-		if (PlayerTwoConnected) if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+		if (playerTwoConnected) if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 	}
 
 	// Render font
@@ -83,7 +82,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 
 
 	playerOne.Update(dt, window);
-	if (PlayerTwoConnected) playerTwo.Update(dt, window);
+	if (playerTwoConnected) playerTwo.Update(dt, window);
 
 	// Iterate all current's frame collision boxes for both players
 	for (auto collA : playerOne.GetCurrentCollision())
