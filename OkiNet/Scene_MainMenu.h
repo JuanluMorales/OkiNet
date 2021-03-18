@@ -18,6 +18,10 @@ public:
 	enum class menuSelection { OfflineMatch, OnlineMatch };
 	enum class onlineSelection { Host, Join };
 	enum class hostSelection { NONE,  IP, PORT };
+
+	std::string ipString;
+	std::string portString;
+
 private:
 	GameState* stateManager;
 
@@ -27,10 +31,11 @@ private:
 	sf::Text hostText;
 	sf::Text joinText;
 
-	std::string ipString;
-	std::string portString;
+
 	sf::Text ipText;
 	sf::Text portText;
+	sf::Text ipTextOverlay;
+	sf::Text portTextOverlay;
 	sf::RectangleShape ipBox;
 	sf::RectangleShape portBox;
 

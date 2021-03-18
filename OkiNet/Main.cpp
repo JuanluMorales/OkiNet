@@ -143,7 +143,7 @@ int main()
 			if (onlineMatchHost == nullptr)
 			{
 				onlineMatchHost = new Scene_OnlineMatch(&window, &inputManager, &view);
-				onlineMatchHost->Init(scenesManager);
+				onlineMatchHost->InitAsHost(scenesManager);
 			}
 			
 			onlineMatchHost->RunScene(deltaTime);
@@ -152,7 +152,13 @@ int main()
 
 			//ONLINE - AS CLIENT
 		case scenes::OnlineMatchClient:
+			if (onlineMatchClient == nullptr)
+			{
+				onlineMatchClient = new Scene_OnlineMatch(&window, &inputManager, &view);
+				onlineMatchClient->InitAsClient(scenesManager, mainMenu.ipString, mainMenu.portString);
+			}
 
+			onlineMatchClient->RunScene(deltaTime);
 			break;
 		default:
 			break;

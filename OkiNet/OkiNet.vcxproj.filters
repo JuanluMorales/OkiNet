@@ -33,9 +33,6 @@
     <ClCompile Include="Scene_OfflineMatch.cpp">
       <Filter>Source Files\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Collision.cpp">
       <Filter>Source Files\BaseClasses</Filter>
     </ClCompile>
@@ -68,6 +65,9 @@
     </ClCompile>
     <ClCompile Include="CollisionBox.cpp">
       <Filter>Source Files\BaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="connectionTest.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

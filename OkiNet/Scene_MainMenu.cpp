@@ -64,6 +64,20 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	portText.setPosition(sf::Vector2f(0, 150));
 	portText.setFillColor(sf::Color::Transparent);
 
+	ipTextOverlay.setFont(menuFont);
+	ipTextOverlay.setString("Enter IP");
+	ipTextOverlay.setCharacterSize(20);
+	ipTextOverlay.setOrigin(sf::Vector2f(onlineMatchText.getGlobalBounds().width / 2, onlineMatchText.getGlobalBounds().height / 2));
+	ipTextOverlay.setPosition(sf::Vector2f(-200, 120));
+	ipTextOverlay.setFillColor(sf::Color::Transparent);
+
+	portTextOverlay.setFont(menuFont);
+	portTextOverlay.setString("Enter PORT");
+	portTextOverlay.setCharacterSize(20);
+	portTextOverlay.setOrigin(sf::Vector2f(onlineMatchText.getGlobalBounds().width / 2, onlineMatchText.getGlobalBounds().height / 2));
+	portTextOverlay.setPosition(sf::Vector2f(-200, 150));
+	portTextOverlay.setFillColor(sf::Color::Transparent);
+
 
 }
 
@@ -80,6 +94,8 @@ void Scene_MainMenu::OverrideRender()
 	window->draw(ipText);
 	window->draw(portBox);
 	window->draw(portText);
+	window->draw(ipTextOverlay);
+	window->draw(portTextOverlay);
 
 
 }
@@ -93,16 +109,23 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 		onlineMatchText.setFillColor(sf::Color::Black);
 		joinText.setFillColor(sf::Color::White);
 		hostText.setFillColor(sf::Color::White);
+		ipTextOverlay.setFillColor(sf::Color::Transparent);
+		portTextOverlay.setFillColor(sf::Color::Transparent);
 	}
 	if (currentSelection == menuSelection::OnlineMatch)
 	{
 		offlineMatchText.setFillColor(sf::Color::Black);
 		onlineMatchText.setFillColor(sf::Color::Red);
 
+		ipTextOverlay.setFillColor(sf::Color::Transparent);
+		portTextOverlay.setFillColor(sf::Color::Transparent);
+
 		if (currentOnlineSelection == onlineSelection::Join)
 		{
 			joinText.setFillColor(sf::Color::Red);
 			hostText.setFillColor(sf::Color::Black);
+
+
 
 			if (currentHostSelection == hostSelection::IP)
 			{
@@ -110,6 +133,8 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 				portText.setFillColor(sf::Color::Black);
 				ipBox.setFillColor(sf::Color(1, 1, 1, 70));
 				portBox.setFillColor(sf::Color(1, 1, 1, 70));
+				ipTextOverlay.setFillColor(sf::Color::Black);
+				portTextOverlay.setFillColor(sf::Color::Black);
 			}
 			else if (currentHostSelection == hostSelection::PORT)
 			{
@@ -117,11 +142,20 @@ void Scene_MainMenu::OverrideUpdate(float dt)
 				portText.setFillColor(sf::Color::Red);
 				ipBox.setFillColor(sf::Color(1, 1, 1, 70));
 				portBox.setFillColor(sf::Color(1, 1, 1, 70));
+				ipTextOverlay.setFillColor(sf::Color::Black);
+				portTextOverlay.setFillColor(sf::Color::Black);
 			}
 		}else if (currentOnlineSelection == onlineSelection::Host)
 		{
 			joinText.setFillColor(sf::Color::Black);
 			hostText.setFillColor(sf::Color::Red);
+
+			if (currentHostSelection == hostSelection::PORT)
+			{
+				portText.setFillColor(sf::Color::Red);
+				portBox.setFillColor(sf::Color(1, 1, 1, 70));
+				portTextOverlay.setFillColor(sf::Color::Black);
+			}
 		}
 
 	}
@@ -165,7 +199,7 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 		}
 		else if (currentSelection == menuSelection::OnlineMatch)
 		{
-			if (currentHostSelection != hostSelection::NONE)
+			if (currentHostSelection != hostSelection::NONE && currentOnlineSelection == onlineSelection::Join)
 			{
 				if (currentHostSelection == hostSelection::IP)
 				{
@@ -191,7 +225,7 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 		input->SetKeyUp(sf::Keyboard::D);
 		input->SetKeyUp(sf::Keyboard::Left);
 
-		if (currentHostSelection == hostSelection::NONE)
+		if (currentHostSelection == hostSelection::NONE )
 		{
 			if (currentOnlineSelection == onlineSelection::Host)
 			{
@@ -216,7 +250,18 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 		{
 			if (currentOnlineSelection == onlineSelection::Host)
 			{
-				stateManager->GoToScene(scenes::OnlineMatchHost);
+				if (!input->IsTextInputFieldActive())
+				{
+					currentHostSelection = hostSelection::PORT;
+					input->ClearInputField();
+					input->SetTextInputFieldActive(true);
+				}
+				else		{
+
+					stateManager->GoToScene(scenes::OnlineMatchHost);
+					input->ClearInputField();
+					input->SetTextInputFieldActive(false);
+				}
 			}
 			else if (currentOnlineSelection == onlineSelection::Join)
 			{
@@ -228,8 +273,9 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 				}
 				else
 				{
-					// TODO: Pass the IP and Port info to client for joining
 					stateManager->GoToScene(scenes::OnlineMatchClient);
+					input->ClearInputField();
+					input->SetTextInputFieldActive(false);
 				}
 				
 			}

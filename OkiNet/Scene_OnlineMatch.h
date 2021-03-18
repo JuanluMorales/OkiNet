@@ -10,7 +10,6 @@ enum class MsgTypes : uint32_t
 	HostClientAccept
 };
 
-
 // Create a host client with overridden methods 
 class CustomHostClient : public net::HostClient<MsgTypes>
 {
