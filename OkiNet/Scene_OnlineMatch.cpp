@@ -53,23 +53,36 @@ void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::
 	// if failed go back to main menu
 	if (!connSuccesful) stateMan->GoToScene(scenes::MainMenu);
 
+	remotePlayerConnected = connSuccesful;
+
 }
 
 void Scene_OnlineMatch::OverrideRender()
 {
 	// draw players
-	if (playerOne.IsActive()) window->draw(playerOne);
-	if (playerTwoConnected) if (playerTwo.IsActive()) window->draw(playerTwo);
+	if (isHost)
+	{
+		if (playerOne.IsActive()) window->draw(playerOne);
+		if (remotePlayerConnected)
+		{
+			if (playerTwo.IsActive()) window->draw(playerTwo);
+		}
+	}
+	else
+	{
+		if (playerOne.IsActive()) window->draw(playerOne);
+		if (playerTwo.IsActive()) window->draw(playerTwo);
+	}
 
-	// draw player collision
-	for (auto coll : playerOne.GetCurrentCollision())
-	{
-		if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
-	}
-	for (auto coll : playerTwo.GetCurrentCollision())
-	{
-		if (playerTwoConnected) if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
-	}
+	//// draw player collision
+	//for (auto coll : playerOne.GetCurrentCollision())
+	//{
+	//	if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+	//}
+	//for (auto coll : playerTwo.GetCurrentCollision())
+	//{
+	//	if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+	//}
 
 	// Render font
 	window->draw(DebugText);
@@ -79,10 +92,23 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
+	
+	if (isHost)
+	{
+		hostClient->Update(); // Listen for messages
+		if (hostClient->IsConnected()) remotePlayerConnected = true;
 
+		playerOne.Update(dt, window);
+		if (remotePlayerConnected) playerTwo.Update(dt, window);
+	}
+	else 
+	{
+		playerOne.Update(dt, window);
+		playerTwo.Update(dt, window);
+	}
 
-	playerOne.Update(dt, window);
-	if (playerTwoConnected) playerTwo.Update(dt, window);
+	
+	
 
 	// Iterate all current's frame collision boxes for both players
 	for (auto collA : playerOne.GetCurrentCollision())
@@ -121,6 +147,15 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 		window->close();
 	}
 
-	playerOne.HandleInput(input, dt);
+	// TODO: MODIFY CHARACTERCLASS SO THAT BOTH INPUT LAYOUTS ARE THE SAME
+	if (isHost)
+	{
+		playerOne.HandleInput(input, dt);
+	}
+	else
+	{
+		playerTwo.HandleInput(input, dt);
+
+	}
 
 }

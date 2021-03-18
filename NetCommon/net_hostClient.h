@@ -124,6 +124,16 @@ namespace net
 
 		}
 
+		// Is there an active connection?
+		bool IsConnected()
+		{
+			if (connection)
+			{
+				return connection->IsConnected();
+			}
+			else return false;
+		}
+
 	protected:
 		// Called when a peer connects
 		virtual bool OnClientConnect(std::shared_ptr<Connection<T>> client)

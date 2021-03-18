@@ -74,11 +74,12 @@ private:
 	std::string ip;
 	std::string port;
 
+	// TODO -> Adapt the client class to act as host (as they should have the same functionalities)
 	CustomHostClient* hostClient = nullptr;
 	CustomClient* client = nullptr;
 
 	bool isHost = false; 
-	bool playerTwoConnected = false;
+	bool remotePlayerConnected = false;
 
 
 
