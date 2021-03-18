@@ -10,6 +10,31 @@ enum class MsgTypes : uint32_t
 	HostClientAccept
 };
 
+
+// Create a host client with overridden methods 
+class CustomHostClient : public net::HostClient<MsgTypes>
+{
+public:
+	CustomHostClient(uint16_t port) : net::HostClient<MsgTypes>(port)
+	{
+
+	}
+
+protected:
+	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
+	{
+		return true;
+	}
+
+	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
+	{
+	}
+
+	virtual void OnMessage(std::shared_ptr<net::Connection<MsgTypes>> client, net::message<MsgTypes>& msg)
+	{
+	}
+};
+
 class Scene_OnlineMatch : public Scene
 {
 public:
@@ -37,38 +62,18 @@ private:
 	sf::Text DebugText;
 
 	// network variables -------------------
-	bool isHost = false; 
-	bool PlayerTwoConnected = false;
-
+	// A host client can act as a normal client as long as it does not start listening for incoming connections
 	std::string ip;
 	std::string port;
 
-
-	// A host client can act as a normal client as long as it does not start listening for incoming connections
 	CustomHostClient* client = nullptr;
+
+	bool isHost = false; 
+	bool PlayerTwoConnected = false;
+
+
+
+
 };
 
-// Create a host client with overridden methods 
-class CustomHostClient : public net::HostClient<MsgTypes>
-{
-public:
-	CustomHostClient(uint16_t port) : net::HostClient<MsgTypes>(port)
-	{
-
-	}
-
-protected:
-	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
-	{
-
-	}
-
-	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
-	{
-	}
-
-	virtual void OnMessage(std::shared_ptr<net::Connection<MsgTypes>> client, net::message<MsgTypes>& msg)
-	{
-	}
-};
 
