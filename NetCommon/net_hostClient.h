@@ -77,6 +77,9 @@ namespace net
 					std::cout << "[Host Client] Connection succesful." << "\n";
 					succesfulCon = true;
 
+					// Close as theres no need to listen for more connections
+					asioAcceptor.close();
+
 				}
 				else
 				{
