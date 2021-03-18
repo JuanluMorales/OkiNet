@@ -17,15 +17,10 @@ namespace net
 		virtual ~Connection()
 		{}
 
-		// When the connection links to a Client
-		void ConnectToClient()
-		{
-			// Start the asynchronous read to work on the background
-			ReadHeader();
-		}
-		// When the connection links to a Host Client
+		// When the connection joins to a Host Client
 		void ConnectToHostClient(const asio::ip::tcp::resolver::results_type& endpoints)
 		{
+			// ASYNC - Attempt connection
 			asio::async_connect(socket_tcp, endpoints,
 				[this](std::error_code ec, asio::ip::tcp::endpoint endpoint)
 			{
@@ -100,7 +95,7 @@ namespace net
 		// ASYNC - Read body information
 		void ReadBody()
 		{
-			asio::async_read(socket_tcp, asio::buffer(&tempIn.body.data(), tempIn.body.size()),
+			asio::async_read(socket_tcp, asio::buffer(tempIn.body.data(), tempIn.body.size()),
 				[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)
@@ -191,6 +186,6 @@ namespace net
 		TQueue<message_owner<T>>& messagesIn;
 
 		// As incoming messages are asynchronous, store the message until ready
-		TQueue<message<T>> tempIn;
+		message<T> tempIn;
 	};
 }

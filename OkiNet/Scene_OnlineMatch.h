@@ -22,7 +22,7 @@ public:
 protected:
 	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
 	{
-		return true;
+		return false;
 	}
 
 	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
@@ -65,7 +65,8 @@ private:
 	std::string ip;
 	std::string port;
 
-	CustomHostClient* client = nullptr;
+	CustomHostClient* hostClient = nullptr;
+	net::Client<MsgTypes>* client = nullptr;
 
 	bool isHost = false; 
 	bool PlayerTwoConnected = false;

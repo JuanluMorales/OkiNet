@@ -69,6 +69,8 @@ namespace net
 					connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
 
 					std::cout << "[Host Client] Connection succesful: " << socket.remote_endpoint() << "\n";
+
+					OnClientConnect(connection);
 				}
 				else
 				{

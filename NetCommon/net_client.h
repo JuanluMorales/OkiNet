@@ -39,7 +39,7 @@ namespace net
 					context, asio::ip::tcp::socket(context), messagesIn); 
 
 				// Connect to host client
-				connection->ConnectToClient(endpoints);
+				connection->ConnectToHostClient(endpoints);
 
 				// Create the thread to run the context
 				thrContext = std::thread([this]() { context.run(); });
@@ -88,7 +88,7 @@ namespace net
 		std::thread thrContext;
 		// Socket of connection
 		asio::ip::tcp::socket socket_tcp;
-		asio::ip::udp::socket socket_udp;
+
 		// Pointer to the connection once there was a succesful "tcp handshake"
 		std::unique_ptr<Connection<T>> connection;
 

@@ -34,8 +34,8 @@ void Scene_OnlineMatch::InitAsHost(GameState* stateMan, std::string& port)
 	Init(stateMan); // Initialize normally
 	isHost = true;
 	int strPort = std::stoi(port); // convert string to int
-	client = new CustomHostClient(strPort);
-	client->StartListening();
+	hostClient = new CustomHostClient(strPort);
+	hostClient->StartListening();
 
 
 }
@@ -46,7 +46,9 @@ void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::
 	isHost = false;
 
 	bool connSuccesful = false;
+	int strPort = std::stoi(port); // convert string to int
 	// Attempt connection
+	connSuccesful = client->Connect(ip, strPort);
 
 	// if failed go back to main menu
 	if (!connSuccesful) stateMan->GoToScene(scenes::MainMenu);
@@ -77,8 +79,11 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
+	while (1)
+	{
 
-	client->Update();
+		hostClient->Update();
+	}
 
 	playerOne.Update(dt, window);
 	if (PlayerTwoConnected) playerTwo.Update(dt, window);
