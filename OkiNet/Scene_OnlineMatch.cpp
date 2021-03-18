@@ -48,6 +48,7 @@ void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::
 	bool connSuccesful = false;
 	int strPort = std::stoi(port); // convert string to int
 	// Attempt connection
+	client = new CustomClient();
 	connSuccesful = client->Connect(ip, strPort);
 
 	// if failed go back to main menu
@@ -79,11 +80,7 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
-	while (1)
-	{
 
-		hostClient->Update();
-	}
 
 	playerOne.Update(dt, window);
 	if (PlayerTwoConnected) playerTwo.Update(dt, window);

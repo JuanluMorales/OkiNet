@@ -59,18 +59,24 @@ namespace net
 			// Call lambda function asynchronously
 			asioAcceptor.async_accept([this](/*method params*/ std::error_code ec, asio::ip::tcp::socket socket)
 			{
+				bool succesfulCon = false;
 				/*Function body*/
 				if(!ec)
 				{ 
 					// Print out address
 					std::cout << "[Host Client] Incoming new connection: " << socket.remote_endpoint() << "\n";
 
+					// HANDLE CONNECTION OBJECT --------------------------
 					// Create the new connection as a shared ptr
-					connection = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
+					std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(asioContext, std::move(socket), messagesIn);	
 
-					std::cout << "[Host Client] Connection succesful: " << socket.remote_endpoint() << "\n";
+					connection = std::move(newConn);
 
-					OnClientConnect(connection);
+					connection->ConnectToClient();
+
+					std::cout << "[Host Client] Connection succesful." << "\n";
+					succesfulCon = true;
+
 				}
 				else
 				{
@@ -79,7 +85,7 @@ namespace net
 				}
 
 				// Make sure asio does not run out of tasks so it does not close
-				WaitForClientConnection();
+				if(!succesfulCon) WaitForClientConnection();
 			});
 		}
 

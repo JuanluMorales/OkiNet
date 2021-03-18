@@ -34,6 +34,10 @@ protected:
 	}
 };
 
+class CustomClient : public net::Client<MsgTypes>
+{
+};
+
 class Scene_OnlineMatch : public Scene
 {
 public:
@@ -66,7 +70,7 @@ private:
 	std::string port;
 
 	CustomHostClient* hostClient = nullptr;
-	net::Client<MsgTypes>* client = nullptr;
+	CustomClient* client = nullptr;
 
 	bool isHost = false; 
 	bool PlayerTwoConnected = false;

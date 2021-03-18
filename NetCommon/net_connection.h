@@ -17,6 +17,12 @@ namespace net
 		virtual ~Connection()
 		{}
 
+		// When the connection links to a Client
+		void ConnectToClient()
+		{
+			// Start the asynchronous read to work on the background
+			//ReadHeader();
+		}
 		// When the connection joins to a Host Client
 		void ConnectToHostClient(const asio::ip::tcp::resolver::results_type& endpoints)
 		{

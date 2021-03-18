@@ -12,6 +12,7 @@ namespace net
 	template<typename T>
 	class Client
 	{
+	public:
 		Client() : socket_tcp(context)
 		{
 			// Initialise the socket with default client type and the io context assigned to a tcp socket
@@ -79,6 +80,15 @@ namespace net
 		TQueue<message_owner<T>>& GetIncomingMessages()
 		{
 			return messagesIn;
+		}
+
+	public :
+		void Send(const message<T>& msg)
+		{
+			if (IsConnected())
+			{
+				connection->Send(msg);
+			}
 		}
 
 	protected:
