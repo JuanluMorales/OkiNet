@@ -62,27 +62,39 @@ void Scene_OnlineMatch::OverrideRender()
 	// draw players
 	if (isHost)
 	{
+		for (auto coll : playerOne.GetCurrentCollision())
+		{
+			if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+		}
+
 		if (playerOne.IsActive()) window->draw(playerOne);
 		if (remotePlayerConnected)
 		{
+			for (auto coll : playerTwo.GetCurrentCollision())
+			{
+				if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+			}
 			if (playerTwo.IsActive()) window->draw(playerTwo);
 		}
 	}
 	else
 	{
+		// draw player collision
+		for (auto coll : playerOne.GetCurrentCollision())
+		{
+			if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+		}
+		for (auto coll : playerTwo.GetCurrentCollision())
+		{
+			if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+		}
+
+		// Draw players
 		if (playerOne.IsActive()) window->draw(playerOne);
 		if (playerTwo.IsActive()) window->draw(playerTwo);
 	}
 
-	//// draw player collision
-	//for (auto coll : playerOne.GetCurrentCollision())
-	//{
-	//	if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
-	//}
-	//for (auto coll : playerTwo.GetCurrentCollision())
-	//{
-	//	if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
-	//}
+
 
 	// Render font
 	window->draw(DebugText);
@@ -96,7 +108,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	if (isHost)
 	{
 		hostClient->Update(); // Listen for messages
-		if (hostClient->IsConnected()) remotePlayerConnected = true;
+		remotePlayerConnected = hostClient->IsConnected();
 
 		playerOne.Update(dt, window);
 		if (remotePlayerConnected) playerTwo.Update(dt, window);
@@ -106,6 +118,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		playerOne.Update(dt, window);
 		playerTwo.Update(dt, window);
 	}
+
 
 	
 	
@@ -155,6 +168,13 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	else
 	{
 		playerTwo.HandleInput(input, dt);
+
+		// Send movement input
+		if (input->IsKeyDown(sf::Keyboard::Key::P))
+		{
+			input->SetKeyUp(sf::Keyboard::Key::P);
+			client->Move();
+		}
 
 	}
 

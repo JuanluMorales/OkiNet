@@ -7,23 +7,23 @@ enum class CustomMsgTypes : uint32_t
 	Defend
 };
 
-//class TestClient : public net::Client<CustomMsgTypes>
-//{
-//public:
-//	bool Move(float x)
-//	{
-//		net::message<CustomMsgTypes> msg;
-//		msg.header.id = CustomMsgTypes::Move;
-//		msg << x;
-//		Send(msg);
-//	}
-//};
-//
+class TestClient : public net::Client<CustomMsgTypes>
+{
+public:
+	bool Move(float x)
+	{
+		net::message<CustomMsgTypes> msg;
+		msg.header.id = CustomMsgTypes::Move;
+		msg << x;
+		Send(msg);
+	}
+};
+
 //int main()
 //{
 //	TestClient c;
-//	c.Connect(ip, port);
-//	c.Move(player.getPosition().x);
+//	//c.Connect(ip, port);
+//	//c.Move(player.getPosition().x);
 //	return;
 //}
 

@@ -107,24 +107,4 @@ namespace net
 		}
 
 	};
-
-	// Forward declare
-	template<typename T>
-	class Connection;
-
-	// Message that also contains a shared pointer to the connection the message came from
-	template <typename T>
-	struct message_owner
-	{
-		std::shared_ptr<Connection<T>> remote = nullptr;
-		message<T> msg; // Regular message object
-		
-		// Overload the output operator again for better visualization of the string
-		friend std::ostream& operator<<(std::ostream& os, const message_owner<T>& msg)
-		{
-			os << msg.msg;
-			return os;
-		}
-	};
-
 }

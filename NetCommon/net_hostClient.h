@@ -64,7 +64,7 @@ namespace net
 				if(!ec)
 				{ 
 					// Print out address
-					std::cout << "[Host Client] Incoming new connection: " << socket.remote_endpoint() << "\n";
+					std::cout << "[Host Client] Incoming connection: " << socket.remote_endpoint() << "\n";
 
 					// HANDLE CONNECTION OBJECT --------------------------
 					// Create the new connection as a shared ptr
@@ -75,7 +75,7 @@ namespace net
 					connection->ConnectToClient();
 
 					std::cout << "[Host Client] Connection succesful." << "\n";
-					OnClientConnect(connection);
+					OnClientConnect();
 					succesfulCon = true;
 
 					// Close as theres no need to listen for more connections
@@ -85,7 +85,7 @@ namespace net
 				else
 				{
 					// Error while accepting a client
-					std::cout << "[Host Client] Incoming new connection error: " << ec.message() << "\n";
+					std::cout << "[Host Client] Incoming connection error: " << ec.message() << "\n";
 				}
 
 				// Make sure asio does not run out of tasks so it does not close
@@ -103,25 +103,21 @@ namespace net
 			else
 			{
 				// Client probably disconnected
-				OnClientDisconnect(connection);
+				OnClientDisconnect();
 				connection.reset();
 			}
 		}
 
 		// Function that will iterate linearly the incoming messages and include them into the message queue
-		void Update(size_t maxMsgCount = -1)
+		void Update()
 		{
-			size_t	messageCount = 0;
-			while (messageCount < maxMsgCount && !messagesIn.empty())
+			if (!messagesIn.empty())
 			{
 				auto msg = messagesIn.pop_front();
 				
-				OnMessageReceived(msg.remote, msg.msg);
+				OnMessageReceived(msg);
 
-				messageCount++;
 			}
-
-
 		}
 
 		// Is there an active connection?
@@ -136,17 +132,17 @@ namespace net
 
 	protected:
 		// Called when a peer connects
-		virtual bool OnClientConnect(std::shared_ptr<Connection<T>> client)
+		virtual bool OnClientConnect()
 		{
 			return false;
 		}
 		// Called when a peer disconnects
-		virtual void OnClientDisconnect(std::shared_ptr<Connection<T>> client)
+		virtual void OnClientDisconnect()
 		{
 
 		}
 		// Called when a message from the peer arrives
-		virtual void OnMessageReceived(std::shared_ptr<Connection<T>> client, message<T>& msg)
+		virtual void OnMessageReceived(message<T>& msg)
 		{
 			
 		}
@@ -155,11 +151,12 @@ namespace net
 		std::shared_ptr<Connection<T>> connection;
 
 		// Queue for incoming message packets
-		TQueue<message_owner<T>> messagesIn;
+		TQueue<message<T>> messagesIn;
 
 		// Asio requirements. Declared in order of initialization:
 		asio::io_context asioContext;
 		std::thread threadContext;
+
 		asio::ip::tcp::acceptor asioAcceptor; // To get the peer socket
 	};
 }

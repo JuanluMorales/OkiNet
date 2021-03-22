@@ -77,7 +77,7 @@ namespace net
 		}
 
 		// Return the queue of messages received
-		TQueue<message_owner<T>>& GetIncomingMessages()
+		TQueue<message<T>>& GetIncomingMessages()
 		{
 			return messagesIn;
 		}
@@ -105,6 +105,6 @@ namespace net
 
 	private:
 		// Incoming messages from remote connection
-		TQueue<message_owner<T>> messagesIn;
+		TQueue<message<T>> messagesIn;
 	};
 }

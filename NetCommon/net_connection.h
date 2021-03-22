@@ -6,12 +6,11 @@
 namespace net
 {
 	// A connection identifies one entity/user relation to another connection (endpoint)
-	// Connection will be handled by their respective client so the class needs to be a shared_ptr
 	template<typename T>
-	class Connection : public std::enable_shared_from_this<Connection<T>> // public inheritance to get a shared ptr from shared_from_this()
+	class Connection
 	{
 	public:
-		Connection(asio::io_context& _asioContext, asio::ip::tcp::socket _socketTCP, TQueue<message_owner<T>>& _qIn)
+		Connection(asio::io_context& _asioContext, asio::ip::tcp::socket _socketTCP, TQueue<message<T>>& _qIn)
 			: asioContext(_asioContext), socket_tcp(std::move(_socketTCP)), messagesIn(_qIn)
 		{}
 		virtual ~Connection()
@@ -21,7 +20,7 @@ namespace net
 		void ConnectToClient()
 		{
 			// Start the asynchronous read to work on the background
-			//ReadHeader();
+			if(socket_tcp.is_open()) ReadHeader();
 		}
 		// When the connection joins to a Host Client
 		void ConnectToHostClient(const asio::ip::tcp::resolver::results_type& endpoints)
@@ -35,9 +34,6 @@ namespace net
 					ReadHeader();
 				}
 			});
-
-			// Start the asynchronous read to work on the background
-			ReadHeader();
 		}
 
 		// Asynchronously close the socket so that ASIO can do so when apropriate (in case it is working or whatever)
@@ -62,9 +58,9 @@ namespace net
 			{
 				// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO:
 				// Assume if the out queue is not empty, ASIO is working on sending
-				bool empty = messagesOut.empty();
+				bool writingMessage = !messagesOut.empty();
 				messagesOut.push_back(msg);
-				if (!empty)
+				if (!writingMessage)
 				{
 					WriteHeader();
 				}
@@ -121,7 +117,7 @@ namespace net
 		// ASYNC - Asynchronous write operation of the header
 		void WriteHeader()
 		{
-			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().header, sizeof(message_header<T>),
+			asio::async_write(socket_tcp, asio::buffer(&messagesOut.front().header, sizeof(message_header<T>)),
 				[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)
@@ -145,13 +141,13 @@ namespace net
 					std::cout << "Writing message header failed.\n";
 					socket_tcp.close();
 				}
-			}));
+			});
 		}
 
 		// ASYNC
 		void WriteBody()
 		{
-			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().body.data(), messagesOut.body.size()),
+			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().body.data(), messagesOut.front().body.size()),
 				[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)
@@ -173,7 +169,7 @@ namespace net
 
 		void AddToIncomingMessageQueue()
 		{
-			messagesIn.push_back({ nullptr, tempIn });
+			messagesIn.push_back(tempIn);
 
 			ReadHeader(); // Task ASIO with reading again so that it does not close (has work to do)
 		}
@@ -191,7 +187,7 @@ namespace net
 
 		// Queue that holds messages received from remote side
 		// Stored as a reference, as the remote connection must provide the queue
-		TQueue<message_owner<T>>& messagesIn;
+		TQueue<message<T>>& messagesIn;
 
 		// As incoming messages are asynchronous, store the message until ready
 		message<T> tempIn;

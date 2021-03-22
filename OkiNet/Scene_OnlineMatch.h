@@ -7,9 +7,7 @@
 // Holds the IDs to interpret the messages
 enum class MsgTypes : uint32_t
 {
-	Move,
-	Dash,
-	FastPunch,
+	Move
 };
 
 // Create a host client with overridden methods 
@@ -22,25 +20,40 @@ public:
 	}
 
 protected:
-	virtual bool OnClientConnect(std::shared_ptr<net::Connection<MsgTypes>> client)
+	virtual bool OnClientConnect()
 	{
 		return true;
 	}
 
-	virtual void OnClientDisconnect(std::shared_ptr<net::Connection<MsgTypes>> client)
+	virtual void OnClientDisconnect()
 	{
+		std::cout << "Peer disconnected.\n";
 	}
 
-	virtual void OnMessage(std::shared_ptr<net::Connection<MsgTypes>> client, net::message<MsgTypes>& msg)
+	virtual void OnMessageReceived(net::message<MsgTypes>& msg)
 	{
-	}
-
-public:
-	
+		switch (msg.header.id)
+		{
+		case MsgTypes::Move:
+			std::cout << "RECEIVED MOVE MESSAGE.\n";
+			break;
+		default:
+			break;
+		}
+	}	
 };
 
 class CustomClient : public net::Client<MsgTypes>
 {
+public:
+	void Move()
+	{
+		net::message<MsgTypes> msg;
+		msg.header.id = MsgTypes::Move;
+		//msg << x;
+		Send(msg);
+		std::cout << "Sent move message.\n";
+	}
 };
 
 class Scene_OnlineMatch : public Scene
@@ -81,7 +94,7 @@ private:
 	bool isHost = false; 
 	bool remotePlayerConnected = false;
 
-
+	sf::Vector2f tempPos;
 
 };
 
