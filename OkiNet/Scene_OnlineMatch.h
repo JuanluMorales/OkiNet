@@ -7,71 +7,33 @@
 // Holds the IDs to interpret the messages
 enum class MsgTypes : uint32_t
 {
-	Ping,
+	PingRequest,
+	PingAnswer,
 	Move,
 	Dash,
 	FastPunch
 };
 
-//// Create a host client with overridden methods 
-//class CustomHostClient : public net::HostClient<MsgTypes>
-//{
-//public:
-//	CustomHostClient(uint16_t port) : net::HostClient<MsgTypes>(port)
-//	{
-//
-//	}
-//
-//protected:
-//	virtual bool OnClientConnect()
-//	{
-//		return true;
-//	}
-//
-//	virtual void OnClientDisconnect()
-//	{
-//		std::cout << "Peer disconnected.\n";
-//	}
-//
-//	virtual void OnMessageReceived(net::message<MsgTypes>& msg)
-//	{
-//		switch (msg.header.id)
-//		{
-//		case MsgTypes::Move:
-//			std::cout << "RECEIVED MOVE MESSAGE.\n";
-//			break;
-//
-//		case MsgTypes::Ping:
-//			std::cout << "Ping from peer\n";
-//			MessageClient(msg); // Bounce back message
-//			break;
-//		default:
-//			break;
-//		}
-//	}	
-//};
-
-class CustomClient : public net::Client<MsgTypes>
+class CustomPeer : public net::Peer<MsgTypes>
 {
 public:
-	CustomClient(uint16_t port) : net::Client<MsgTypes>(port)
+	CustomPeer(uint16_t port) : net::Peer<MsgTypes>(port)
 	{
 
 	}
-
 	void Move()
 	{
 		net::message<MsgTypes> msg;
 		msg.header.id = MsgTypes::Move;
-		//msg << x;
 		Send(msg);
 		std::cout << "Sent move message.\n";
 	}
 
-	void Ping()
+	// Send a ping request to retrieve the roundtrip time
+	void PingRequest()
 	{
 		net::message<MsgTypes> msg;
-		msg.header.id = MsgTypes::Ping;
+		msg.header.id = MsgTypes::PingRequest;
 		std::chrono::system_clock::time_point timenow = std::chrono::system_clock::now();
 		msg << timenow;
 		Send(msg);
@@ -97,9 +59,18 @@ protected:
 			std::cout << "RECEIVED MOVE MESSAGE.\n";
 			break;
 
-		case MsgTypes::Ping:
-			std::cout << "Ping from peer\n";
-			//Send(msg); // Bounce back message
+		case MsgTypes::PingRequest:
+			std::cout << "Ping request from peer.\n";
+			msg.header.id = MsgTypes::PingAnswer; // change msg id
+			Send(msg); // Bounce back message
+			break;
+		case MsgTypes::PingAnswer:
+		{
+			std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
+			std::chrono::system_clock::time_point timeThen;
+			msg >> timeThen;
+			std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
+		}
 			break;
 		default:
 			break;
@@ -138,7 +109,7 @@ private:
 	std::string ip;
 	std::string port;
 
-	CustomClient* client = nullptr;
+	CustomPeer* thisPeer = nullptr;
 
 	bool isHost = false; 
 	bool remotePlayerConnected = false;

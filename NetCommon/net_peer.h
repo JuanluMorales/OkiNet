@@ -10,18 +10,18 @@ namespace net
 	// Responsible for the game's network communication tasks
 	// A Client or Peer encapsulates the functionality needed to connect and disconnect to a host client 
 	template<typename T>
-	class Client
+	class Peer
 	{
 	public:
 		// Initialise the socket with default client type and the io context assigned to a tcp socket
 		// Initialize the asio acceptor to listen for the peer connection
-		Client(uint16_t port) : socket_tcp(context), asioAcceptor(context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+		Peer(uint16_t port) : socket_tcp(context), asioAcceptor(context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
 
 
 		}
 
-		virtual ~Client()
+		virtual ~Peer()
 		{
 			// Attempt to disconnect if the client is destroyed
 			Disconnect();
@@ -41,7 +41,7 @@ namespace net
 		{
 			try
 			{
-				WaitForClientConnection(); // issue work to the asio context so it does not close because of lack of work
+				WaitForConnection(); // issue work to the asio context so it does not close because of lack of work
 
 				// Start the parallel thread with the context running
 				thrContext = std::thread([this]() { context.run(); });
@@ -58,7 +58,7 @@ namespace net
 		}
 
 		// ASYNC - Tell asio to wait for connection
-		void WaitForClientConnection()
+		void WaitForConnection()
 		{
 			// Call lambda function asynchronously
 			asioAcceptor.async_accept([this](/*method params*/ std::error_code ec, asio::ip::tcp::socket socket)
@@ -93,7 +93,7 @@ namespace net
 				}
 
 				// Make sure asio does not run out of tasks so it does not close
-				if (!succesfulCon) WaitForClientConnection();
+				if (!succesfulCon) WaitForConnection();
 			});
 		}
 

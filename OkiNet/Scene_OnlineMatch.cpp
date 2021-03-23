@@ -30,30 +30,33 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 
 void Scene_OnlineMatch::InitAsHost(GameState* stateMan, std::string& port)
 {
-	Init(stateMan); // Initialize normally
+	
 	isHost = true;
 	int strPort = std::stoi(port); // convert string to int
-	client = new CustomClient(strPort);
-	client->StartListening();
+	thisPeer = new CustomPeer(strPort);
+	thisPeer->StartListening();
 
+	Init(stateMan); // Initialize normally
 
 }
 
 void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::string& port)
 {
-	Init(stateMan); // Initialize normally
+	
 	isHost = false;
 
 	bool connSuccesful = false;
 	int strPort = std::stoi(port); // convert string to int
 	// Attempt connection
-	client = new CustomClient(strPort);
-	connSuccesful = client->Connect(ip, strPort);
+	thisPeer = new CustomPeer(strPort);
+	connSuccesful = thisPeer->Connect(ip, strPort);
 
 	// if failed go back to main menu
 	if (!connSuccesful) stateMan->GoToScene(scenes::MainMenu);
 
 	remotePlayerConnected = connSuccesful;
+
+	Init(stateMan); // Initialize normally
 
 }
 
@@ -104,8 +107,10 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
-	client->Update(); // Listen for messages
-	remotePlayerConnected = client->IsConnected();
+	// Check network state -------
+	thisPeer->Update(); // Listen for messages
+	remotePlayerConnected = thisPeer->IsConnected();
+
 	if (isHost)
 	{
 		localPlayer.Update(dt, window);
@@ -116,10 +121,6 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		localPlayer.Update(dt, window);
 		remotePlayer.Update(dt, window);
 	}
-
-
-	
-	
 
 	// Iterate all current's frame collision boxes for both players
 	for (auto collA : localPlayer.GetCurrentCollision())
@@ -161,26 +162,28 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	// TODO: MODIFY CHARACTERCLASS SO THAT BOTH INPUT LAYOUTS ARE THE SAME
 	if (isHost)
 	{
+		// TODO: PASS PEER NETWORK OBJECT TO CHARACTER CONTROLLER TO SEND INPUT MESSAGES TO REMOTE PEER
 		localPlayer.HandleInput(input, dt);
+
 		// Send movement input
 		if (input->IsKeyDown(sf::Keyboard::Key::P))
 		{
 			input->SetKeyUp(sf::Keyboard::Key::P);
-			client->Ping();
+			thisPeer->PingRequest();
 		}
 
 	}
 	else
 	{
+		// TODO: APPLY INPUT CHANGES TO REMOTE PLAYER BASED ON NETWORK MESSAGES
 		remotePlayer.HandleInput(input, dt);
 
 		// Send movement input
 		if (input->IsKeyDown(sf::Keyboard::Key::P))
 		{
 			input->SetKeyUp(sf::Keyboard::Key::P);
-			client->Ping();
+			thisPeer->PingRequest();
 		}
-
 	}
 
 }
