@@ -36,7 +36,7 @@ namespace net
 	struct message_header
 	{
 		T id{}; // Templated class to allow any type of enum classes to be used as a message identifier
-		uint32_t size = 0; // use unit32 instead of size_t to reduce byte issues
+		uint32_t size = 0; // Size of the entire message (including header) use unit32 instead of size_t to reduce byte issues
 	};
 
 	// Network packet message structure with a header and a body of the message actual content
@@ -47,10 +47,10 @@ namespace net
 		message_header<T> header{};
 		std::vector<uint8_t> body; // Vector byte contents of the message
 
-		// Return the size of the entire message packet in bytes
+		// Return the size of the body message packet in bytes
 		size_t size() const
 		{
-			return sizeof(message_header<T>) + body.size(); // return header and body size
+			return body.size(); // return header and body size
 		}
 
 		// Override std::cout for friendlier description of the packet contents
@@ -77,6 +77,9 @@ namespace net
 			// Copy the data into newly allocated vector space
 			std::memcpy(msg.body.data() + i, &data, sizeof(DataType));
 
+			// recalculate message size
+			msg.header.size = static_cast<uint32_t>(msg.size());
+
 			// Return the target message so it can be chained
 			return msg;
 		}
@@ -100,7 +103,7 @@ namespace net
 			msg.body.resize(i);
 
 			// recalculate message size
-			msg.header.size = msg.size();
+			msg.header.size = static_cast<uint32_t>(msg.size());
 
 			return msg;
 

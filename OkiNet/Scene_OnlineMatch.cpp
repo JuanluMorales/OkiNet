@@ -117,6 +117,30 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	{
 		playerOne.Update(dt, window);
 		playerTwo.Update(dt, window);
+
+		if (client->IsConnected())
+		{
+			if (!client->GetIncomingMessages().empty())
+			{
+				auto msg = client->GetIncomingMessages().pop_front();
+
+				switch (msg.header.id)
+				{
+				case MsgTypes::Ping:
+				{
+
+
+					std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
+					std::chrono::system_clock::time_point timeThen;
+					msg >> timeThen;
+					std::cout << "Ping: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
+				}
+					break;
+				default:
+					break;
+				}
+			}
+		}
 	}
 
 
@@ -173,7 +197,7 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 		if (input->IsKeyDown(sf::Keyboard::Key::P))
 		{
 			input->SetKeyUp(sf::Keyboard::Key::P);
-			client->Move();
+			client->Ping();
 		}
 
 	}

@@ -7,7 +7,10 @@
 // Holds the IDs to interpret the messages
 enum class MsgTypes : uint32_t
 {
-	Move
+	Ping,
+	Move,
+	Dash,
+	FastPunch
 };
 
 // Create a host client with overridden methods 
@@ -37,6 +40,11 @@ protected:
 		case MsgTypes::Move:
 			std::cout << "RECEIVED MOVE MESSAGE.\n";
 			break;
+
+		case MsgTypes::Ping:
+			std::cout << "Ping from peer\n";
+			MessageClient(msg); // Bounce back message
+			break;
 		default:
 			break;
 		}
@@ -53,6 +61,16 @@ public:
 		//msg << x;
 		Send(msg);
 		std::cout << "Sent move message.\n";
+	}
+
+	void Ping()
+	{
+		net::message<MsgTypes> msg;
+		msg.header.id = MsgTypes::Ping;
+		std::chrono::system_clock::time_point timenow = std::chrono::system_clock::now();
+		msg << timenow;
+		Send(msg);
+
 	}
 };
 
