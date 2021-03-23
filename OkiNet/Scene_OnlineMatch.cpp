@@ -162,6 +162,13 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	if (isHost)
 	{
 		localPlayer.HandleInput(input, dt);
+		// Send movement input
+		if (input->IsKeyDown(sf::Keyboard::Key::P))
+		{
+			input->SetKeyUp(sf::Keyboard::Key::P);
+			client->Ping();
+		}
+
 	}
 	else
 	{
@@ -171,7 +178,7 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 		if (input->IsKeyDown(sf::Keyboard::Key::P))
 		{
 			input->SetKeyUp(sf::Keyboard::Key::P);
-			//client->Ping();
+			client->Ping();
 		}
 
 	}

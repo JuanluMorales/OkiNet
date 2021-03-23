@@ -166,7 +166,6 @@
     <ClCompile Include="Scene_MainMenu.cpp" />
     <ClCompile Include="Scene_OfflineMatch.cpp" />
     <ClCompile Include="Scene_OnlineMatch.cpp" />
-    <ClCompile Include="connectionTest.cpp" />
     <ClCompile Include="SpriteBase.cpp" />
   </ItemGroup>
   <ItemGroup>
