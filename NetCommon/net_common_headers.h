@@ -5,4 +5,3 @@
 #include "net_threadSafeQueue.h"
 #include "net_connection.h"
 #include "net_client.h"
-#include "net_hostClient.h"

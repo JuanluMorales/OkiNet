@@ -7,7 +7,7 @@ namespace net
 {
 	// A connection identifies one entity/user relation to another connection (endpoint)
 	template<typename T>
-	class Connection
+	class Connection : public std::enable_shared_from_this<Connection<T>> // Inherit publicly to create a shaed pointer to this class
 	{
 	public:
 		Connection(asio::io_context& _asioContext, asio::ip::tcp::socket _socketTCP, TQueue<message<T>>& _qIn)
@@ -36,7 +36,7 @@ namespace net
 			});
 		}
 
-		// Asynchronously close the socket so that ASIO can do so when apropriate (in case it is working or whatever)
+		// Asynchronously close the socket so that ASIO can do so when apropriate
 		void Disconnect()
 		{
 			if (IsConnected())

@@ -20,11 +20,11 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 
 	// Setup player one
 	playerOneStartPos = sf::Vector2f(-200, 0);
-	playerOne.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
+	localPlayer.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
 
 	// Setup player two
 	playerTwoStartPos = sf::Vector2f(200, 0);
-	playerTwo.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
+	remotePlayer.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
 
 }
 
@@ -33,8 +33,8 @@ void Scene_OnlineMatch::InitAsHost(GameState* stateMan, std::string& port)
 	Init(stateMan); // Initialize normally
 	isHost = true;
 	int strPort = std::stoi(port); // convert string to int
-	hostClient = new CustomHostClient(strPort);
-	hostClient->StartListening();
+	client = new CustomClient(strPort);
+	client->StartListening();
 
 
 }
@@ -47,7 +47,7 @@ void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::
 	bool connSuccesful = false;
 	int strPort = std::stoi(port); // convert string to int
 	// Attempt connection
-	client = new CustomClient();
+	client = new CustomClient(strPort);
 	connSuccesful = client->Connect(ip, strPort);
 
 	// if failed go back to main menu
@@ -62,36 +62,36 @@ void Scene_OnlineMatch::OverrideRender()
 	// draw players
 	if (isHost)
 	{
-		for (auto coll : playerOne.GetCurrentCollision())
+		for (auto coll : localPlayer.GetCurrentCollision())
 		{
 			if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 		}
 
-		if (playerOne.IsActive()) window->draw(playerOne);
+		if (localPlayer.IsActive()) window->draw(localPlayer);
 		if (remotePlayerConnected)
 		{
-			for (auto coll : playerTwo.GetCurrentCollision())
+			for (auto coll : remotePlayer.GetCurrentCollision())
 			{
 				if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 			}
-			if (playerTwo.IsActive()) window->draw(playerTwo);
+			if (remotePlayer.IsActive()) window->draw(remotePlayer);
 		}
 	}
 	else
 	{
 		// draw player collision
-		for (auto coll : playerOne.GetCurrentCollision())
+		for (auto coll : localPlayer.GetCurrentCollision())
 		{
 			if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 		}
-		for (auto coll : playerTwo.GetCurrentCollision())
+		for (auto coll : remotePlayer.GetCurrentCollision())
 		{
 			if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
 		}
 
 		// Draw players
-		if (playerOne.IsActive()) window->draw(playerOne);
-		if (playerTwo.IsActive()) window->draw(playerTwo);
+		if (localPlayer.IsActive()) window->draw(localPlayer);
+		if (remotePlayer.IsActive()) window->draw(remotePlayer);
 	}
 
 
@@ -104,43 +104,17 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
-	
+	client->Update(); // Listen for messages
+	remotePlayerConnected = client->IsConnected();
 	if (isHost)
 	{
-		hostClient->Update(); // Listen for messages
-		remotePlayerConnected = hostClient->IsConnected();
-
-		playerOne.Update(dt, window);
-		if (remotePlayerConnected) playerTwo.Update(dt, window);
+		localPlayer.Update(dt, window);
+		if (remotePlayerConnected) remotePlayer.Update(dt, window);
 	}
 	else 
 	{
-		playerOne.Update(dt, window);
-		playerTwo.Update(dt, window);
-
-		if (client->IsConnected())
-		{
-			if (!client->GetIncomingMessages().empty())
-			{
-				auto msg = client->GetIncomingMessages().pop_front();
-
-				switch (msg.header.id)
-				{
-				case MsgTypes::Ping:
-				{
-
-
-					std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
-					std::chrono::system_clock::time_point timeThen;
-					msg >> timeThen;
-					std::cout << "Ping: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
-				}
-					break;
-				default:
-					break;
-				}
-			}
-		}
+		localPlayer.Update(dt, window);
+		remotePlayer.Update(dt, window);
 	}
 
 
@@ -148,9 +122,9 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	
 
 	// Iterate all current's frame collision boxes for both players
-	for (auto collA : playerOne.GetCurrentCollision())
+	for (auto collA : localPlayer.GetCurrentCollision())
 	{
-		for (auto collB : playerTwo.GetCurrentCollision())
+		for (auto collB : remotePlayer.GetCurrentCollision())
 		{
 			if (collA->IsActive() && collB->IsActive())
 			{
@@ -158,15 +132,15 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 
 				if (newColl.None) // If there was no collision...
 				{
-					playerOne.NoCollisionRegistered();
-					playerTwo.NoCollisionRegistered();
+					localPlayer.NoCollisionRegistered();
+					remotePlayer.NoCollisionRegistered();
 
 					DebugText.setString("NO COLLISION");
 				}
 				else
 				{
-					playerOne.CollisionResponseToPlayer(&newColl);
-					playerTwo.CollisionResponseToPlayer(&newColl);
+					localPlayer.CollisionResponseToPlayer(&newColl);
+					remotePlayer.CollisionResponseToPlayer(&newColl);
 
 					DebugText.setString("COLLISION");
 				}
@@ -187,17 +161,17 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	// TODO: MODIFY CHARACTERCLASS SO THAT BOTH INPUT LAYOUTS ARE THE SAME
 	if (isHost)
 	{
-		playerOne.HandleInput(input, dt);
+		localPlayer.HandleInput(input, dt);
 	}
 	else
 	{
-		playerTwo.HandleInput(input, dt);
+		remotePlayer.HandleInput(input, dt);
 
 		// Send movement input
 		if (input->IsKeyDown(sf::Keyboard::Key::P))
 		{
 			input->SetKeyUp(sf::Keyboard::Key::P);
-			client->Ping();
+			//client->Ping();
 		}
 
 	}
