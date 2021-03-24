@@ -8,6 +8,7 @@ PlayerCharacter::PlayerCharacter()
 	moveState = MoveState::Idle; // Idle by default
 	attackState = AttackState::None;
 	animState = AnimationFrameType::Idle;
+	networkAuthority = NetworkAuthority::Offline; // ofline by default
 
 	shouldAcceptInput = true;
 	CharacterSetUp = false;
@@ -81,11 +82,57 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	CharacterSetUp = true;
 }
 
+void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos, std::shared_ptr<CustomPeer> peerRef, bool isLocalCharacter)
+{
+	// Assign the network object
+	thisPeer = peerRef;
+	playerID = id;
+	isLocalCharacter ? networkAuthority = NetworkAuthority::Local : networkAuthority = NetworkAuthority::Remote;
+
+	// Assign the corresponding graphics to each player 
+	if (id == PlayerID::PlayerOne)
+	{
+		// Configure player one graphics
+		texture.loadFromFile("Sprites/Player1_Sheet.png");
+		setSize(sf::Vector2f(78, 55));
+		setOrigin(sf::Vector2f(78 / 2, 55 / 2));
+		setScale(static_cast<float>(PIXEL_SCALE_FACTOR), static_cast<float>(PIXEL_SCALE_FACTOR));
+		setTexture(&texture);
+	}
+	else
+	{
+		// Configure player two graphics
+		texture.loadFromFile("Sprites/Player2_Sheet.png");
+		setSize(sf::Vector2f(78, 55));
+		setOrigin(sf::Vector2f(78 / 2, 55 / 2));
+		setScale(static_cast<float>(PIXEL_SCALE_FACTOR), static_cast<float>(PIXEL_SCALE_FACTOR));
+		setTexture(&texture);
+		flipped = true;
+	}
+
+	// Position character at designated start position
+	setPosition(startPos);
+	// Setup Animations
+	SetUpAnimationFrames();
+
+	CharacterSetUp = true;
+}
+
 
 
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
+	// Update network component
+	if (characterNetworked && networkAuthority == NetworkAuthority::Local)
+	{
+		if (thisPeer->IsConnected())
+		{
+			thisPeer->Update();
+		}
+
+	}
+
 	if (receivedDamage)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
@@ -95,8 +142,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
 	}
-
-
 
 	HandleAnimation(dt);
 
@@ -109,7 +154,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
 {
-	if (playerID == PlayerID::PlayerOne)
+	// If this is the second local networked character use player 1 scheme for both players
+	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
 		// Check timers and counters
 		if (dashTimer >= dashTime) // Check dashing timer
@@ -400,7 +446,8 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
 		{
 			inflictedDamage = true;
-		}else inflictedDamage = false;
+		}
+		else inflictedDamage = false;
 
 		// Check for suffering damage
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)

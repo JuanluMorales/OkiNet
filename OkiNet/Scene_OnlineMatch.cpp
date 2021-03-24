@@ -17,38 +17,42 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	DebugText.setPosition(sf::Vector2f(0, -200));
 	DebugText.setFillColor(sf::Color::Red);
 
-
-	// Setup player one
+	// Setup initialization for the host and joiner
 	playerOneStartPos = sf::Vector2f(-200, 0);
-	localPlayer.InitCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos);
-
-	// Setup player two
 	playerTwoStartPos = sf::Vector2f(200, 0);
-	remotePlayer.InitCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos);
+	if (isHost)
+	{
+		localPlayer.InitNetworkedCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos, thisPeer, true);
+		remotePlayer.InitNetworkedCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos, thisPeer, false);
+	}
+	else
+	{
+		localPlayer.InitNetworkedCharacter(PlayerCharacter::PlayerID::PlayerTwo, playerTwoStartPos, thisPeer, true);
+		remotePlayer.InitNetworkedCharacter(PlayerCharacter::PlayerID::PlayerOne, playerOneStartPos, thisPeer, false);
+	}
+
 
 }
 
 void Scene_OnlineMatch::InitAsHost(GameState* stateMan, std::string& port)
 {
-	
 	isHost = true;
+
 	int strPort = std::stoi(port); // convert string to int
-	thisPeer = new CustomPeer(strPort);
+	thisPeer = std::make_shared<CustomPeer>(strPort);
 	thisPeer->StartListening();
 
 	Init(stateMan); // Initialize normally
-
 }
 
 void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::string& port)
 {
-	
 	isHost = false;
 
 	bool connSuccesful = false;
 	int strPort = std::stoi(port); // convert string to int
 	// Attempt connection
-	thisPeer = new CustomPeer(strPort);
+	thisPeer = std::make_shared<CustomPeer>(strPort);
 	connSuccesful = thisPeer->Connect(ip, strPort);
 
 	// if failed go back to main menu
@@ -57,7 +61,6 @@ void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::
 	remotePlayerConnected = connSuccesful;
 
 	Init(stateMan); // Initialize normally
-
 }
 
 void Scene_OnlineMatch::OverrideRender()
@@ -71,6 +74,7 @@ void Scene_OnlineMatch::OverrideRender()
 		}
 
 		if (localPlayer.IsActive()) window->draw(localPlayer);
+
 		if (remotePlayerConnected)
 		{
 			for (auto coll : remotePlayer.GetCurrentCollision())
@@ -97,30 +101,17 @@ void Scene_OnlineMatch::OverrideRender()
 		if (remotePlayer.IsActive()) window->draw(remotePlayer);
 	}
 
-
-
 	// Render font
 	window->draw(DebugText);
-
-
 }
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
-	// Check network state -------
-	thisPeer->Update(); // Listen for messages
 	remotePlayerConnected = thisPeer->IsConnected();
-
-	if (isHost)
-	{
-		localPlayer.Update(dt, window);
-		if (remotePlayerConnected) remotePlayer.Update(dt, window);
-	}
-	else 
-	{
-		localPlayer.Update(dt, window);
-		remotePlayer.Update(dt, window);
-	}
+	
+	// Update players, if connection fails go back to menu
+	localPlayer.Update(dt, window);
+	if (remotePlayerConnected) remotePlayer.Update(dt, window);
 
 	// Iterate all current's frame collision boxes for both players
 	for (auto collA : localPlayer.GetCurrentCollision())
@@ -149,7 +140,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		}
 	}
 
-	
+
 }
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)
@@ -159,31 +150,6 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 		window->close();
 	}
 
-	// TODO: MODIFY CHARACTERCLASS SO THAT BOTH INPUT LAYOUTS ARE THE SAME
-	if (isHost)
-	{
-		// TODO: PASS PEER NETWORK OBJECT TO CHARACTER CONTROLLER TO SEND INPUT MESSAGES TO REMOTE PEER
-		localPlayer.HandleInput(input, dt);
-
-		// Send movement input
-		if (input->IsKeyDown(sf::Keyboard::Key::P))
-		{
-			input->SetKeyUp(sf::Keyboard::Key::P);
-			thisPeer->PingRequest();
-		}
-
-	}
-	else
-	{
-		// TODO: APPLY INPUT CHANGES TO REMOTE PLAYER BASED ON NETWORK MESSAGES
-		remotePlayer.HandleInput(input, dt);
-
-		// Send movement input
-		if (input->IsKeyDown(sf::Keyboard::Key::P))
-		{
-			input->SetKeyUp(sf::Keyboard::Key::P);
-			thisPeer->PingRequest();
-		}
-	}
-
+	localPlayer.HandleInput(input, dt);
+	//remotePlayer.HandleInput(input, dt); // Remote player wont be accepting input
 }
