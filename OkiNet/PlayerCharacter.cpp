@@ -124,7 +124,7 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	// Update network component
-	if (characterNetworked && networkAuthority == NetworkAuthority::Local)
+	if (networkAuthority == NetworkAuthority::Local)
 	{
 		if (thisPeer->IsConnected())
 		{
@@ -157,6 +157,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	// If this is the second local networked character use player 1 scheme for both players
 	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
+		if (input->IsKeyDown(sf::Keyboard::P))
+		{
+			input->SetKeyUp(sf::Keyboard::P);
+			thisPeer->PingRequest();
+		}
+
 		// Check timers and counters
 		if (dashTimer >= dashTime) // Check dashing timer
 		{

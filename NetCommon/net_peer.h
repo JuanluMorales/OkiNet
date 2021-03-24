@@ -76,10 +76,11 @@ namespace net
 
 					connection = std::move(newConn);
 
-					connection->ConnectToClient();
+					// Start the asynchronous read to work on the background
+					connection->Listen_TCP();
 
 					std::cout << "Connection succesful." << "\n";
-					OnClientConnect();
+					OnPeerConnect();
 					succesfulCon = true;
 
 					// Close as theres no need to listen for more connections
@@ -112,7 +113,7 @@ namespace net
 					context, asio::ip::tcp::socket(context), messagesIn);
 
 				// Connect to host client
-				connection->ConnectToHostClient(endpoints);
+				connection->ConnectTo(endpoints);
 
 				// Create the thread to run the context
 				thrContext = std::thread([this]() { context.run(); });
@@ -135,6 +136,7 @@ namespace net
 			if (IsConnected())
 			{
 				connection->Disconnect();
+				OnPeerDisconnect();
 			}
 		}
 
@@ -145,7 +147,10 @@ namespace net
 			{
 				return connection->IsConnected();
 			}
-			else return false;
+			else
+			{
+				return false;
+			}
 		}
 
 		// Return the queue of messages received
@@ -177,19 +182,19 @@ namespace net
 			else
 			{
 				// Client probably disconnected
-				OnClientDisconnect();
+				OnPeerDisconnect();
 				connection.reset();
 			}
 		}
 
 	protected:
 		// Called when a peer connects
-		virtual bool OnClientConnect()
+		virtual bool OnPeerConnect()
 		{
 			return false;
 		}
 		// Called when a peer disconnects
-		virtual void OnClientDisconnect()
+		virtual void OnPeerDisconnect()
 		{
 
 		}

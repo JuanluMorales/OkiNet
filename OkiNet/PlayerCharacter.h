@@ -83,8 +83,6 @@ private:
 	// The peer object contains all the network functionality and is shared with the scene class
 	std::shared_ptr<NetworkPeer> thisPeer;
 
-	bool characterNetworked = false; // Is this character setup as a network match participant?
-
 	enum class NetworkAuthority { Offline, Local, Remote };
 	NetworkAuthority networkAuthority; // Assuming multiplayer, is this the local or the remote character?
 };

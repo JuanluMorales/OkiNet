@@ -16,14 +16,8 @@ namespace net
 		virtual ~Connection()
 		{}
 
-		// When the connection links to a Client
-		void ConnectToClient()
-		{
-			// Start the asynchronous read to work on the background
-			if(socket_tcp.is_open()) ReadHeader();
-		}
 		// When the connection joins to a Host Client
-		void ConnectToHostClient(const asio::ip::tcp::resolver::results_type& endpoints)
+		void ConnectTo(const asio::ip::tcp::resolver::results_type& endpoints)
 		{
 			// ASYNC - Attempt connection
 			asio::async_connect(socket_tcp, endpoints,
@@ -65,6 +59,12 @@ namespace net
 					WriteHeader();
 				}
 			});
+		}
+
+		// If socket is ready, start reading headers
+		void Listen_TCP()
+		{
+			if (socket_tcp.is_open()) ReadHeader();
 		}
 
 	private:
