@@ -1,5 +1,13 @@
 #include "NetworkPeer.h"
 
+void NetworkPeer::ResetRemotePlayerStatus()
+{
+	remotePlayerStatus.Pressed_A = false;
+	remotePlayerStatus.Pressed_D = false;
+	remotePlayerStatus.Pressed_S = false;
+	remotePlayerStatus.Pressed_Q = false;
+}
+
 void NetworkPeer::PingRequest()
 {
 	net::message<MsgTypes> msg;
@@ -65,6 +73,21 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
 	}
 	break;
+
+	case MsgTypes::Pressed_A:
+		remotePlayerStatus.Pressed_A = true;
+		break;
+
+	case MsgTypes::Pressed_D:
+		remotePlayerStatus.Pressed_D = true;
+		break;
+	case MsgTypes::Pressed_S:
+		remotePlayerStatus.Pressed_S = true;
+		break;
+	case MsgTypes::Pressed_Q:
+		remotePlayerStatus.Pressed_Q = true;
+		break;
+
 	default:
 		break;
 	}

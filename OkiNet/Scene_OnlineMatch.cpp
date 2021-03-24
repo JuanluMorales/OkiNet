@@ -150,6 +150,10 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 		window->close();
 	}
 
-	localPlayer.HandleInput(input, dt);
-	//remotePlayer.HandleInput(input, dt); // Remote player wont be accepting input
+	// Dont accept input until the remote is ready -> potential critical desync issue
+	if (remotePlayerConnected)
+	{
+		localPlayer.HandleInput(input, dt);
+		remotePlayer.HandleRemotePlayerInput(input, dt); // Remote player wont be accepting input
+	}
 }

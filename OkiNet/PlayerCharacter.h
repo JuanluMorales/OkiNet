@@ -18,7 +18,9 @@ public:
 	~PlayerCharacter();
 
 	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
+
 	void HandleInput(InputManager* input, float dt); // Register input
+	void HandleRemotePlayerInput(InputManager* input, float dt); // update the remote player input based on the network state
 
 	Animation* GetCurrentAnimation() { return currentAnim; }; // Return the animation currently being played
 	std::vector<CollisionBox*> GetCurrentCollision() { return currentAnim->GetCurrentBoxes(); }; // Returns a vector of hitboxes for the frame

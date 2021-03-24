@@ -118,8 +118,6 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 	CharacterSetUp = true;
 }
 
-
-
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
@@ -157,6 +155,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	// If this is the second local networked character use player 1 scheme for both players
 	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
+		// Send ping request for roundtrip time
 		if (input->IsKeyDown(sf::Keyboard::P))
 		{
 			input->SetKeyUp(sf::Keyboard::P);
@@ -196,6 +195,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
+
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
 		}
 
 		if (!shouldAcceptInput) return;
@@ -205,6 +206,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
+
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
 		}
 		else attackState = AttackState::None;
 		//-------------------
@@ -222,7 +225,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
 				moveState = MoveState::Left;
 			}
-
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
 		}
 		else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
 		{
@@ -237,7 +240,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
 				moveState = MoveState::Right;
 			}
-
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
 		}
 		else // idle
 		{
@@ -354,8 +357,106 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 		// -------------------
 	}
+}
 
+void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
+{
+	if (networkAuthority == NetworkAuthority::Remote)
+	{
+		// Check timers and counters
+		if (dashTimer >= dashTime) // Check dashing timer
+		{
+			b_dashTriggerR = false;
+			b_dashTriggerL = false;
+			dashTimer = 0.0f;
+		}
+		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
 
+		// Check this frame's type to decide if input should be accepted
+		switch (animState)
+		{
+		case AnimationFrameType::Idle:
+			shouldAcceptInput = true;
+			break;
+		case AnimationFrameType::StartUp:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Active:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Recovery:
+			shouldAcceptInput = true;
+			break;
+		default:
+			break;
+		}
+
+		// Defend
+		if (thisPeer->remotePlayerStatus.Pressed_S)
+		{
+			attackState = AttackState::Defend;
+			shouldAcceptInput = false;
+		}
+
+		if (shouldAcceptInput)
+		{
+
+			// Attack
+			if (thisPeer->remotePlayerStatus.Pressed_Q)
+			{
+				attackState = AttackState::FastPunch;
+			}
+			else attackState = AttackState::None;
+			//-------------------
+			// Movement ---------
+			if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left
+			{
+				if (b_dashTriggerL) // Dash 
+				{
+					dashTimer = dashTime;
+					setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+					moveState = MoveState::DashL;
+				}
+				else // Walk
+				{
+					setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+					moveState = MoveState::Left;
+				}
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_D && CanGoRight) // Right
+			{
+				if (b_dashTriggerR) // Dash 
+				{
+					dashTimer = dashTime;
+					setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+					moveState = MoveState::DashR;
+				}
+				else // Walk
+				{
+					setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+					moveState = MoveState::Right;
+				}
+			}
+			else // idle
+			{
+				// if last move state was walking, check the dash relevant trigger
+				if (moveState == MoveState::Left)
+				{
+					b_dashTriggerL = true;
+					dashTimer = 0.0f;
+				}
+				if (moveState == MoveState::Right)
+				{
+					b_dashTriggerR = true;
+					dashTimer = 0.0f;
+				}
+
+				moveState = MoveState::Idle;
+			}
+		}
+	}
+	// Resets all inputs this frame
+	thisPeer->ResetRemotePlayerStatus();
 }
 
 void PlayerCharacter::HandleAnimation(float dt)
