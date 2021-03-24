@@ -36,7 +36,7 @@ private:
 	std::string port;
 
 	// The peer object is shared with the character controller for messaging purposes
-	std::shared_ptr<CustomPeer> thisPeer = nullptr;
+	std::shared_ptr<NetworkPeer> thisPeer = nullptr;
 
 	bool isHost = false; 
 	bool remotePlayerConnected = false;

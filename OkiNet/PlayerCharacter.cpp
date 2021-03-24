@@ -82,7 +82,7 @@ void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
 	CharacterSetUp = true;
 }
 
-void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos, std::shared_ptr<CustomPeer> peerRef, bool isLocalCharacter)
+void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos, std::shared_ptr<NetworkPeer> peerRef, bool isLocalCharacter)
 {
 	// Assign the network object
 	thisPeer = peerRef;

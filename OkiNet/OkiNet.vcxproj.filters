@@ -66,6 +66,9 @@
     <ClCompile Include="CollisionBox.cpp">
       <Filter>Source Files\BaseClasses</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPeer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene_OfflineMatch.h">
@@ -103,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="CollisionBox.h">
       <Filter>Header Files\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPeer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -39,7 +39,7 @@ void Scene_OnlineMatch::InitAsHost(GameState* stateMan, std::string& port)
 	isHost = true;
 
 	int strPort = std::stoi(port); // convert string to int
-	thisPeer = std::make_shared<CustomPeer>(strPort);
+	thisPeer = std::make_shared<NetworkPeer>(strPort);
 	thisPeer->StartListening();
 
 	Init(stateMan); // Initialize normally
@@ -52,7 +52,7 @@ void Scene_OnlineMatch::InitAsClient(GameState* stateMan, std::string& ip, std::
 	bool connSuccesful = false;
 	int strPort = std::stoi(port); // convert string to int
 	// Attempt connection
-	thisPeer = std::make_shared<CustomPeer>(strPort);
+	thisPeer = std::make_shared<NetworkPeer>(strPort);
 	connSuccesful = thisPeer->Connect(ip, strPort);
 
 	// if failed go back to main menu
