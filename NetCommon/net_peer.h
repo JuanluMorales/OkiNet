@@ -15,7 +15,7 @@ namespace net
 	public:
 		// Initialise the socket with default client type and the io context assigned to a tcp socket
 		// Initialize the asio acceptor to listen for the peer connection
-		Peer(uint16_t port) : socket_tcp(context), asioAcceptor(context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+		Peer(uint16_t port) : asioAcceptor(context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
 
 
@@ -212,10 +212,7 @@ namespace net
 
 		asio::ip::tcp::acceptor asioAcceptor; // To get the peer socket to connect
 
-		// Socket of connection
-		asio::ip::tcp::socket socket_tcp;
-
-		// Pointer to the connection once there was a succesful "tcp handshake"
+		// Pointer to the connection
 		std::shared_ptr<Connection<T>> connection;
 
 	private:
