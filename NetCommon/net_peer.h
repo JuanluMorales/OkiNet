@@ -17,7 +17,7 @@ namespace net
 		// Initialize the asio acceptor to listen for the peer connection
 		Peer(uint16_t port) : asioAcceptor(context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 		{
-
+			portNumber = port;
 		}
 
 		virtual ~Peer()
@@ -70,21 +70,23 @@ namespace net
 					std::cout << "Incoming connection: " << socket.remote_endpoint() << "\n";
 
 					// HANDLE CONNECTION OBJECT --------------------------
+
+					asio::ip::udp::socket tempSockUDP(context, asio::ip::udp::endpoint(asio::ip::udp::v4(), portNumber));
 					// Create the new connection as a shared ptr
-					std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(context, std::move(socket), messagesIn);
+					std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(context, std::move(socket), std::move(tempSockUDP), messagesIn);
 
 					connection = std::move(newConn);
 
 					// Start the asynchronous read to work on the background
 					connection->Listen_TCP();
-					connection->Listen_UDP();
+					//connection->ConnectToUDP();
+
 					std::cout << "Connection succesful." << "\n";
 					OnPeerConnect();
 					succesfulCon = true;
 
 					// Close as theres no need to listen for more connections
 					asioAcceptor.close();
-
 				}
 				else
 				{
@@ -106,15 +108,14 @@ namespace net
 				// Resolve hostname/ip into address
 				asio::ip::tcp::resolver resolver(context);
 				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port)); // url magic
-				asio::ip::udp::resolver resolverUDP(context);
-				asio::ip::udp::resolver::results_type endpointsUDP = resolverUDP.resolve(host, std::to_string(port)); // url magic
+
+				asio::ip::udp::socket tempSockUDP(context);
 				// Create connection
-				connection = std::make_unique<Connection<T>>(
-					context, asio::ip::tcp::socket(context), messagesIn);
+				connection = std::make_unique<Connection<T>>(context, asio::ip::tcp::socket(context), std::move(tempSockUDP), messagesIn);
 
 				// Connect to host client
 				connection->ConnectTo(endpoints);
-				connection->ConnectToUDP(endpointsUDP);
+				//connection->ConnectToUDP();
 				// Create the thread to run the context
 				thrContext = std::thread([this]() { context.run(); });
 
@@ -173,11 +174,11 @@ namespace net
 		}
 
 		// Send message to connection
-		void Send(const message<T>& msg)
+		void Send_TCP(const message<T>& msg)
 		{
 			if (connection && connection->IsConnected())
 			{
-				connection->Send(msg);
+				connection->Send_TCP(msg);
 			}
 			else
 			{
@@ -187,15 +188,15 @@ namespace net
 			}
 		}
 
-		void SendUDP(const message<T>& msg)
+		void Send_UDP(const message<T>& msg)
 		{
 			if (connection && connection->IsConnected())
 			{
-				connection->SendTCP(msg);
+				connection->Send_TCP(msg);
 			}
 			else
 			{
-				// Client probably disconnected
+				// Peer probably disconnected
 				OnPeerDisconnect();
 				connection.reset();
 			}
@@ -232,5 +233,7 @@ namespace net
 	private:
 		// Incoming messages from remote connection
 		TQueue<message<T>> messagesIn;
+
+		uint16_t portNumber;
 	};
 }
