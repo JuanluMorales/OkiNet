@@ -76,7 +76,7 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\CGAD\4th year\honours CMP400\Project\OkiNet\NetCommon;D:\CGAD\4th year\honours CMP400\Project\asio-1.18.0\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\Abertay CGAD\honours CMP400\Project\SFML-2.5.1\include;E:\Abertay CGAD\honours CMP400\Project\OkiNet\NetCommon;E:\Abertay CGAD\honours CMP400\Project\asio-1.18.0\include</IncludePath>
+    <IncludePath>E:\Abertay CGAD\honours CMP400\Project\OkiNet\NetCommon;E:\Abertay CGAD\honours CMP400\Project\SFML-2.5.1\include;E:\Abertay CGAD\honours CMP400\Project\asio-1.18.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>E:\Abertay CGAD\honours CMP400\Project\OkiNet\NetCommon;E:\Abertay CGAD\honours CMP400\Project\SFML-2.5.1\include;E:\Abertay CGAD\honours CMP400\Project\asio-1.18.0\include;$(IncludePath)</IncludePath>
@@ -103,7 +103,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\Abertay CGAD\honours CMP400\Project\asio-1.18.0\include;E:\Abertay CGAD\honours CMP400\Project\SFML-2.5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Abertay CGAD\honours CMP400\Project\OkiNet\NetCommon;E:\Abertay CGAD\honours CMP400\Project\asio-1.18.0\include;E:\Abertay CGAD\honours CMP400\Project\SFML-2.5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
