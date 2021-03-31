@@ -3,6 +3,7 @@
 #include "net_message.h"
 #include "net_threadSafeQueue.h"
 #include "net_connection.h"
+#include <string>
 
 namespace net
 {
@@ -66,12 +67,14 @@ namespace net
 				/*Function body*/
 				if (!ec)
 				{
+					ipAddress = socket.remote_endpoint().address().to_string();
+					UDPportNumber = portNumber + 1;
 					// Print out address
 					std::cout << "Incoming connection: " << socket.remote_endpoint() << "\n";
 
 					// HANDLE CONNECTION OBJECT --------------------------
 
-					asio::ip::udp::socket tempSockUDP(context, asio::ip::udp::endpoint(asio::ip::udp::v4(), portNumber));
+					asio::ip::udp::socket tempSockUDP(context, asio::ip::udp::endpoint(asio::ip::make_address(ipAddress), UDPportNumber));
 					// Create the new connection as a shared ptr
 					std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(context, std::move(socket), std::move(tempSockUDP), messagesIn);
 
@@ -79,7 +82,7 @@ namespace net
 
 					// Start the asynchronous read to work on the background
 					connection->Listen_TCP();
-					//connection->ConnectToUDP();
+					connection->ConnectToUDP(portNumber + 2, ipAddress);
 
 					std::cout << "Connection succesful." << "\n";
 					OnPeerConnect();
@@ -105,17 +108,19 @@ namespace net
 		{
 			try
 			{
+				ipAddress = host;
+				UDPportNumber = portNumber + 2;
 				// Resolve hostname/ip into address
 				asio::ip::tcp::resolver resolver(context);
 				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port)); // url magic
 
-				asio::ip::udp::socket tempSockUDP(context);
+				asio::ip::udp::socket tempSockUDP(context, asio::ip::udp::endpoint(asio::ip::make_address(host), UDPportNumber));
 				// Create connection
 				connection = std::make_unique<Connection<T>>(context, asio::ip::tcp::socket(context), std::move(tempSockUDP), messagesIn);
 
 				// Connect to host client
 				connection->ConnectTo(endpoints);
-				//connection->ConnectToUDP();
+				connection->ConnectToUDP(portNumber + 1, ipAddress);
 				// Create the thread to run the context
 				thrContext = std::thread([this]() { context.run(); });
 
@@ -192,7 +197,7 @@ namespace net
 		{
 			if (connection && connection->IsConnected())
 			{
-				connection->Send_TCP(msg);
+				connection->Send_UDP(msg);
 			}
 			else
 			{
@@ -235,5 +240,8 @@ namespace net
 		TQueue<message<T>> messagesIn;
 
 		uint16_t portNumber;
+		uint16_t UDPportNumber; // port number + 10
+		std::string ipAddress;
+
 	};
 }

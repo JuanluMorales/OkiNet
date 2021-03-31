@@ -2,6 +2,7 @@
 #include "net_common.h"
 #include "net_threadSafeQueue.h"
 #include "net_message.h"
+#include <string>
 
 namespace net
 {
@@ -32,22 +33,21 @@ namespace net
 		}
 
 		// "Connect" udp to use async methods without passing endpoints
-		void ConnectToUDP()
+		void ConnectToUDP(uint16_t portNumber, std::string ipAddress)
 		{
 			// ASYNC - Attempt connection TODO: MAKE ASYNC?
 			
-			//if (socket_udp.is_open())
-			//{
-			//	asio::error_code ec;
-			//	asio::ip::udp::resolver resolver(asioContext);
-			//	socket_udp.connect(endpoints->endpoint(), ec);
+			if (socket_udp.is_open())
+			{
+				asio::error_code ec;
+				socket_udp.connect(asio::ip::udp::endpoint(asio::ip::make_address(ipAddress), portNumber), ec);
 
-			//	if (!ec)
-			//	{
-			//		ReadHeader_UDP();
-			//	}
-			//	else std::cout << "UDP Connection failed: " << ec.message() << "\n.";
-			//}
+				if (!ec)
+				{
+					ReadHeader_UDP();
+				}
+				else std::cout << "UDP Connection failed: " << ec.message() << "\n.";
+			}
 		}
 
 		// Asynchronously close the socket so that ASIO can do so when apropriate
