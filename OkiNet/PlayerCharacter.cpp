@@ -200,7 +200,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (!shouldAcceptInput) return;
 
 		// Attack
-		if (input->IsKeyDown(sf::Keyboard::Q))
+		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
+		{
+			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+			attackState = AttackState::HeavyPunch;
+
+		}else if (input->IsKeyDown(sf::Keyboard::Q))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
@@ -299,7 +304,13 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (!shouldAcceptInput) return;
 
 		// Attack
-		if (input->IsKeyDown(sf::Keyboard::Numpad0))
+		if (input->IsKeyDown(sf::Keyboard::Numpad0) && input->IsKeyDown(sf::Keyboard::Left))
+		{
+			input->SetKeyUp(sf::Keyboard::Numpad0); // Lift key so it acts as trigger
+			attackState = AttackState::HeavyPunch;
+
+		}
+		else if (input->IsKeyDown(sf::Keyboard::Numpad0))
 		{
 			input->SetKeyUp(sf::Keyboard::Numpad0); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
@@ -472,11 +483,15 @@ void PlayerCharacter::HandleAnimation(float dt)
 	{
 	case AttackState::None:
 		anim_fastPunch.ResetAnimation();
+		anim_heavyPunch.ResetAnimation();
 		anim_hurt.ResetAnimation();
 		isAttacking = false;
 		break;
 	case AttackState::FastPunch:
 		currentAnim = &anim_fastPunch;
+		break;
+	case AttackState::HeavyPunch:
+		currentAnim = &anim_heavyPunch;
 		break;
 	case AttackState::Defend:
 		currentAnim = &anim_defend;
@@ -631,12 +646,14 @@ void PlayerCharacter::SetUpAnimationFrames()
 	sf::Vector2f bodycallSize = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(42 * PIXEL_SCALE_FACTOR));
 	CollisionBox* bodyColl = new CollisionBox(CollisionBox::ColliderType::HurtBox, bodycallPos, bodycallSize, bodyCollOffset);
 
+	// Idle -----
 	anim_idle.AddFrame(sf::IntRect(0, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.AddFrame(sf::IntRect(78, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.AddFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.SetFrameSpeed(0.1f);
 
+	// Walk -----
 	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.AddFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
@@ -646,28 +663,12 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.AddFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.SetFrameSpeed(0.1f);
 
-	// Punch attack
-	sf::Vector2f  punchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
-	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
-	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(17 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
-	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);
-
-	std::vector<CollisionBox*> punchCollVector;
-	punchCollVector.push_back(bodyColl);
-	punchCollVector.push_back(punchColl);
-
-	// fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp, *bodyColl);
-	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
-	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
-	anim_fastPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
-	anim_fastPunch.SetFrameSpeed(0.1f);
-	anim_fastPunch.SetLooping(false);
-
+	// Defend ---
 	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize, bodyCollOffset);
 	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Idle, *GuardColl);
 	anim_defend.SetLooping(false);
 
+	// Dash FWD and BKW ---
 	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
@@ -680,12 +681,49 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dashBKW.SetLooping(false);
 	anim_dashBKW.SetFrameSpeed(0.1f);
 
+	// Hurt anim -----
 	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
 	anim_hurt.AddFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
 	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
 	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_hurt.SetLooping(false);
 	anim_hurt.SetFrameSpeed(0.1f);
+
+
+	// Fast Punch attack ------
+	sf::Vector2f  punchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
+	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(17 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);
+
+	std::vector<CollisionBox*> punchCollVector;
+	punchCollVector.push_back(bodyColl);
+	punchCollVector.push_back(punchColl);
+
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_fastPunch.SetFrameSpeed(0.1f);
+	anim_fastPunch.SetLooping(false);
+
+	// Heavy punch 
+	sf::Vector2f hpunchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f hpunchCollPos = getPosition() + hpunchCollOffset;
+	sf::Vector2f hpunchCollSize = sf::Vector2f(static_cast <float>(22 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	CollisionBox* hpunchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, hpunchCollPos, hpunchCollSize, hpunchCollOffset);
+
+	std::vector<CollisionBox*> hpunchCollVector;
+	hpunchCollVector.push_back(bodyColl);
+	hpunchCollVector.push_back(hpunchColl);
+
+	anim_heavyPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_heavyPunch.AddFrame(sf::IntRect(156, 220, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_heavyPunch.AddFrame(sf::IntRect(234, 220, 78, 55), AnimationFrameType::Active, hpunchCollVector);
+	anim_heavyPunch.AddFrame(sf::IntRect(234, 220, 78, 55), AnimationFrameType::Active, hpunchCollVector);
+	anim_heavyPunch.AddFrame(sf::IntRect(309, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_heavyPunch.SetFrameSpeed(0.1f);
+	anim_heavyPunch.SetLooping(false);
 
 	// Initialize to idle
 	currentAnim = &anim_idle;
