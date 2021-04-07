@@ -49,8 +49,13 @@ private:
 	Animation anim_dashFWD; // Forward dash
 	Animation anim_dashBKW; // Backward dash
 	Animation anim_fastPunch;
+	Animation anim_heavyPunch;
+	Animation anim_fastkick;
+	Animation anim_heavyKick;
+	Animation anim_dPunch;
 	Animation anim_defend;
 	Animation anim_hurt;
+	Animation anim_die;
 
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState; // Alive by default

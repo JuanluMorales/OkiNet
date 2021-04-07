@@ -44,9 +44,7 @@ PlayerCharacter::~PlayerCharacter()
 	delete currentAnim;
 }
 
-/// <summary>
 /// Initialize the player character. Must be called at scene initialization to setup different players
-/// </summary>
 /// <param name="id"></param> Whether this is player one or two
 /// <param name="startPos"></param> Spawn location in the world
 void PlayerCharacter::InitCharacter(PlayerID id, sf::Vector2f startPos)
@@ -474,6 +472,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 	{
 	case AttackState::None:
 		anim_fastPunch.ResetAnimation();
+		anim_hurt.ResetAnimation();
 		isAttacking = false;
 		break;
 	case AttackState::FastPunch:
@@ -511,10 +510,10 @@ void PlayerCharacter::HandleAnimation(float dt)
 			currentAnim = &anim_walkFWD;
 			break;
 		case MoveState::DashL:
-			currentAnim = &anim_dashBKW;
+			flipped ? currentAnim = &anim_dashFWD : currentAnim = &anim_dashBKW;
 			break;
 		case MoveState::DashR:
-			currentAnim = &anim_dashFWD;
+			flipped ? currentAnim = &anim_dashBKW : currentAnim = &anim_dashFWD;
 			break;
 		default:
 			break;
@@ -638,7 +637,6 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.SetFrameSpeed(0.1f);
 
-
 	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.AddFrame(sf::IntRect(156, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
@@ -651,7 +649,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	// Punch attack
 	sf::Vector2f  punchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
 	sf::Vector2f punchCollPos = getPosition() + punchCollOffset;
-	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f punchCollSize = sf::Vector2f(static_cast <float>(17 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
 	CollisionBox* punchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, punchCollPos, punchCollSize, punchCollOffset);
 
 	std::vector<CollisionBox*> punchCollVector;
@@ -659,10 +657,10 @@ void PlayerCharacter::SetUpAnimationFrames()
 	punchCollVector.push_back(punchColl);
 
 	// fastPunch.addFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::StartUp);
-	anim_fastPunch.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::StartUp, *bodyColl);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchCollVector);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Active, punchCollVector);
-	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_fastPunch.AddFrame(sf::IntRect(312, 165, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
+	anim_fastPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
 
@@ -683,12 +681,13 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dashBKW.SetFrameSpeed(0.1f);
 
 	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
-	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
-	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
-	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
-	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
-	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_hurt.SetLooping(false);
 	anim_hurt.SetFrameSpeed(0.1f);
+
+	// Initialize to idle
 	currentAnim = &anim_idle;
 }
 
