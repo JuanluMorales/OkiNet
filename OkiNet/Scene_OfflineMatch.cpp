@@ -34,15 +34,15 @@ void Scene_OfflineMatch::OverrideRender()
 	if (playerOne.IsActive()) window->draw(playerOne);
 	if (playerTwo.IsActive()) window->draw(playerTwo);
 
-	// draw player collision
-	for (auto coll : playerOne.GetCurrentCollision())
-	{
-		if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
-	}
-	for (auto coll : playerTwo.GetCurrentCollision())
-	{
-		if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
-	}
+	//// draw player collision
+	//for (auto coll : playerOne.GetCurrentCollision())
+	//{
+	//	if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+	//}
+	//for (auto coll : playerTwo.GetCurrentCollision())
+	//{
+	//	if (coll->GetDrawable() && coll->IsActive()) window->draw(*coll);
+	//}
 
 	// Render font
 	window->draw(DebugText);

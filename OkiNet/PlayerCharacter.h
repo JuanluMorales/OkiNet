@@ -8,9 +8,9 @@ class PlayerCharacter : public SpriteBase
 {
 public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
-	enum class PlayerState { Alive, Dead };
+	enum class PlayerState { Alive, Dead, Hurt };
 	enum class MoveState { Idle, Left, Right, DashL, DashR };
-	enum class AttackState { None, FastPunch, HeavyPunch, FastKick, HeavyKick, DragonPunch, Defend, HitStun, BlockStun };
+	enum class AttackState { None, FastPunch, HeavyPunch, FastKick, HeavyKick, DragonPunch, Defend };
 
 	PlayerCharacter();
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);

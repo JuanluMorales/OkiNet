@@ -25,6 +25,10 @@ private:
 	sf::Vector2f playerOneStartPos;
 	sf::Vector2f playerTwoStartPos;
 
+	// Map limits
+	CollisionBox leftColl;
+	CollisionBox rightColl;
+
 	sf::Font DebugFont;
 	sf::Text DebugText;
 

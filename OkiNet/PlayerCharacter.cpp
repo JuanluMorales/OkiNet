@@ -132,11 +132,15 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	if (receivedDamage)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
-		attackState = AttackState::HitStun;
+		playerState = PlayerState::Hurt;
 	}
 	else if (hitGuardBox)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
+	}
+	else
+	{
+		playerState = PlayerState::Alive;
 	}
 
 	HandleAnimation(dt);
@@ -200,12 +204,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (!shouldAcceptInput) return;
 
 		// Attack
-		attackState = AttackState::None;
 		// Special punch
-		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::E))
+		if (input->IsKeyDown(sf::Keyboard::W))
 		{
-			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+			input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
 			attackState = AttackState::DragonPunch;
 		}else
 		// Punch
@@ -214,10 +216,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::HeavyPunch;
 
-		}else if (input->IsKeyDown(sf::Keyboard::Q))
+		}
+		else if (input->IsKeyDown(sf::Keyboard::Q))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
+
 
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
 		}
@@ -230,8 +234,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 		else if (input->IsKeyDown(sf::Keyboard::E))
 		{
+
 			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
 			attackState = AttackState::FastKick;
+
 
 		}
 
@@ -320,25 +326,45 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (input->IsKeyDown(sf::Keyboard::Down))
 		{
 			attackState = AttackState::Defend;
-			shouldAcceptInput = false;
+			//shouldAcceptInput = false;
+		}
+		else
+		{
+			attackState = AttackState::None;
 		}
 
 		if (!shouldAcceptInput) return;
 
 		// Attack
-		if (input->IsKeyDown(sf::Keyboard::Numpad0) && input->IsKeyDown(sf::Keyboard::Left))
+		if (input->IsKeyDown(sf::Keyboard::Up))
 		{
-			input->SetKeyUp(sf::Keyboard::Numpad0); // Lift key so it acts as trigger
+			input->SetKeyUp(sf::Keyboard::Up); // Lift key so it acts as trigger
+			attackState = AttackState::DragonPunch;
+		}else
+		if (input->IsKeyDown(sf::Keyboard::Numpad1) && input->IsKeyDown(sf::Keyboard::Left))
+		{
+			input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
 			attackState = AttackState::HeavyPunch;
 
 		}
-		else if (input->IsKeyDown(sf::Keyboard::Numpad0))
+		else if (input->IsKeyDown(sf::Keyboard::Numpad1))
 		{
-			input->SetKeyUp(sf::Keyboard::Numpad0); // Lift key so it acts as trigger
+			input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
 		}
-		else attackState = AttackState::None;
+		// Kick
+		if (input->IsKeyDown(sf::Keyboard::Numpad2) && input->IsKeyDown(sf::Keyboard::Left))
+		{
+			input->SetKeyUp(sf::Keyboard::Numpad2); // Lift key so it acts as trigger
+			attackState = AttackState::HeavyKick;
 
+		}
+		else if (input->IsKeyDown(sf::Keyboard::Numpad2))
+		{
+			input->SetKeyUp(sf::Keyboard::Numpad2); // Lift key so it acts as trigger
+			attackState = AttackState::FastKick;
+
+		}
 
 		//-------------------
 		// Movement ---------
@@ -500,9 +526,14 @@ void PlayerCharacter::HandleAnimation(float dt)
 		currentAnim->SetFlipped(true);
 	}
 
+	if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery && moveState != MoveState::Idle 
+		|| attackState == AttackState::None 
+		|| currentAnim->IsAnimationCompleted())
+	{
+		attackState = AttackState::None;
+
+	}
 	// ATTACK --------------------------------------------------------
-	bool isAttacking = true;
-	// Check the attack state, if any
 	switch (attackState)
 	{
 	case AttackState::None:
@@ -511,8 +542,6 @@ void PlayerCharacter::HandleAnimation(float dt)
 		anim_fastkick.ResetAnimation();
 		anim_heavyKick.ResetAnimation();
 		anim_dragonPunch.ResetAnimation();
-		anim_hurt.ResetAnimation();
-		isAttacking = false;
 		break;
 	case AttackState::FastPunch:
 		currentAnim = &anim_fastPunch;
@@ -536,18 +565,13 @@ void PlayerCharacter::HandleAnimation(float dt)
 	case AttackState::Defend:
 		currentAnim = &anim_defend;
 		break;
-	case AttackState::HitStun:
-		currentAnim = &anim_hurt;
-		break;
-	case AttackState::BlockStun:
-		currentAnim = &anim_defend;
-		break;
+
 	default:
 		break;
 	}
 
 	// MOVE - Calculate the move state if we are not attacking
-	if (!isAttacking)
+	if (attackState == AttackState::None)
 	{
 		// Update movement animation
 		switch (moveState)
@@ -573,6 +597,22 @@ void PlayerCharacter::HandleAnimation(float dt)
 		default:
 			break;
 		}
+	}
+
+	// Check player health state
+	switch (playerState)
+	{
+	case PlayerState::Alive:
+		anim_hurt.ResetAnimation();
+		break;
+	case PlayerState::Dead:
+		currentAnim = &anim_die;
+		break;
+	case PlayerState::Hurt:
+		currentAnim = &anim_hurt;
+		break;
+	default:
+		break;
 	}
 
 	setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw
@@ -705,7 +745,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 
 	// Defend ---
 	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize, bodyCollOffset);
-	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Idle, *GuardColl);
+	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Active, *GuardColl);
 	anim_defend.SetLooping(false);
 
 	// Dash FWD and BKW ---
@@ -744,6 +784,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
 	anim_fastPunch.AddFrame(sf::IntRect(0, 220, 78, 55), AnimationFrameType::Active, punchCollVector);
 	anim_fastPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_fastPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
 
@@ -761,42 +802,79 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_heavyPunch.AddFrame(sf::IntRect(156, 220, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_heavyPunch.AddFrame(sf::IntRect(234, 220, 78, 55), AnimationFrameType::Active, hpunchCollVector);
 	anim_heavyPunch.AddFrame(sf::IntRect(234, 220, 78, 55), AnimationFrameType::Active, hpunchCollVector);
-	anim_heavyPunch.AddFrame(sf::IntRect(309, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_heavyPunch.AddFrame(sf::IntRect(312, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_heavyPunch.AddFrame(sf::IntRect(312, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_heavyPunch.AddFrame(sf::IntRect(312, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_heavyPunch.SetFrameSpeed(0.1f);
 	anim_heavyPunch.SetLooping(false);
 
 	// fast kick
-	anim_fastkick.AddFrame(sf::IntRect(0, 275, 78, 55), AnimationFrameType::StartUp);
-	anim_fastkick.AddFrame(sf::IntRect(78, 275, 78, 55), AnimationFrameType::Active);
-	anim_fastkick.AddFrame(sf::IntRect(78, 275, 78, 55), AnimationFrameType::Active);
-	anim_fastkick.AddFrame(sf::IntRect(156, 275, 78, 55), AnimationFrameType::Recovery);
+	sf::Vector2f kickCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(15 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f kickCollPos = getPosition() + kickCollOffset;
+	sf::Vector2f kickCollSize = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	CollisionBox* kickColl = new CollisionBox(CollisionBox::ColliderType::HitBox, kickCollPos, kickCollSize, kickCollOffset);
+
+	std::vector<CollisionBox*> kickCollVector;
+	kickCollVector.push_back(bodyColl);
+	kickCollVector.push_back(kickColl);
+
+	anim_fastkick.AddFrame(sf::IntRect(0, 275, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_fastkick.AddFrame(sf::IntRect(78, 275, 78, 55), AnimationFrameType::Active, kickCollVector);
+	anim_fastkick.AddFrame(sf::IntRect(78, 275, 78, 55), AnimationFrameType::Active, kickCollVector);
+	anim_fastkick.AddFrame(sf::IntRect(156, 275, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_fastkick.AddFrame(sf::IntRect(156, 275, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_fastkick.SetFrameSpeed(0.1f);
 	anim_fastkick.SetLooping(false);
 
 	// Heavy kick
-	anim_heavyKick.AddFrame(sf::IntRect(234, 275, 78, 55), AnimationFrameType::StartUp);
-	anim_heavyKick.AddFrame(sf::IntRect(309, 275, 78, 55), AnimationFrameType::StartUp);
-	anim_heavyKick.AddFrame(sf::IntRect(387, 275, 78, 55), AnimationFrameType::StartUp);
-	anim_heavyKick.AddFrame(sf::IntRect(0, 330, 78, 55), AnimationFrameType::Active);
-	anim_heavyKick.AddFrame(sf::IntRect(78, 330, 78, 55), AnimationFrameType::Recovery);
+	sf::Vector2f hkickCollOffset = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(-8 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f hkickCollPos = getPosition() + hkickCollOffset;
+	sf::Vector2f hkickCollSize = sf::Vector2f(static_cast <float>(18 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	CollisionBox* hkickColl = new CollisionBox(CollisionBox::ColliderType::HitBox, hkickCollPos, hkickCollSize, hkickCollOffset);
+
+	std::vector<CollisionBox*> hkickCollVector;
+	hkickCollVector.push_back(bodyColl);
+	hkickCollVector.push_back(hkickColl);
+
+	anim_heavyKick.AddFrame(sf::IntRect(234, 275, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_heavyKick.AddFrame(sf::IntRect(312, 275, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_heavyKick.AddFrame(sf::IntRect(390, 275, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_heavyKick.AddFrame(sf::IntRect(0, 330, 78, 55), AnimationFrameType::Active, hkickCollVector);
+	anim_heavyKick.AddFrame(sf::IntRect(0, 330, 78, 55), AnimationFrameType::Active, hkickCollVector);
+	anim_heavyKick.AddFrame(sf::IntRect(0, 330, 78, 55), AnimationFrameType::Active, hkickCollVector);
+	anim_heavyKick.AddFrame(sf::IntRect(78, 330, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_heavyKick.AddFrame(sf::IntRect(78, 330, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_heavyKick.AddFrame(sf::IntRect(234, 275, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_heavyKick.SetFrameSpeed(0.1f);
 	anim_heavyKick.SetLooping(false);
 
 	// Dragon punch
-	anim_dragonPunch.AddFrame(sf::IntRect(156, 330, 78, 55), AnimationFrameType::StartUp);
-	anim_dragonPunch.AddFrame(sf::IntRect(234, 330, 78, 55), AnimationFrameType::StartUp);
-	anim_dragonPunch.AddFrame(sf::IntRect(309, 330, 78, 55), AnimationFrameType::Active);
-	anim_dragonPunch.AddFrame(sf::IntRect(387, 330, 78, 55), AnimationFrameType::Active);
-	anim_dragonPunch.AddFrame(sf::IntRect(0, 385, 78, 55), AnimationFrameType::Active);
-	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery);
-	anim_dragonPunch.SetFrameSpeed(0.1f);
+	sf::Vector2f  dpunchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-10 * PIXEL_SCALE_FACTOR));
+	sf::Vector2f dpunchCollPos = getPosition() + dpunchCollOffset;
+	sf::Vector2f dpunchCollSize = sf::Vector2f(static_cast <float>(10 * PIXEL_SCALE_FACTOR), static_cast <float>(10 * PIXEL_SCALE_FACTOR));
+	CollisionBox* dpunchColl = new CollisionBox(CollisionBox::ColliderType::HitBox, dpunchCollPos, dpunchCollSize, dpunchCollOffset);
+
+	std::vector<CollisionBox*> dpunchCollVector;
+	dpunchCollVector.push_back(bodyColl);
+	dpunchCollVector.push_back(dpunchColl);
+
+	anim_dragonPunch.AddFrame(sf::IntRect(156, 330, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_dragonPunch.AddFrame(sf::IntRect(234, 330, 78, 55), AnimationFrameType::StartUp, *bodyColl);
+	anim_dragonPunch.AddFrame(sf::IntRect(312, 330, 78, 55), AnimationFrameType::Active, dpunchCollVector);
+	anim_dragonPunch.AddFrame(sf::IntRect(390, 330, 78, 55), AnimationFrameType::Active, dpunchCollVector);
+	anim_dragonPunch.AddFrame(sf::IntRect(0, 385, 78, 55), AnimationFrameType::Active, dpunchCollVector);
+	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_dragonPunch.SetFrameSpeed(0.07f);
 	anim_dragonPunch.SetLooping(false);
 
 	// Die
 	anim_die.AddFrame(sf::IntRect(156, 385, 78, 55), AnimationFrameType::Active);
 	anim_die.AddFrame(sf::IntRect(234, 385, 78, 55), AnimationFrameType::Active);
-	anim_die.AddFrame(sf::IntRect(309, 385, 78, 55), AnimationFrameType::Active);
-	anim_die.AddFrame(sf::IntRect(387, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.AddFrame(sf::IntRect(312, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.AddFrame(sf::IntRect(390, 385, 78, 55), AnimationFrameType::Active);
 	anim_die.SetFrameSpeed(0.1f);
 	anim_die.SetLooping(false);
 
