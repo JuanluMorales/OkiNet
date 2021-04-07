@@ -52,7 +52,7 @@ private:
 	Animation anim_heavyPunch;
 	Animation anim_fastkick;
 	Animation anim_heavyKick;
-	Animation anim_dPunch;
+	Animation anim_dragonPunch;
 	Animation anim_defend;
 	Animation anim_hurt;
 	Animation anim_die;

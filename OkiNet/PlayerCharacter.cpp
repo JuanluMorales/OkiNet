@@ -200,6 +200,15 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (!shouldAcceptInput) return;
 
 		// Attack
+		attackState = AttackState::None;
+		// Special punch
+		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::E))
+		{
+			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+			attackState = AttackState::DragonPunch;
+		}else
+		// Punch
 		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
@@ -212,7 +221,20 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
 		}
-		else attackState = AttackState::None;
+		// Kick
+		if (input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D))
+		{
+			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+			attackState = AttackState::HeavyKick;
+
+		}
+		else if (input->IsKeyDown(sf::Keyboard::E))
+		{
+			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+			attackState = AttackState::FastKick;
+
+		}
+
 		//-------------------
 		// Movement ---------
 		if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
@@ -316,6 +338,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			attackState = AttackState::FastPunch;
 		}
 		else attackState = AttackState::None;
+
+
 		//-------------------
 		// Movement ---------
 		if (input->IsKeyDown(sf::Keyboard::Left) && CanGoLeft) // Left
@@ -484,6 +508,9 @@ void PlayerCharacter::HandleAnimation(float dt)
 	case AttackState::None:
 		anim_fastPunch.ResetAnimation();
 		anim_heavyPunch.ResetAnimation();
+		anim_fastkick.ResetAnimation();
+		anim_heavyKick.ResetAnimation();
+		anim_dragonPunch.ResetAnimation();
 		anim_hurt.ResetAnimation();
 		isAttacking = false;
 		break;
@@ -491,7 +518,20 @@ void PlayerCharacter::HandleAnimation(float dt)
 		currentAnim = &anim_fastPunch;
 		break;
 	case AttackState::HeavyPunch:
+		//if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::StartUp)
+		//{
+		//	PushPlayer(sf::Vector2f(static_cast<float>(-18), 0), dt * 5);
+		//}
 		currentAnim = &anim_heavyPunch;
+		break;
+	case AttackState::FastKick:
+		currentAnim = &anim_fastkick;
+		break;
+	case AttackState::HeavyKick:
+		currentAnim = &anim_heavyKick;
+		break;
+	case AttackState::DragonPunch:
+		currentAnim = &anim_dragonPunch;
 		break;
 	case AttackState::Defend:
 		currentAnim = &anim_defend;
@@ -724,6 +764,41 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_heavyPunch.AddFrame(sf::IntRect(309, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_heavyPunch.SetFrameSpeed(0.1f);
 	anim_heavyPunch.SetLooping(false);
+
+	// fast kick
+	anim_fastkick.AddFrame(sf::IntRect(0, 275, 78, 55), AnimationFrameType::StartUp);
+	anim_fastkick.AddFrame(sf::IntRect(78, 275, 78, 55), AnimationFrameType::Active);
+	anim_fastkick.AddFrame(sf::IntRect(78, 275, 78, 55), AnimationFrameType::Active);
+	anim_fastkick.AddFrame(sf::IntRect(156, 275, 78, 55), AnimationFrameType::Recovery);
+	anim_fastkick.SetFrameSpeed(0.1f);
+	anim_fastkick.SetLooping(false);
+
+	// Heavy kick
+	anim_heavyKick.AddFrame(sf::IntRect(234, 275, 78, 55), AnimationFrameType::StartUp);
+	anim_heavyKick.AddFrame(sf::IntRect(309, 275, 78, 55), AnimationFrameType::StartUp);
+	anim_heavyKick.AddFrame(sf::IntRect(387, 275, 78, 55), AnimationFrameType::StartUp);
+	anim_heavyKick.AddFrame(sf::IntRect(0, 330, 78, 55), AnimationFrameType::Active);
+	anim_heavyKick.AddFrame(sf::IntRect(78, 330, 78, 55), AnimationFrameType::Recovery);
+	anim_heavyKick.SetFrameSpeed(0.1f);
+	anim_heavyKick.SetLooping(false);
+
+	// Dragon punch
+	anim_dragonPunch.AddFrame(sf::IntRect(156, 330, 78, 55), AnimationFrameType::StartUp);
+	anim_dragonPunch.AddFrame(sf::IntRect(234, 330, 78, 55), AnimationFrameType::StartUp);
+	anim_dragonPunch.AddFrame(sf::IntRect(309, 330, 78, 55), AnimationFrameType::Active);
+	anim_dragonPunch.AddFrame(sf::IntRect(387, 330, 78, 55), AnimationFrameType::Active);
+	anim_dragonPunch.AddFrame(sf::IntRect(0, 385, 78, 55), AnimationFrameType::Active);
+	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery);
+	anim_dragonPunch.SetFrameSpeed(0.1f);
+	anim_dragonPunch.SetLooping(false);
+
+	// Die
+	anim_die.AddFrame(sf::IntRect(156, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.AddFrame(sf::IntRect(234, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.AddFrame(sf::IntRect(309, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.AddFrame(sf::IntRect(387, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.SetFrameSpeed(0.1f);
+	anim_die.SetLooping(false);
 
 	// Initialize to idle
 	currentAnim = &anim_idle;
