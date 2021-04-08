@@ -11,7 +11,8 @@ public:
 		Uninitialized,
 		HitBox, // The enemy will receive damage on collision with this collider
 		GuardBox, // The player does not receive damage on collision response
-		HurtBox // The player receives damage on collision response
+		HurtBox, // The player receives damage on collision response
+		Environment // The collider blocks the player movement
 	};
 
 	CollisionBox();

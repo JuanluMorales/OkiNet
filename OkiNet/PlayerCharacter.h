@@ -10,6 +10,8 @@ public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, Hurt };
 	enum class MoveState { Idle, Left, Right, DashL, DashR };
+	bool CanGoLeft; //Allows the player to move left 
+	bool CanGoRight;
 	enum class AttackState { None, FastPunch, HeavyPunch, FastKick, HeavyKick, DragonPunch, Defend };
 
 	PlayerCharacter();
@@ -78,8 +80,7 @@ private:
 	bool b_fastPunch; // Helper for triggering the animation on/off
 
 	bool grounded; //Sets the player able to jump when true
-	bool CanGoLeft; //Allows the player to move left 
-	bool CanGoRight;
+
 
 	int maxHealthPoints; //Total hit points the player can suffer before dying
 	int currentHealthPoints; //Current health 

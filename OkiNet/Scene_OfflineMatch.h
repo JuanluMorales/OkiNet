@@ -26,8 +26,13 @@ private:
 	sf::Vector2f playerTwoStartPos;
 
 	// Map limits
-	CollisionBox leftColl;
-	CollisionBox rightColl;
+	CollisionBox* leftColl;
+	CollisionBox* rightColl;
+
+	std::vector<sf::RectangleShape*> p1_lifeBar;
+	std::vector<sf::RectangleShape*> p1_lifeBarBackground;
+	std::vector<sf::RectangleShape*> p2_lifeBar;
+	std::vector<sf::RectangleShape*> p2_lifeBarBackground;
 
 	sf::Font DebugFont;
 	sf::Text DebugText;

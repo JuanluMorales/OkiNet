@@ -202,7 +202,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 		else
 		{
-			if(attackState == AttackState::Defend) attackState = AttackState::None;
+			if (attackState == AttackState::Defend) attackState = AttackState::None;
 		}
 
 		if (!shouldAcceptInput) return;
@@ -531,14 +531,9 @@ void PlayerCharacter::HandleAnimation(float dt)
 	{
 		currentAnim->SetFlipped(true);
 	}
-	//// Check if we want to cancel the recovery frames with movement
-	//if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery && moveState != MoveState::Idle)
-	//{
-	//	attackState = AttackState::None;
 
-	//}
 	// ATTACK --------------------------------------------------------
-	// Check if the attack is finished and reset it
+	// Check if the attack is finished and reset it, unless is defending
 	if (attackState != AttackState::None && attackState != AttackState::Defend)
 	{
 		if (currentAnim->IsAnimationCompleted())
@@ -551,16 +546,11 @@ void PlayerCharacter::HandleAnimation(float dt)
 	switch (attackState)
 	{
 	case AttackState::None:
-		anim_fastPunch.ResetAnimation();
-		anim_heavyPunch.ResetAnimation();
-		anim_fastkick.ResetAnimation();
-		anim_heavyKick.ResetAnimation();
-		anim_dragonPunch.ResetAnimation();
 		break;
 	case AttackState::FastPunch:
 		currentAnim = &anim_fastPunch;
 		break;
-	case AttackState::HeavyPunch:	
+	case AttackState::HeavyPunch:
 		currentAnim = &anim_heavyPunch;
 		break;
 	case AttackState::FastKick:
