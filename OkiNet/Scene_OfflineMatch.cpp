@@ -94,22 +94,24 @@ void Scene_OfflineMatch::OverrideRender()
 	window->draw(DebugText);
 
 	// Draw UI
-	for (auto hpBack : p1_lifeBarBackground)
-	{
-		window->draw(*hpBack);
-	}
-	for (auto hp : p1_lifeBar)
+	for (auto hp : p1_lifeBarBackground)
 	{
 		window->draw(*hp);
 	}
-	for (auto hpBack : p2_lifeBarBackground)
+	for (int i = 0; i < playerOne.currentHealthPoints; i++)
 	{
-		window->draw(*hpBack);
+		window->draw(*p1_lifeBar.at(i));
 	}
-	for (auto hp : p2_lifeBar)
+
+	for (auto hp : p2_lifeBarBackground)
 	{
 		window->draw(*hp);
 	}
+	for (int i = 0; i < playerTwo.currentHealthPoints; i++)
+	{
+		window->draw(*p2_lifeBar.at(i));
+	}
+
 
 }
 
@@ -119,6 +121,7 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 	playerTwo.Update(dt, window);
 
 	// Iterate all current's frame collision boxes for both players
+	bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
 	for (auto collA : playerOne.GetCurrentCollision())
 	{
 		for (auto collB : playerTwo.GetCurrentCollision()) 
@@ -128,15 +131,9 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 				// Check collision between players
 				Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
 
-				if (newColl.None) // If there was no collision...
+				if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
 				{
-					playerOne.NoCollisionRegistered();
-					playerTwo.NoCollisionRegistered();
-
-					DebugText.setString("NO COLLISION");
-				}
-				else
-				{
+					interPlayerCollision = true;
 					playerOne.CollisionResponseToPlayer(&newColl);
 					playerTwo.CollisionResponseToPlayer(&newColl);
 
@@ -165,6 +162,14 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 				}
 			}
 		}
+	}
+
+	if (!interPlayerCollision)
+	{
+		playerOne.NoCollisionRegistered();
+		playerTwo.NoCollisionRegistered();
+
+		DebugText.setString("NO COLLISION");
 	}
 
 

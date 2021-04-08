@@ -29,8 +29,7 @@ PlayerCharacter::PlayerCharacter()
 	b_fastPunch = false;
 	currentAnim = NULL;
 
-	maxHealthPoints = 50; //Total hit points the player can suffer before dying
-	currentHealthPoints = 50; //Current health 
+	currentHealthPoints = maxHealthPoints; //Current health 
 
 	moveDistance = 180;
 	dashDistance = 5000;
@@ -646,6 +645,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		// Check for inflict damage collision
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
 		{
+			
 			inflictedDamage = true;
 		}
 		else inflictedDamage = false;
@@ -653,9 +653,9 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		// Check for suffering damage
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)
 		{
+			if(!receivedDamage)	currentHealthPoints -= 10;
 			receivedDamage = true;
 		}
-		else receivedDamage = false;
 
 		// Check hitting guard box
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::GuardBox)
