@@ -200,6 +200,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
 		}
+		else
+		{
+			if(attackState == AttackState::Defend) attackState = AttackState::None;
+		}
 
 		if (!shouldAcceptInput) return;
 
@@ -209,22 +213,23 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
 			attackState = AttackState::DragonPunch;
-		}else
-		// Punch
-		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
-		{
-			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-			attackState = AttackState::HeavyPunch;
-
 		}
-		else if (input->IsKeyDown(sf::Keyboard::Q))
-		{
-			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-			attackState = AttackState::FastPunch;
+		else
+			// Punch
+			if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
+			{
+				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+				attackState = AttackState::HeavyPunch;
+
+			}
+			else if (input->IsKeyDown(sf::Keyboard::Q))
+			{
+				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+				attackState = AttackState::FastPunch;
 
 
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
-		}
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
+			}
 		// Kick
 		if (input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D))
 		{
@@ -326,11 +331,11 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (input->IsKeyDown(sf::Keyboard::Down))
 		{
 			attackState = AttackState::Defend;
-			//shouldAcceptInput = false;
+			shouldAcceptInput = false;
 		}
 		else
 		{
-			attackState = AttackState::None;
+			if (attackState == AttackState::Defend) attackState = AttackState::None;
 		}
 
 		if (!shouldAcceptInput) return;
@@ -340,18 +345,19 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			input->SetKeyUp(sf::Keyboard::Up); // Lift key so it acts as trigger
 			attackState = AttackState::DragonPunch;
-		}else
-		if (input->IsKeyDown(sf::Keyboard::Numpad1) && input->IsKeyDown(sf::Keyboard::Left))
-		{
-			input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
-			attackState = AttackState::HeavyPunch;
+		}
+		else
+			if (input->IsKeyDown(sf::Keyboard::Numpad1) && input->IsKeyDown(sf::Keyboard::Left))
+			{
+				input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
+				attackState = AttackState::HeavyPunch;
 
-		}
-		else if (input->IsKeyDown(sf::Keyboard::Numpad1))
-		{
-			input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
-			attackState = AttackState::FastPunch;
-		}
+			}
+			else if (input->IsKeyDown(sf::Keyboard::Numpad1))
+			{
+				input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
+				attackState = AttackState::FastPunch;
+			}
 		// Kick
 		if (input->IsKeyDown(sf::Keyboard::Numpad2) && input->IsKeyDown(sf::Keyboard::Left))
 		{
@@ -525,15 +531,23 @@ void PlayerCharacter::HandleAnimation(float dt)
 	{
 		currentAnim->SetFlipped(true);
 	}
+	//// Check if we want to cancel the recovery frames with movement
+	//if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery && moveState != MoveState::Idle)
+	//{
+	//	attackState = AttackState::None;
 
-	if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery && moveState != MoveState::Idle 
-		|| attackState == AttackState::None 
-		|| currentAnim->IsAnimationCompleted())
-	{
-		attackState = AttackState::None;
-
-	}
+	//}
 	// ATTACK --------------------------------------------------------
+	// Check if the attack is finished and reset it
+	if (attackState != AttackState::None && attackState != AttackState::Defend)
+	{
+		if (currentAnim->IsAnimationCompleted())
+		{
+			attackState = AttackState::None;
+			currentAnim->ResetAnimation();
+		}
+	}
+	// Assign correct attack animation
 	switch (attackState)
 	{
 	case AttackState::None:
@@ -546,11 +560,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 	case AttackState::FastPunch:
 		currentAnim = &anim_fastPunch;
 		break;
-	case AttackState::HeavyPunch:
-		//if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::StartUp)
-		//{
-		//	PushPlayer(sf::Vector2f(static_cast<float>(-18), 0), dt * 5);
-		//}
+	case AttackState::HeavyPunch:	
 		currentAnim = &anim_heavyPunch;
 		break;
 	case AttackState::FastKick:
