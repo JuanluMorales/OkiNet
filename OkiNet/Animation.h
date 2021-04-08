@@ -16,6 +16,9 @@ public:
 	void SetFrameSpeed(float speed);
 	int GetSize();
 
+	void SetID(int id) { ID = id; }
+	int GetID() { return ID; }
+
 	// update/reset animation
 	void Animate(float dt);
 	void ResetAnimation();
@@ -49,6 +52,7 @@ protected:
 	bool isLooping;
 	bool isPlaying;
 	float elapsedTime;
+	int ID; // Animation identifier
 
 };
 

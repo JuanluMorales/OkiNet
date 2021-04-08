@@ -125,9 +125,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		{
 			thisPeer->Update();
 		}
-
 	}
 
+	// Check damage and life status
 	if (receivedDamage)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
@@ -139,7 +139,11 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	}
 	else
 	{
-		playerState = PlayerState::Alive;
+		if (currentHealthPoints <= 0)
+		{
+			playerState = PlayerState::Dead;
+			shouldAcceptInput = false;
+		}else playerState = PlayerState::Alive;
 	}
 
 	HandleAnimation(dt);
@@ -653,7 +657,22 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		// Check for suffering damage
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)
 		{
-			if(!receivedDamage)	currentHealthPoints -= 10;
+			if (!receivedDamage)
+			{
+				// Modify damage receive behaviour based on type of attack
+				float modifier = 0.0f;
+				if (collResponse->s2anim->GetID() == anim_fastPunch.GetID() || collResponse->s2anim->GetID() == anim_fastkick.GetID())
+				{
+					modifier = 1.0f;
+				}
+				if (collResponse->s2anim->GetID() == anim_heavyPunch.GetID() || collResponse->s2anim->GetID() == anim_heavyKick.GetID())
+				{
+					modifier = 2.0f;
+				}
+
+				currentHealthPoints -= 10 * modifier;
+				if (currentHealthPoints <= 0) currentHealthPoints = 0;
+			}
 			receivedDamage = true;
 		}
 
@@ -732,7 +751,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_idle.AddFrame(sf::IntRect(156, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.AddFrame(sf::IntRect(234, 0, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_idle.SetFrameSpeed(0.1f);
-
+	anim_idle.SetID(0);
 	// Walk -----
 	anim_walkFWD.AddFrame(sf::IntRect(0, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.AddFrame(sf::IntRect(78, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
@@ -742,11 +761,13 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_walkFWD.AddFrame(sf::IntRect(390, 55, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.AddFrame(sf::IntRect(0, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_walkFWD.SetFrameSpeed(0.1f);
+	anim_walkFWD.SetID(1);
 
 	// Defend ---
 	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize, bodyCollOffset);
 	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Active, *GuardColl);
 	anim_defend.SetLooping(false);
+	anim_defend.SetID(2);
 
 	// Dash FWD and BKW ---
 	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
@@ -754,12 +775,14 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dashFWD.SetLooping(false);
 	anim_dashFWD.SetFrameSpeed(0.1f);
+	anim_dashFWD.SetID(3);
 
 	anim_dashBKW.AddFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dashBKW.SetLooping(false);
 	anim_dashBKW.SetFrameSpeed(0.1f);
+	anim_dashBKW.SetID(4);
 
 	// Hurt anim -----
 	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
@@ -768,7 +791,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_hurt.SetLooping(false);
 	anim_hurt.SetFrameSpeed(0.1f);
-
+	anim_hurt.SetID(5);
 
 	// Fast Punch attack ------
 	sf::Vector2f  punchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
@@ -787,6 +810,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_fastPunch.AddFrame(sf::IntRect(78, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_fastPunch.SetFrameSpeed(0.1f);
 	anim_fastPunch.SetLooping(false);
+	anim_fastPunch.SetID(6);
 
 	// Heavy punch 
 	sf::Vector2f hpunchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-7 * PIXEL_SCALE_FACTOR));
@@ -807,6 +831,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_heavyPunch.AddFrame(sf::IntRect(312, 220, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_heavyPunch.SetFrameSpeed(0.1f);
 	anim_heavyPunch.SetLooping(false);
+	anim_heavyPunch.SetID(7);
 
 	// fast kick
 	sf::Vector2f kickCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(15 * PIXEL_SCALE_FACTOR));
@@ -825,6 +850,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_fastkick.AddFrame(sf::IntRect(156, 275, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_fastkick.SetFrameSpeed(0.1f);
 	anim_fastkick.SetLooping(false);
+	anim_fastkick.SetID(8);
 
 	// Heavy kick
 	sf::Vector2f hkickCollOffset = sf::Vector2f(static_cast <float>(20 * PIXEL_SCALE_FACTOR), static_cast <float>(-8 * PIXEL_SCALE_FACTOR));
@@ -847,6 +873,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_heavyKick.AddFrame(sf::IntRect(234, 275, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_heavyKick.SetFrameSpeed(0.1f);
 	anim_heavyKick.SetLooping(false);
+	anim_heavyKick.SetID(9);
 
 	// Dragon punch
 	sf::Vector2f  dpunchCollOffset = sf::Vector2f(static_cast <float>(15 * PIXEL_SCALE_FACTOR), static_cast <float>(-10 * PIXEL_SCALE_FACTOR));
@@ -869,14 +896,16 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dragonPunch.AddFrame(sf::IntRect(78, 385, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dragonPunch.SetFrameSpeed(0.07f);
 	anim_dragonPunch.SetLooping(false);
-
+	anim_dragonPunch.SetID(10);
 	// Die
 	anim_die.AddFrame(sf::IntRect(156, 385, 78, 55), AnimationFrameType::Active);
 	anim_die.AddFrame(sf::IntRect(234, 385, 78, 55), AnimationFrameType::Active);
 	anim_die.AddFrame(sf::IntRect(312, 385, 78, 55), AnimationFrameType::Active);
 	anim_die.AddFrame(sf::IntRect(390, 385, 78, 55), AnimationFrameType::Active);
+	anim_die.AddFrame(sf::IntRect(0, 440, 78, 55), AnimationFrameType::Active);
 	anim_die.SetFrameSpeed(0.1f);
 	anim_die.SetLooping(false);
+	anim_die.SetID(11);
 
 	// Initialize to idle
 	currentAnim = &anim_idle;

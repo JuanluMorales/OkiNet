@@ -9,7 +9,7 @@ Animation::Animation()
 	isPlaying = true;
 	isLooping = true;
 	animationSpeed = 1;
-
+	ID = -1;
 }
 
 void Animation::AddFrame(AnimationFrame animFrame)

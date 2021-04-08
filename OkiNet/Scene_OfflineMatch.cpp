@@ -129,7 +129,7 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 			if (collA->IsActive() && collB->IsActive())
 			{
 				// Check collision between players
-				Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB);
+				Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, playerOne.GetCurrentAnimation(), playerTwo.GetCurrentAnimation());
 
 				if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
 				{
