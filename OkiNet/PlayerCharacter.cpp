@@ -30,6 +30,7 @@ PlayerCharacter::PlayerCharacter()
 	currentAnim = NULL;
 
 	currentHealthPoints = maxHealthPoints; //Current health 
+	currentEnergyPoints = maxEnergyPoints;
 
 	moveDistance = 180;
 	dashDistance = 5000;
@@ -669,6 +670,10 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				{
 					modifier = 2.0f;
 				}
+				if (collResponse->s2anim->GetID() == anim_dragonPunch.GetID())
+				{
+					modifier = 5.0f;
+				}
 
 				currentHealthPoints -= 10 * modifier;
 				if (currentHealthPoints <= 0) currentHealthPoints = 0;
@@ -712,6 +717,26 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		// Check for suffering damage
 		if (collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::HitBox)
 		{
+			if (!receivedDamage)
+			{
+				// Modify damage receive behaviour based on type of attack
+				float modifier = 0.0f;
+				if (collResponse->s1anim->GetID() == anim_fastPunch.GetID() || collResponse->s1anim->GetID() == anim_fastkick.GetID())
+				{
+					modifier = 1.0f;
+				}
+				if (collResponse->s1anim->GetID() == anim_heavyPunch.GetID() || collResponse->s1anim->GetID() == anim_heavyKick.GetID())
+				{
+					modifier = 2.0f;
+				}
+				if (collResponse->s1anim->GetID() == anim_dragonPunch.GetID())
+				{
+					modifier = 5.0f;
+				}
+
+				currentHealthPoints -= 10 * modifier;
+				if (currentHealthPoints <= 0) currentHealthPoints = 0;
+			}
 			receivedDamage = true;
 		}
 		else receivedDamage = false;

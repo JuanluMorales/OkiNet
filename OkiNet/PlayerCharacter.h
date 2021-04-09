@@ -10,6 +10,7 @@ public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, Hurt };
 	int currentHealthPoints; //Current health 
+	int currentEnergyPoints;
 	enum class MoveState { Idle, Left, Right, DashL, DashR };
 	bool CanGoLeft; //Allows the player to move left 
 	bool CanGoRight;
@@ -84,7 +85,7 @@ private:
 
 
 	const int maxHealthPoints = 100; //Total hit points the player can suffer before dying
-
+	const int maxEnergyPoints = 100;
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 

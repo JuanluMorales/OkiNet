@@ -65,6 +65,45 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 		disp += static_cast<int>(unitSize.x);
 	}
 
+	//Player 1 energy bar
+	disp = 0;
+	startPos = sf::Vector2f(-99, -315);
+	unitSize = sf::Vector2f(4, 15);
+	for (int i = 0; i < 100; i++)
+	{
+		sf::RectangleShape* energyBarStack = new sf::RectangleShape();
+		energyBarStack->setFillColor(sf::Color::Yellow);
+		energyBarStack->setPosition(sf::Vector2f(startPos.x + disp, startPos.y));
+		energyBarStack->setSize(unitSize);
+		p1_energyBar.push_back(energyBarStack);
+
+		sf::RectangleShape* energyBarBackgroundStack = new sf::RectangleShape();
+		energyBarBackgroundStack->setFillColor(sf::Color::Black);
+		energyBarBackgroundStack->setPosition(sf::Vector2f((startPos.x - 4.0f) + disp, startPos.y - 3.0f));
+		energyBarBackgroundStack->setSize(sf::Vector2f(unitSize.x * 4.0f, unitSize.y * 1.4f));
+		p1_energyBarBackground.push_back(energyBarBackgroundStack);
+		disp -= static_cast<int>(unitSize.x);
+	}
+	// Player 2
+	disp = 0;
+	startPos = sf::Vector2f(100, -315);
+	unitSize = sf::Vector2f(4, 15);
+	for (int i = 0; i < 100; i++)
+	{
+		sf::RectangleShape* energyBarStack = new sf::RectangleShape();
+		energyBarStack->setFillColor(sf::Color::Yellow);
+		energyBarStack->setPosition(sf::Vector2f(startPos.x + disp, startPos.y));
+		energyBarStack->setSize(unitSize);
+		p2_energyBar.push_back(energyBarStack);
+
+		sf::RectangleShape* energyBarBackgroundStack = new sf::RectangleShape();
+		energyBarBackgroundStack->setFillColor(sf::Color::Black);
+		energyBarBackgroundStack->setPosition(sf::Vector2f((startPos.x - 7.0f) + disp, startPos.y - 3.0f));
+		energyBarBackgroundStack->setSize(sf::Vector2f(unitSize.x * 4.0f, unitSize.y * 1.4f));
+		p2_energyBarBackground.push_back(energyBarBackgroundStack);
+		disp += static_cast<int>(unitSize.x);
+	}
+
 }
 
 void Scene_OfflineMatch::OverrideEarlyUpdate(float dt)
@@ -94,6 +133,7 @@ void Scene_OfflineMatch::OverrideRender()
 	window->draw(DebugText);
 
 	// Draw UI
+	// HP bars
 	for (auto hp : p1_lifeBarBackground)
 	{
 		window->draw(*hp);
@@ -111,12 +151,30 @@ void Scene_OfflineMatch::OverrideRender()
 	{
 		window->draw(*p2_lifeBar.at(i));
 	}
+	// Energy bars
+	for (auto hp : p1_energyBarBackground)
+	{
+		window->draw(*hp);
+	}
+	for (int i = 0; i < playerOne.currentEnergyPoints; i++)
+	{
+		window->draw(*p1_energyBar.at(i));
+	}
 
-
+	for (auto hp : p2_energyBarBackground)
+	{
+		window->draw(*hp);
+	}
+	for (int i = 0; i < playerTwo.currentEnergyPoints; i++)
+	{
+		window->draw(*p2_energyBar.at(i));
+	}
 }
 
 void Scene_OfflineMatch::OverrideUpdate(float dt)
 {
+	if (playerOne.currentHealthPoints <= 0 || playerTwo.currentHealthPoints <= 0) Restart();
+
 	playerOne.Update(dt, window);
 	playerTwo.Update(dt, window);
 
@@ -186,4 +244,15 @@ void Scene_OfflineMatch::OverrideHandleInput(float dt)
 	playerTwo.HandleInput(input, dt);
 
 
+}
+
+void Scene_OfflineMatch::Restart()
+{
+	thisMatchState = MatchState::Restart;
+
+	playerOne.setPosition(playerOneStartPos);
+	playerTwo.setPosition(playerTwoStartPos);
+	playerOne.currentHealthPoints = 100;
+	playerTwo.currentHealthPoints = 100;
+	thisMatchState = MatchState::Start;
 }
