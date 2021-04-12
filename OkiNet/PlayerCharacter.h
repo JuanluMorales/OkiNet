@@ -9,8 +9,8 @@ class PlayerCharacter : public SpriteBase
 public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, Hurt };
-	int currentHealthPoints; //Current health 
-	int currentEnergyPoints;
+	float currentHealthPoints; //Current health 
+	float currentEnergyPoints;
 	enum class MoveState { Idle, Left, Right, DashL, DashR };
 	bool CanGoLeft; //Allows the player to move left 
 	bool CanGoRight;
@@ -73,6 +73,7 @@ private:
 	bool receivedDamage;
 	bool inflictedDamage;
 	bool hitGuardBox;
+	bool receivedGuardBox; // has the player received damage while guarding during this frame?
 
 	bool b_dashTriggerL; // Helps checking if player can/wants to dash
 	bool b_dashTriggerR;
@@ -84,8 +85,8 @@ private:
 	bool grounded; //Sets the player able to jump when true
 
 
-	const int maxHealthPoints = 100; //Total hit points the player can suffer before dying
-	const int maxEnergyPoints = 100;
+	const float maxHealthPoints = 100; //Total hit points the player can suffer before dying
+	const float maxEnergyPoints = 100;
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 

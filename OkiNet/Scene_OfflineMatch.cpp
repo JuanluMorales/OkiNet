@@ -173,7 +173,10 @@ void Scene_OfflineMatch::OverrideRender()
 
 void Scene_OfflineMatch::OverrideUpdate(float dt)
 {
-	if (playerOne.currentHealthPoints <= 0 || playerTwo.currentHealthPoints <= 0) Restart();
+	if (playerOne.currentHealthPoints <= 0 || playerTwo.currentHealthPoints <= 0)
+	{
+		Restart();
+	}
 
 	playerOne.Update(dt, window);
 	playerTwo.Update(dt, window);
@@ -197,27 +200,6 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 
 					DebugText.setString("COLLISION");
 				}
-
-				// Check collision between the players and the map limits
-				Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
-				if (newColl2.None)
-				{
-					playerOne.CanGoLeft = true;
-				}
-				else
-				{
-					playerOne.CanGoLeft = false;
-				}
-
-				Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
-				if (newColl3.None)
-				{
-					playerTwo.CanGoRight = true;
-				}
-				else
-				{
-					playerTwo.CanGoRight = false;
-				}
 			}
 		}
 	}
@@ -230,6 +212,33 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 		DebugText.setString("NO COLLISION");
 	}
 
+	// Check map collision
+	for (auto collA : playerOne.GetCurrentCollision())
+	{
+		for (auto collB : playerTwo.GetCurrentCollision())
+		{
+			// Check collision between the players and the map limits
+			Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
+			if (newColl2.None)
+			{
+				playerOne.CanGoLeft = true;
+			}
+			else
+			{
+				playerOne.CanGoLeft = false;
+			}
+
+			Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
+			if (newColl3.None)
+			{
+				playerTwo.CanGoRight = true;
+			}
+			else
+			{
+				playerTwo.CanGoRight = false;
+			}
+		}
+	}
 
 }
 
@@ -254,5 +263,7 @@ void Scene_OfflineMatch::Restart()
 	playerTwo.setPosition(playerTwoStartPos);
 	playerOne.currentHealthPoints = 100;
 	playerTwo.currentHealthPoints = 100;
+	playerOne.currentEnergyPoints = 100;
+	playerTwo.currentEnergyPoints = 100;
 	thisMatchState = MatchState::Start;
 }

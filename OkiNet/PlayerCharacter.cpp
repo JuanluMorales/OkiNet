@@ -25,6 +25,7 @@ PlayerCharacter::PlayerCharacter()
 	hitGuardBox = false;
 	inflictedDamage = false;
 	receivedDamage = false;
+	receivedGuardBox = false;
 
 	b_fastPunch = false;
 	currentAnim = NULL;
@@ -144,7 +145,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		{
 			playerState = PlayerState::Dead;
 			shouldAcceptInput = false;
-		}else playerState = PlayerState::Alive;
+		}
+		else playerState = PlayerState::Alive;
 	}
 
 	HandleAnimation(dt);
@@ -196,20 +198,24 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			break;
 		}
 
+		if (!shouldAcceptInput)
+		{
+			if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::S) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+			{
+				if (attackState == AttackState::Defend) attackState = AttackState::None;
+				shouldAcceptInput = true;
+			}
+			else return;
+		}
+
 		// Defend
-		if (input->IsKeyDown(sf::Keyboard::S))
+		if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
 
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
 		}
-		else
-		{
-			if (attackState == AttackState::Defend) attackState = AttackState::None;
-		}
-
-		if (!shouldAcceptInput) return;
 
 		// Attack
 		// Special punch
@@ -218,22 +224,22 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
 			attackState = AttackState::DragonPunch;
 		}
-		else
-			// Punch
-			if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
-			{
-				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-				attackState = AttackState::HeavyPunch;
+		// Punch
+		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
+		{
+			input->SetKeyUp(sf::Keyboard::D);
+			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+			attackState = AttackState::HeavyPunch;
 
-			}
-			else if (input->IsKeyDown(sf::Keyboard::Q))
-			{
-				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-				attackState = AttackState::FastPunch;
+		}
+		else if (input->IsKeyDown(sf::Keyboard::Q))
+		{
+			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+			attackState = AttackState::FastPunch;
 
 
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
-			}
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
+		}
 		// Kick
 		if (input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D))
 		{
@@ -256,6 +262,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			if (b_dashTriggerL) // Dash 
 			{
+				input->SetKeyUp(sf::Keyboard::A);
 				dashTimer = dashTime;
 				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
 				moveState = MoveState::DashL;
@@ -271,6 +278,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			if (b_dashTriggerR) // Dash 
 			{
+				input->SetKeyUp(sf::Keyboard::D);
 				dashTimer = dashTime;
 				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
 				moveState = MoveState::DashR;
@@ -331,18 +339,24 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			break;
 		}
 
+		if (!shouldAcceptInput)
+		{
+			if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::Down) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+			{
+				if (attackState == AttackState::Defend) attackState = AttackState::None;
+				shouldAcceptInput = true;
+			}
+			else return;
+		}
+
 		// Defend
-		if (input->IsKeyDown(sf::Keyboard::Down))
+		if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
-		}
-		else
-		{
-			if (attackState == AttackState::Defend) attackState = AttackState::None;
-		}
 
-		if (!shouldAcceptInput) return;
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
+		}
 
 		// Attack
 		if (input->IsKeyDown(sf::Keyboard::Up))
@@ -350,18 +364,17 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			input->SetKeyUp(sf::Keyboard::Up); // Lift key so it acts as trigger
 			attackState = AttackState::DragonPunch;
 		}
-		else
-			if (input->IsKeyDown(sf::Keyboard::Numpad1) && input->IsKeyDown(sf::Keyboard::Left))
-			{
-				input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
-				attackState = AttackState::HeavyPunch;
+		if (input->IsKeyDown(sf::Keyboard::Numpad1) && input->IsKeyDown(sf::Keyboard::Left))
+		{
+			input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
+			attackState = AttackState::HeavyPunch;
 
-			}
-			else if (input->IsKeyDown(sf::Keyboard::Numpad1))
-			{
-				input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
-				attackState = AttackState::FastPunch;
-			}
+		}
+		else if (input->IsKeyDown(sf::Keyboard::Numpad1))
+		{
+			input->SetKeyUp(sf::Keyboard::Numpad1); // Lift key so it acts as trigger
+			attackState = AttackState::FastPunch;
+		}
 		// Kick
 		if (input->IsKeyDown(sf::Keyboard::Numpad2) && input->IsKeyDown(sf::Keyboard::Left))
 		{
@@ -550,6 +563,12 @@ void PlayerCharacter::HandleAnimation(float dt)
 	switch (attackState)
 	{
 	case AttackState::None:
+		anim_fastkick.ResetAnimation();
+		anim_fastPunch.ResetAnimation();
+		anim_heavyKick.ResetAnimation();
+		anim_heavyPunch.ResetAnimation();
+		anim_dragonPunch.ResetAnimation();
+
 		break;
 	case AttackState::FastPunch:
 		currentAnim = &anim_fastPunch;
@@ -650,10 +669,9 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		// Check for inflict damage collision
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
 		{
-			
+
 			inflictedDamage = true;
 		}
-		else inflictedDamage = false;
 
 		// Check for suffering damage
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)
@@ -676,11 +694,38 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				}
 
 				currentHealthPoints -= 10 * modifier;
+
 				if (currentHealthPoints <= 0) currentHealthPoints = 0;
+
 			}
 			receivedDamage = true;
 		}
 
+		if (collResponse->s1CollType == CollisionBox::ColliderType::GuardBox && collResponse->s2CollType == CollisionBox::ColliderType::HitBox)
+		{
+			if (!receivedGuardBox)
+			{
+
+				// Modify energy damage receive behaviour based on type of attack
+				float modifier = 0.0f;
+				if (collResponse->s2anim->GetID() == anim_fastPunch.GetID() || collResponse->s2anim->GetID() == anim_fastkick.GetID())
+				{
+					modifier = 1.0f;
+				}
+				if (collResponse->s2anim->GetID() == anim_heavyPunch.GetID() || collResponse->s2anim->GetID() == anim_heavyKick.GetID())
+				{
+					modifier = 2.0f;
+				}
+				if (collResponse->s2anim->GetID() == anim_dragonPunch.GetID())
+				{
+					modifier = 5.0f;
+				}
+				currentEnergyPoints -= 10 * modifier * 2;
+				if (currentEnergyPoints <= 0) currentEnergyPoints = 0;
+				receivedGuardBox = true;
+				receivedDamage = true; // so we dont get hit through the broken guard
+			}
+		}
 		// Check hitting guard box
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::GuardBox)
 		{
@@ -741,9 +786,35 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 		}
 		else receivedDamage = false;
 
+		if (collResponse->s2CollType == CollisionBox::ColliderType::GuardBox && collResponse->s1CollType == CollisionBox::ColliderType::HitBox)
+		{
+			if (!receivedGuardBox)
+			{
+				// Modify energy damage receive behaviour based on type of attack
+				float modifier = 0.0f;
+				if (collResponse->s1anim->GetID() == anim_fastPunch.GetID() || collResponse->s1anim->GetID() == anim_fastkick.GetID())
+				{
+					modifier = 1.0f;
+				}
+				if (collResponse->s1anim->GetID() == anim_heavyPunch.GetID() || collResponse->s1anim->GetID() == anim_heavyKick.GetID())
+				{
+					modifier = 2.0f;
+				}
+				if (collResponse->s1anim->GetID() == anim_dragonPunch.GetID())
+				{
+					modifier = 5.0f;
+				}
+				currentEnergyPoints -= 10 * modifier * 2;
+				if (currentEnergyPoints <= 0) currentEnergyPoints = 0;
+				receivedGuardBox = true;
+				receivedDamage = true; // so we dont get hit through the broken guard
+			}
+		}
+
 		// Check hitting guard box
 		if (collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::GuardBox)
 		{
+
 			hitGuardBox = true;
 		}
 		else hitGuardBox = false;
@@ -758,7 +829,7 @@ void PlayerCharacter::NoCollisionRegistered()
 	if (receivedDamage) receivedDamage = false;
 	if (inflictedDamage) inflictedDamage = false;
 	if (hitGuardBox) hitGuardBox = false;
-
+	if (receivedGuardBox) receivedGuardBox = false;
 }
 
 void PlayerCharacter::SetUpAnimationFrames()
@@ -796,15 +867,17 @@ void PlayerCharacter::SetUpAnimationFrames()
 
 	// Dash FWD and BKW ---
 	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
-	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
-	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
+	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
+	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_dashFWD.SetLooping(false);
 	anim_dashFWD.SetFrameSpeed(0.1f);
 	anim_dashFWD.SetID(3);
 
 	anim_dashBKW.AddFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
-	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
-	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_dashBKW.SetLooping(false);
 	anim_dashBKW.SetFrameSpeed(0.1f);
 	anim_dashBKW.SetID(4);
