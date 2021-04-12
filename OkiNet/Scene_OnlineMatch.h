@@ -17,8 +17,17 @@ public:
 	void OverrideUpdate(float dt);
 	void OverrideHandleInput(float dt);
 
+	enum class MatchState { Start, OnGoing, P1Win, P2Win, Restart };
+	void Restart();
+	int restartTime = 200; // Time in frames until restart
+	int restartCounter = 0;
+
+	int p1Score = 0;
+	int p2Score = 0;
+
 private:
 	GameState* stateManager;
+	MatchState thisMatchState;
 
 	SpriteBase platform;
 	PlayerCharacter localPlayer;
@@ -26,6 +35,24 @@ private:
 
 	sf::Vector2f playerOneStartPos;
 	sf::Vector2f playerTwoStartPos;
+
+	// Map limits
+	CollisionBox* leftColl;
+	CollisionBox* rightColl;
+
+	// Life bars
+	std::vector<sf::RectangleShape*> p1_lifeBar;
+	std::vector<sf::RectangleShape*> p1_lifeBarBackground;
+	std::vector<sf::RectangleShape*> p2_lifeBar;
+	std::vector<sf::RectangleShape*> p2_lifeBarBackground;
+	// Energy bars
+	std::vector<sf::RectangleShape*> p1_energyBar;
+	std::vector<sf::RectangleShape*> p1_energyBarBackground;
+	std::vector<sf::RectangleShape*> p2_energyBar;
+	std::vector<sf::RectangleShape*> p2_energyBarBackground;
+
+	sf::Text p1ScoreText;
+	sf::Text p2ScoreText;
 
 	sf::Font DebugFont;
 	sf::Text DebugText;
