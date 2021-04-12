@@ -18,6 +18,8 @@ public:
 
 	enum class MatchState { Start, OnGoing, P1Win, P2Win, Restart };
 	void Restart();
+	int restartTime = 200; // Time in frames until restart
+	int restartCounter = 0;
 
 	int p1Score = 0;
 	int p2Score = 0;
@@ -49,6 +51,8 @@ private:
 
 	sf::Font DebugFont;
 	sf::Text DebugText;
+	sf::Text p1ScoreText;
+	sf::Text p2ScoreText;
 
 	
 };

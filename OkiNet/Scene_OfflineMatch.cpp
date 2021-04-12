@@ -104,6 +104,19 @@ void Scene_OfflineMatch::Init(GameState* stateMan)
 		disp += static_cast<int>(unitSize.x);
 	}
 
+	// Score texts
+	p1ScoreText.setFont(DebugFont);
+	p2ScoreText.setFont(DebugFont);
+	p1ScoreText.setString("0");
+	p2ScoreText.setString("0");
+	p1ScoreText.setOrigin(sf::Vector2f(DebugText.getGlobalBounds().width / 2, DebugText.getGlobalBounds().height / 2));
+	p1ScoreText.setPosition(sf::Vector2f(0, -300));
+	p1ScoreText.setFillColor(sf::Color::Black);
+	p2ScoreText.setOrigin(sf::Vector2f(DebugText.getGlobalBounds().width / 2, DebugText.getGlobalBounds().height / 2));
+	p2ScoreText.setPosition(sf::Vector2f(250, -300));
+	p2ScoreText.setFillColor(sf::Color::Black);
+	p1ScoreText.setCharacterSize(55);
+	p2ScoreText.setCharacterSize(55);
 }
 
 void Scene_OfflineMatch::OverrideEarlyUpdate(float dt)
@@ -131,6 +144,8 @@ void Scene_OfflineMatch::OverrideRender()
 
 	// Render font
 	window->draw(DebugText);
+	window->draw(p1ScoreText);
+	window->draw(p2ScoreText);
 
 	// Draw UI
 	// HP bars
@@ -175,11 +190,16 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 {
 	if (playerOne.currentHealthPoints <= 0 || playerTwo.currentHealthPoints <= 0)
 	{
-		Restart();
+		if(restartCounter >= restartTime) Restart();
+		restartCounter++;
 	}
 
 	playerOne.Update(dt, window);
 	playerTwo.Update(dt, window);
+
+	// Update score text
+	p1ScoreText.setString(std::to_string(p1Score));
+	p2ScoreText.setString(std::to_string(p2Score));
 
 	// Iterate all current's frame collision boxes for both players
 	bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
@@ -266,4 +286,11 @@ void Scene_OfflineMatch::Restart()
 	playerOne.currentEnergyPoints = 100;
 	playerTwo.currentEnergyPoints = 100;
 	thisMatchState = MatchState::Start;
+
+	if (playerOne.currentHealthPoints <= 0) {
+		p2Score += 1;
+	}
+	else p1Score += 1;
+
+	restartCounter = 0;
 }
