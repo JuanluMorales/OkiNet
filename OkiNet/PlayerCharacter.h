@@ -60,6 +60,7 @@ private:
 	Animation anim_defend;
 	Animation anim_hurt;
 	Animation anim_die;
+	int frameAdvantage = 0; // Depending on the attack, can be positive or negative
 
 	PlayerID playerID; // Is this the first or second player
 	PlayerState playerState; // Alive by default

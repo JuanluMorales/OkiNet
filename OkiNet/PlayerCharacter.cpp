@@ -149,13 +149,17 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		else playerState = PlayerState::Alive;
 	}
 
-	HandleAnimation(dt);
+	if (frameAdvantage == 0 || currentAnim->GetCurrentFrame().GetFrameType() != AnimationFrameType::Recovery) HandleAnimation(dt);
 
 	// Position the colliders in animation 
 	for (auto coll : GetCurrentCollision())
 	{
 		coll->SetCollisionBoxPosition(getPosition());
 	}
+
+	// Update frame advantage
+	if (frameAdvantage > 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery) frameAdvantage -= 1;
+	if (frameAdvantage < 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery) frameAdvantage += 1;
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
@@ -178,6 +182,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			dashTimer = 0.0f;
 		}
 		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
+		if (frameAdvantage < 0)
+		{
+			shouldAcceptInput = false;
+			return;
+		}
 
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
@@ -350,7 +360,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 
 		// Defend
-		if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+		if (input->IsKeyDown(sf::Keyboard::Down) && currentEnergyPoints > 0)
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
@@ -666,11 +676,28 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			else CanGoLeft = true;
 		}
 
-		// Check for inflict damage collision
+		// Check for inflict damage collision --> PLUS ADVANTAGE
 		if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::HurtBox)
 		{
 
 			inflictedDamage = true;
+		}
+
+		// Check hitting guard box --> MINUS ADVANTAGE
+		if (collResponse->s1CollType == CollisionBox::ColliderType::HitBox && collResponse->s2CollType == CollisionBox::ColliderType::GuardBox)
+		{
+			if (collResponse->s1anim->GetID() == anim_fastPunch.GetID() || collResponse->s1anim->GetID() == anim_fastkick.GetID())
+			{
+				frameAdvantage = -10;
+			}
+			if (collResponse->s1anim->GetID() == anim_heavyPunch.GetID() || collResponse->s1anim->GetID() == anim_heavyKick.GetID())
+			{
+				frameAdvantage = -15;
+			}
+			if (collResponse->s1anim->GetID() == anim_dragonPunch.GetID())
+			{
+				frameAdvantage = -35;
+			}
 		}
 
 		// Check for suffering damage
@@ -720,18 +747,17 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				{
 					modifier = 5.0f;
 				}
-				currentEnergyPoints -= 10 * modifier * 2;
-				if (currentEnergyPoints <= 0) currentEnergyPoints = 0;
+				currentEnergyPoints -= 10 * modifier * 1.25f;
+				if (currentEnergyPoints <= 0)
+				{
+					receivedDamage = true; // so we dont get hit through the broken guard
+					currentEnergyPoints = 0;
+				}
 				receivedGuardBox = true;
-				receivedDamage = true; // so we dont get hit through the broken guard
+				hitGuardBox = true;
 			}
 		}
-		// Check hitting guard box
-		if (collResponse->s1CollType == CollisionBox::ColliderType::HurtBox && collResponse->s2CollType == CollisionBox::ColliderType::GuardBox)
-		{
-			hitGuardBox = true;
-		}
-		else hitGuardBox = false;
+
 	}
 	else
 	{
@@ -758,6 +784,23 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			inflictedDamage = true;
 		}
 		else inflictedDamage = false;
+
+		// Check hitting guard box
+		if (collResponse->s2CollType == CollisionBox::ColliderType::GuardBox && collResponse->s1CollType == CollisionBox::ColliderType::HitBox)
+		{
+			if (collResponse->s2anim->GetID() == anim_fastPunch.GetID() || collResponse->s2anim->GetID() == anim_fastkick.GetID())
+			{
+				frameAdvantage = -10;
+			}
+			if (collResponse->s2anim->GetID() == anim_heavyPunch.GetID() || collResponse->s2anim->GetID() == anim_heavyKick.GetID())
+			{
+				frameAdvantage = -15;
+			}
+			if (collResponse->s2anim->GetID() == anim_dragonPunch.GetID())
+			{
+				frameAdvantage = -35;
+			}
+		}
 
 		// Check for suffering damage
 		if (collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::HitBox)
@@ -804,20 +847,18 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				{
 					modifier = 5.0f;
 				}
-				currentEnergyPoints -= 10 * modifier * 2;
-				if (currentEnergyPoints <= 0) currentEnergyPoints = 0;
+				currentEnergyPoints -= 10 * modifier * 1.25f;
+				if (currentEnergyPoints <= 0)
+				{
+					receivedDamage = true; // so we dont get hit through the broken guard
+					currentEnergyPoints = 0;
+				}
 				receivedGuardBox = true;
-				receivedDamage = true; // so we dont get hit through the broken guard
+				hitGuardBox = true;
 			}
 		}
 
-		// Check hitting guard box
-		if (collResponse->s2CollType == CollisionBox::ColliderType::HurtBox && collResponse->s1CollType == CollisionBox::ColliderType::GuardBox)
-		{
 
-			hitGuardBox = true;
-		}
-		else hitGuardBox = false;
 	}
 }
 
