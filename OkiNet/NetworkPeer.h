@@ -7,9 +7,17 @@ enum class MsgTypes : uint32_t
 	PingRequest,
 	PingAnswer,
 	Pressed_A,
+	Released_A,
 	Pressed_D,
+	Released_D,
 	Pressed_S,
+	Released_S,
 	Pressed_Q,
+	Released_Q,
+	Pressed_E,
+	Released_E,
+	Pressed_W,
+	Released_W
 };
 
 // Inherit from the base peer class to override and add functionality
@@ -31,6 +39,15 @@ public:
 	void Pressed_D();
 	void Pressed_S();
 	void Pressed_Q();
+	void Pressed_E();
+	void Pressed_W();
+
+	void Released_A();
+	void Released_D();
+	void Released_S();
+	void Released_Q();
+	void Released_E();
+	void Released_W();
 
 protected:
 	// Called when a client connects to this peer
@@ -48,6 +65,14 @@ private:
 		bool Pressed_D = false;
 		bool Pressed_S = false;
 		bool Pressed_Q = false;
+		bool Released_A = false;
+		bool Released_D = false;
+		bool Released_S = false;
+		bool Released_Q = false;
+		bool Pressed_E = false;
+		bool Released_E = false;
+		bool Pressed_W = false;
+		bool Released_W = false;
 	};
 
 public:

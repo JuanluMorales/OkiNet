@@ -464,6 +464,12 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 		}
 		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
 
+		if (frameAdvantage < 0)
+		{
+			shouldAcceptInput = false;
+			return;
+		}
+
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
 		{
@@ -483,8 +489,18 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 			break;
 		}
 
+		if (!shouldAcceptInput)
+		{
+			if (attackState == AttackState::Defend && !thisPeer->remotePlayerStatus.Pressed_S || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+			{
+				if (attackState == AttackState::Defend) attackState = AttackState::None;
+				shouldAcceptInput = true;
+			}
+			else return;
+		}
+
 		// Defend
-		if (thisPeer->remotePlayerStatus.Pressed_S)
+		if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
 		{
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
@@ -492,13 +508,30 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 		if (shouldAcceptInput)
 		{
-
-			// Attack
-			if (thisPeer->remotePlayerStatus.Pressed_Q)
+			if (thisPeer->remotePlayerStatus.Pressed_W)
+			{
+				attackState = AttackState::DragonPunch;
+			}
+			// Punch
+			if (thisPeer->remotePlayerStatus.Pressed_Q && thisPeer->remotePlayerStatus.Pressed_D)
+			{
+				attackState = AttackState::HeavyPunch;
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_Q)
 			{
 				attackState = AttackState::FastPunch;
 			}
-			else attackState = AttackState::None;
+			// Kick
+			if (thisPeer->remotePlayerStatus.Pressed_E && thisPeer->remotePlayerStatus.Pressed_D)
+			{
+				attackState = AttackState::HeavyKick;
+
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_E)
+			{
+				attackState = AttackState::FastKick;
+			}
+
 			//-------------------
 			// Movement ---------
 			if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left

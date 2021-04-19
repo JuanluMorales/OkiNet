@@ -200,47 +200,98 @@ void Scene_OnlineMatch::OverrideRender()
 
 	// Render font
 	window->draw(DebugText);
-	window->draw(p1ScoreText);
-	window->draw(p2ScoreText);
+	if (isHost)
+	{
+		window->draw(p1ScoreText);
+		window->draw(p2ScoreText);
+	}
+	else
+	{
+		window->draw(p2ScoreText);
+		window->draw(p1ScoreText);
+	}
+
 
 
 	// Draw UI
 	// HP bars
-	for (auto hp : p1_lifeBarBackground)
+	if (isHost)
 	{
-		window->draw(*hp);
-	}
-	for (int i = 0; i < localPlayer.currentHealthPoints; i++)
-	{
-		window->draw(*p1_lifeBar.at(i));
-	}
+		for (auto hp : p1_lifeBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < localPlayer.currentHealthPoints; i++)
+		{
+			window->draw(*p1_lifeBar.at(i));
+		}
 
-	for (auto hp : p2_lifeBarBackground)
-	{
-		window->draw(*hp);
-	}
-	for (int i = 0; i < remotePlayer.currentHealthPoints; i++)
-	{
-		window->draw(*p2_lifeBar.at(i));
-	}
-	// Energy bars
-	for (auto hp : p1_energyBarBackground)
-	{
-		window->draw(*hp);
-	}
-	for (int i = 0; i < localPlayer.currentEnergyPoints; i++)
-	{
-		window->draw(*p1_energyBar.at(i));
-	}
+		for (auto hp : p2_lifeBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < remotePlayer.currentHealthPoints; i++)
+		{
+			window->draw(*p2_lifeBar.at(i));
+		}
+		// Energy bars
+		for (auto hp : p1_energyBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < localPlayer.currentEnergyPoints; i++)
+		{
+			window->draw(*p1_energyBar.at(i));
+		}
 
-	for (auto hp : p2_energyBarBackground)
-	{
-		window->draw(*hp);
+		for (auto hp : p2_energyBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < remotePlayer.currentEnergyPoints; i++)
+		{
+			window->draw(*p2_energyBar.at(i));
+		}
 	}
-	for (int i = 0; i < remotePlayer.currentEnergyPoints; i++)
+	else
 	{
-		window->draw(*p2_energyBar.at(i));
+		for (auto hp : p1_lifeBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < remotePlayer.currentHealthPoints; i++)
+		{
+			window->draw(*p1_lifeBar.at(i));
+		}
+
+		for (auto hp : p2_lifeBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < localPlayer.currentHealthPoints; i++)
+		{
+			window->draw(*p2_lifeBar.at(i));
+		}
+		// Energy bars
+		for (auto hp : p1_energyBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < remotePlayer.currentEnergyPoints; i++)
+		{
+			window->draw(*p1_energyBar.at(i));
+		}
+
+		for (auto hp : p2_energyBarBackground)
+		{
+			window->draw(*hp);
+		}
+		for (int i = 0; i < localPlayer.currentEnergyPoints; i++)
+		{
+			window->draw(*p2_energyBar.at(i));
+		}
 	}
+	
 }
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
@@ -261,63 +312,128 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	p1ScoreText.setString(std::to_string(p1Score));
 	p2ScoreText.setString(std::to_string(p2Score));
 
-	// Iterate all current's frame collision boxes for both players
-	bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
-	for (auto collA : localPlayer.GetCurrentCollision())
+	// Update collisions for both users
+	if (isHost)
 	{
-		for (auto collB : remotePlayer.GetCurrentCollision())
+		// Iterate all current's frame collision boxes for both players
+		bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
+		for (auto collA : localPlayer.GetCurrentCollision())
 		{
-			if (collA->IsActive() && collB->IsActive())
+			for (auto collB : remotePlayer.GetCurrentCollision())
 			{
-				// Check collision between players
-				Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, localPlayer.GetCurrentAnimation(), remotePlayer.GetCurrentAnimation());
-
-				if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
+				if (collA->IsActive() && collB->IsActive())
 				{
-					interPlayerCollision = true;
-					localPlayer.CollisionResponseToPlayer(&newColl);
-					remotePlayer.CollisionResponseToPlayer(&newColl);
+					// Check collision between players
+					Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, localPlayer.GetCurrentAnimation(), remotePlayer.GetCurrentAnimation());
+
+					if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
+					{
+						interPlayerCollision = true;
+						localPlayer.CollisionResponseToPlayer(&newColl);
+						remotePlayer.CollisionResponseToPlayer(&newColl);
+					}
+				}
+			}
+		}
+
+
+		if (!interPlayerCollision)
+		{
+			localPlayer.NoCollisionRegistered();
+			remotePlayer.NoCollisionRegistered();
+
+			DebugText.setString("NO COLLISION");
+		}
+
+		// Check map collision
+		for (auto collA : localPlayer.GetCurrentCollision())
+		{
+			for (auto collB : remotePlayer.GetCurrentCollision())
+			{
+				// Check collision between the players and the map limits
+				Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
+				if (newColl2.None)
+				{
+					localPlayer.CanGoLeft = true;
+				}
+				else
+				{
+					localPlayer.CanGoLeft = false;
+				}
+
+				Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
+				if (newColl3.None)
+				{
+					remotePlayer.CanGoRight = true;
+				}
+				else
+				{
+					remotePlayer.CanGoRight = false;
 				}
 			}
 		}
 	}
-
-
-	if (!interPlayerCollision)
+	else
 	{
-		localPlayer.NoCollisionRegistered();
-		remotePlayer.NoCollisionRegistered();
-
-		DebugText.setString("NO COLLISION");
-	}
-
-	// Check map collision
-	for (auto collA : localPlayer.GetCurrentCollision())
-	{
-		for (auto collB : remotePlayer.GetCurrentCollision())
+		// Iterate all current's frame collision boxes for both players
+		bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
+		for (auto collA : remotePlayer.GetCurrentCollision())
 		{
-			// Check collision between the players and the map limits
-			Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
-			if (newColl2.None)
+			for (auto collB : localPlayer.GetCurrentCollision())
 			{
-				localPlayer.CanGoLeft = true;
-			}
-			else
-			{
-				localPlayer.CanGoLeft = false;
-			}
+				if (collA->IsActive() && collB->IsActive())
+				{
+					// Check collision between players
+					Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, remotePlayer.GetCurrentAnimation(), localPlayer.GetCurrentAnimation());
 
-			Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
-			if (newColl3.None)
-			{
-				remotePlayer.CanGoRight = true;
+					if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
+					{
+						interPlayerCollision = true;
+						localPlayer.CollisionResponseToPlayer(&newColl);
+						remotePlayer.CollisionResponseToPlayer(&newColl);
+					}
+				}
 			}
-			else
+		}
+
+
+		if (!interPlayerCollision)
+		{
+			localPlayer.NoCollisionRegistered();
+			remotePlayer.NoCollisionRegistered();
+
+			DebugText.setString("NO COLLISION");
+		}
+
+		// Check map collision
+		for (auto collA : remotePlayer.GetCurrentCollision())
+		{
+			for (auto collB : localPlayer.GetCurrentCollision())
 			{
-				remotePlayer.CanGoRight = false;
+				// Check collision between the players and the map limits
+				Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
+				if (newColl2.None)
+				{
+					remotePlayer.CanGoLeft = true;
+				}
+				else
+				{
+					remotePlayer.CanGoLeft = false;
+				}
+
+				Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
+				if (newColl3.None)
+				{
+					localPlayer.CanGoRight = true;
+				}
+				else
+				{
+					localPlayer.CanGoRight = false;
+				}
 			}
 		}
 	}
+	
 
 
 }
@@ -340,9 +456,17 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 void Scene_OnlineMatch::Restart()
 {
 	thisMatchState = MatchState::Restart;
+	if (isHost)
+	{
+		localPlayer.setPosition(playerOneStartPos);
+		remotePlayer.setPosition(playerTwoStartPos);
+	}
+	else 
+	{
+		localPlayer.setPosition(playerTwoStartPos);
+		remotePlayer.setPosition(playerOneStartPos);
+	}
 
-	localPlayer.setPosition(playerOneStartPos);
-	remotePlayer.setPosition(playerTwoStartPos);
 	localPlayer.currentHealthPoints = 100;
 	remotePlayer.currentHealthPoints = 100;
 	localPlayer.currentEnergyPoints = 100;
