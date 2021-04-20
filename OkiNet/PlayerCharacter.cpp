@@ -246,7 +246,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
-
+			std::cout << "Pressed Q!\n";
 
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
 		}
@@ -265,7 +265,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 
 		}
-
 		//-------------------
 		// Movement ---------
 		if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
@@ -591,17 +590,8 @@ void PlayerCharacter::HandleAnimation(float dt)
 	{
 		currentAnim->SetFlipped(true);
 	}
-
+	
 	// ATTACK --------------------------------------------------------
-	// Check if the attack is finished and reset it, unless is defending
-	if (attackState != AttackState::None && attackState != AttackState::Defend)
-	{
-		if (currentAnim->IsAnimationCompleted())
-		{
-			attackState = AttackState::None;
-			currentAnim->ResetAnimation();
-		}
-	}
 	// Assign correct attack animation
 	switch (attackState)
 	{
@@ -636,6 +626,24 @@ void PlayerCharacter::HandleAnimation(float dt)
 		break;
 	}
 
+	// Go back to attack none if the animation is finished
+	if (attackState != AttackState::None && attackState != AttackState::Defend)
+	{
+		if (currentAnim->IsAnimationCompleted())
+		{
+			attackState = AttackState::None;
+		}
+
+		// Check if we are moving to cancel the attack
+		if (currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery && moveState == MoveState::Left
+			|| currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery && moveState == MoveState::Right)
+		{
+			attackState = AttackState::None;
+		}
+	}
+
+
+		
 	// MOVE - Calculate the move state if we are not attacking
 	if (attackState == AttackState::None)
 	{
