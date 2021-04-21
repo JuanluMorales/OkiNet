@@ -60,6 +60,14 @@ void InputManager::WriteInputField(char newText)
 	inputText += newText;
 }
 
+void InputManager::SetInputField(char newText)
+{
+	inputText = newText;
+}
+void InputManager::SetInputField(std::string newText)
+{
+	inputText = newText;
+}
 void InputManager::ClearInputField()
 {
 	inputText.clear();

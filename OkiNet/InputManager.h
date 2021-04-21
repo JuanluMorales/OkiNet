@@ -31,6 +31,9 @@ public:
 	void SetTextInputFieldActive(bool b) { isAcceptingInputText = b; };
 	bool IsTextInputFieldActive() { return isAcceptingInputText; };
 	void WriteInputField(char newText);
+	void SetInputField(char nexText);
+	void SetInputField(std::string nexText);
+
 	void ClearInputField();
 	std::string GetCurrentInputText() { return inputText; };
 	void RemoveLetterFromInputField();

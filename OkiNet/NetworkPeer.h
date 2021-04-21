@@ -14,7 +14,9 @@ enum class MsgTypes : uint32_t
 	PosAnswer,
 	// Input messages sent/received to/from the remote player
 	Pressed_A,
+	Dashed_A,
 	Pressed_D,
+	Dashed_D,
 	Pressed_S,
 	Pressed_Q,
 	Pressed_E,
@@ -39,7 +41,9 @@ public:
 
 	// Input messages sent to the remote player
 	void Pressed_A();
+	void Dashed_A();
 	void Pressed_D();
+	void Dashed_D();
 	void Pressed_S();
 	void Pressed_Q();
 	void Pressed_E();
@@ -58,7 +62,9 @@ private:
 	struct RemotePlayerStatus
 	{
 		bool Pressed_A = false;
+		bool Dashed_A = false;
 		bool Pressed_D = false;
+		bool Dashed_D = false;
 		bool Pressed_S = false;
 		bool Pressed_Q = false;
 		bool Pressed_E = false;

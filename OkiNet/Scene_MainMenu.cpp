@@ -44,7 +44,7 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	ipBox.setSize(sf::Vector2f(200, 25));
 	ipBox.setFillColor(sf::Color::Transparent);
 
-	ipString = "Enter IP";
+	ipString = "";
 	ipText.setFont(inputFont);
 	ipText.setString(ipString);
 	ipText.setCharacterSize(20);
@@ -57,7 +57,7 @@ void Scene_MainMenu::Init(GameState* stateMan)
 	portBox.setSize(sf::Vector2f(200, 25));
 	portBox.setFillColor(sf::Color::Transparent);
 
-	portString = "Enter Port";
+	portString = "";
 	portText.setFont(inputFont);
 	portText.setString(portString);
 	portText.setCharacterSize(20);
@@ -205,10 +205,12 @@ void Scene_MainMenu::OverrideHandleInput(float dt)
 				if (currentHostSelection == hostSelection::IP)
 				{
 					currentHostSelection = hostSelection::PORT;
+					input->SetInputField(portString);
 				}
 				else if (currentHostSelection == hostSelection::PORT)
 				{
 					currentHostSelection = hostSelection::IP;
+					input->SetInputField(ipString);
 				}
 			}
 			else currentSelection = menuSelection::OfflineMatch;

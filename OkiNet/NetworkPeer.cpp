@@ -3,7 +3,9 @@
 void NetworkPeer::ResetRemotePlayerStatus()
 {
 	remotePlayerStatus.Pressed_A = false;
+	remotePlayerStatus.Dashed_A = false;
 	remotePlayerStatus.Pressed_D = false;
+	remotePlayerStatus.Dashed_D = false;
 	remotePlayerStatus.Pressed_S = false;
 	remotePlayerStatus.Pressed_Q = false;
 	remotePlayerStatus.Pressed_E = false;
@@ -27,10 +29,24 @@ void NetworkPeer::Pressed_A()
 	Send_UDP(msg);
 }
 
+void NetworkPeer::Dashed_A()
+{
+	net::message<MsgTypes> msg;
+	msg.header.id = MsgTypes::Dashed_A;
+	Send_UDP(msg);
+}
+
 void NetworkPeer::Pressed_D()
 {
 	net::message<MsgTypes> msg;
 	msg.header.id = MsgTypes::Pressed_D;
+	Send_UDP(msg);
+}
+
+void NetworkPeer::Dashed_D()
+{
+	net::message<MsgTypes> msg;
+	msg.header.id = MsgTypes::Dashed_D;
 	Send_UDP(msg);
 }
 
@@ -93,8 +109,14 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 	case MsgTypes::Pressed_A:
 		remotePlayerStatus.Pressed_A = true;
 		break;
+	case MsgTypes::Dashed_A:
+		remotePlayerStatus.Dashed_A = true;
+		break;
 	case MsgTypes::Pressed_D:
 		remotePlayerStatus.Pressed_D = true;
+		break;
+	case MsgTypes::Dashed_D:
+		remotePlayerStatus.Dashed_D = true;
 		break;
 	case MsgTypes::Pressed_S:
 		remotePlayerStatus.Pressed_S = true;
