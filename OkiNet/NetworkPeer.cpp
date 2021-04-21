@@ -14,6 +14,21 @@ void NetworkPeer::ResetRemotePlayerStatus()
 	remotePlayerStatus.HeavyPunched = false;
 }
 
+void NetworkPeer::ResetLocalPlayerStatus()
+{
+	localPlayerStatus.Pressed_A = false;
+	localPlayerStatus.Dashed_A = false;
+	localPlayerStatus.Pressed_D = false;
+	localPlayerStatus.Dashed_D = false;
+	localPlayerStatus.Pressed_S = false;
+	localPlayerStatus.Pressed_Q = false;
+	localPlayerStatus.Pressed_E = false;
+	localPlayerStatus.Pressed_W = false;
+	localPlayerStatus.HeavyKicked = false;
+	localPlayerStatus.HeavyPunched = false;
+	receivedRemoteUpdateThisFrame = false;
+}
+
 void NetworkPeer::PingRequest()
 {
 	net::message<MsgTypes> msg;
@@ -35,72 +50,60 @@ void NetworkPeer::SyncStateRequest()
 
 void NetworkPeer::Pressed_A()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Pressed_A;
-	Send_UDP(msg);
+	localPlayerStatus.Pressed_A = true;
 }
 
 void NetworkPeer::Dashed_A()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Dashed_A;
-	Send_UDP(msg);
+	localPlayerStatus.Dashed_A = true;
 }
 
 void NetworkPeer::Pressed_D()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Pressed_D;
-	Send_UDP(msg);
+	localPlayerStatus.Pressed_D = true;
 }
 
 void NetworkPeer::Dashed_D()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Dashed_D;
-	Send_UDP(msg);
+	localPlayerStatus.Dashed_D = true;
 }
 
 void NetworkPeer::HeavyPunched()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::HeavyPunched;
-	Send_UDP(msg);
+	localPlayerStatus.HeavyPunched = true;
 }
 
 void NetworkPeer::HeavyKicked()
 {
+	localPlayerStatus.HeavyKicked = true;
+}
+
+void NetworkPeer::SendPlayerStatus()
+{
 	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::HeavyKicked;
+	msg.header.id = MsgTypes::ReceivePlayerState;
+	msg << localPlayerStatus;
 	Send_UDP(msg);
 }
 
 void NetworkPeer::Pressed_S()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Pressed_S;
-	Send_UDP(msg);
+	localPlayerStatus.Pressed_S = true;
 }
 
 void NetworkPeer::Pressed_Q()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Pressed_Q;
-	Send_UDP(msg);
+	localPlayerStatus.Pressed_Q = true;
 }
 
 void NetworkPeer::Pressed_E()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Pressed_E;
-	Send_UDP(msg);
+	localPlayerStatus.Pressed_E = true;
 }
 
 void NetworkPeer::Pressed_W()
 {
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Pressed_W;
-	Send_UDP(msg);
+	localPlayerStatus.Pressed_W = true;
 }
 
 bool NetworkPeer::OnPeerConnect()
@@ -202,37 +205,15 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		}
 	}
 	break;
-	case MsgTypes::Pressed_A:
-		remotePlayerStatus.Pressed_A = true;
-		break;
-	case MsgTypes::Dashed_A:
-		remotePlayerStatus.Dashed_A = true;
-		break;
-	case MsgTypes::Pressed_D:
-		remotePlayerStatus.Pressed_D = true;
-		break;
-	case MsgTypes::Dashed_D:
-		remotePlayerStatus.Dashed_D = true;
-		break;
-	case MsgTypes::Pressed_S:
-		remotePlayerStatus.Pressed_S = true;
-		break;
-	case MsgTypes::Pressed_Q:
-		remotePlayerStatus.Pressed_Q = true;
-		break;
-	case MsgTypes::Pressed_E:
-		remotePlayerStatus.Pressed_E = true;
-		break;
-	case MsgTypes::Pressed_W:
-		remotePlayerStatus.Pressed_W = true;
-		break;
-	case MsgTypes::HeavyKicked:
-		remotePlayerStatus.HeavyKicked = true;
-		break;
-	case MsgTypes::HeavyPunched:
-		remotePlayerStatus.HeavyPunched = true;
-		break;
-	default:
+
+	case MsgTypes::ReceivePlayerState:
+		receivedRemoteUpdateThisFrame = true; // Raise the flag of having received notification from the other player (as he should every frame)
+
+		// Interpret the message
+		PlayerStatus newRemoteStatus;
+		msg >> newRemoteStatus;
+		remotePlayerStatus = newRemoteStatus;
+
 		break;
 	}
 }

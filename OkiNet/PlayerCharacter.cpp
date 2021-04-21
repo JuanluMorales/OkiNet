@@ -248,114 +248,121 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			else
 			{
 				if (networkAuthority == NetworkAuthority::Local && attackState == AttackState::Defend) thisPeer->Pressed_S(); // Inform remote player we are still guarding
-				return;
 			}
 		}
 
-		// Defend
-		if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+		if (shouldAcceptInput)
 		{
-			attackState = AttackState::Defend;
-			shouldAcceptInput = false;
-
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
-		}
-
-		// Attack
-		// Special punch
-		if (input->IsKeyDown(sf::Keyboard::W))
-		{
-			input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
-			attackState = AttackState::DragonPunch;
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_W();
-		}
-		// Punch
-		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
-		{
-
-			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-			attackState = AttackState::HeavyPunch;
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyPunched();
-
-		}
-		else if (input->IsKeyDown(sf::Keyboard::Q))
-		{
-			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-			attackState = AttackState::FastPunch;
-
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
-		}
-		// Kick
-		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
-		{
-
-			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
-			attackState = AttackState::HeavyKick;
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyKicked();
-
-		}
-		else if (input->IsKeyDown(sf::Keyboard::E))
-		{
-
-			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
-			attackState = AttackState::FastKick;
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
-
-		}
-		//-------------------
-		// Movement ---------
-		if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
-		{
-			if (b_dashTriggerL) // Dash 
+			// Defend
+			if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
 			{
-				input->SetKeyUp(sf::Keyboard::A);
-				dashTimer = dashTime;
-				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
-				moveState = MoveState::DashL;
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
-			}
-			else // Walk
-			{
-				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
-				moveState = MoveState::Left;
-			}
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
-		}
-		else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
-		{
-			if (b_dashTriggerR) // Dash 
-			{
-				input->SetKeyUp(sf::Keyboard::D);
-				dashTimer = dashTime;
-				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
-				moveState = MoveState::DashR;
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_D();
-			}
-			else // Walk
-			{
-				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
-				moveState = MoveState::Right;
-			}
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
-		}
-		else // idle
-		{
-			// if last move state was walking, check the dash relevant trigger
-			if (moveState == MoveState::Left)
-			{
-				b_dashTriggerL = true;
-				dashTimer = 0.0f;
-			}
-			if (moveState == MoveState::Right)
-			{
-				b_dashTriggerR = true;
-				dashTimer = 0.0f;
+				attackState = AttackState::Defend;
+				shouldAcceptInput = false;
+
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
 			}
 
-			moveState = MoveState::Idle;
-		}
-		// -------------------
+			// Attack
+			// Special punch
+			if (input->IsKeyDown(sf::Keyboard::W))
+			{
+				input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
+				attackState = AttackState::DragonPunch;
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_W();
+			}
+			// Punch
+			if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+			{
 
+				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+				attackState = AttackState::HeavyPunch;
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyPunched();
+
+			}
+			else if (input->IsKeyDown(sf::Keyboard::Q))
+			{
+				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+				attackState = AttackState::FastPunch;
+
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
+			}
+			// Kick
+			if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
+			{
+
+				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+				attackState = AttackState::HeavyKick;
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyKicked();
+
+			}
+			else if (input->IsKeyDown(sf::Keyboard::E))
+			{
+
+				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+				attackState = AttackState::FastKick;
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
+
+			}
+			//-------------------
+			// Movement ---------
+			if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+			{
+				if (b_dashTriggerL) // Dash 
+				{
+					input->SetKeyUp(sf::Keyboard::A);
+					dashTimer = dashTime;
+					setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+					moveState = MoveState::DashL;
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
+				}
+				else // Walk
+				{
+					setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+					moveState = MoveState::Left;
+				}
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
+			}
+			else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+			{
+				if (b_dashTriggerR) // Dash 
+				{
+					input->SetKeyUp(sf::Keyboard::D);
+					dashTimer = dashTime;
+					setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+					moveState = MoveState::DashR;
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_D();
+				}
+				else // Walk
+				{
+					setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+					moveState = MoveState::Right;
+				}
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
+			}
+			else // idle
+			{
+				// if last move state was walking, check the dash relevant trigger
+				if (moveState == MoveState::Left)
+				{
+					b_dashTriggerL = true;
+					dashTimer = 0.0f;
+				}
+				if (moveState == MoveState::Right)
+				{
+					b_dashTriggerR = true;
+					dashTimer = 0.0f;
+				}
+
+				moveState = MoveState::Idle;
+			}
+			// -------------------
+		}
+		if (networkAuthority == NetworkAuthority::Local)
+		{
+		
+			thisPeer->SendPlayerStatus();
+			thisPeer->ResetLocalPlayerStatus();
+		}
 	}
 	else if (playerID == PlayerID::PlayerTwo)
 	{

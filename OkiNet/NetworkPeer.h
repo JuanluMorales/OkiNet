@@ -10,18 +10,9 @@ enum class MsgTypes : uint32_t
 	// For checking if the game is in sync; ask for the local state of the remote player
 	SyncStateRequest,
 	SyncStateAnswer,
-	// Input messages sent/received to/from the remote player
-	Pressed_A,
-	Pressed_D,
-	Pressed_S,
-	Pressed_Q,
-	Pressed_E,
-	Pressed_W,
-	// Input messages that are a combination of presses and so must be sent individually
-	Dashed_A,
-	Dashed_D,
-	HeavyPunched,
-	HeavyKicked
+	// Message id to receive the state of the remote player
+	ReceivePlayerState
+
 };
 
 // The synchronization state of both peers
@@ -45,6 +36,7 @@ public:
 	// Call at the end of the frame to set all remote statuses to false
 	// This way the inputs are treated as triggers
 	void ResetRemotePlayerStatus();
+	void ResetLocalPlayerStatus();
 
 	// Send a ping request to retrieve the roundtrip time
 	void PingRequest();
@@ -52,7 +44,7 @@ public:
 	void SyncStateRequest();
 
 
-	// Input messages sent to the remote player
+	// Change the player status 
 	void Pressed_A();
 	void Pressed_D();
 	void Pressed_S();
@@ -65,6 +57,8 @@ public:
 	void HeavyPunched();
 	void HeavyKicked();
 
+	void SendPlayerStatus();
+
 protected:
 	// Called when a client connects to this peer
 	virtual bool OnPeerConnect();
@@ -75,7 +69,8 @@ protected:
 
 private:
 	//Struct that represents the remote player's input status to update the local representation of the remote player
-	struct RemotePlayerStatus
+	// Sent at the end of the frame 
+	struct PlayerStatus
 	{
 		bool Pressed_A = false;
 		bool Pressed_D = false;
@@ -92,9 +87,11 @@ private:
 	};
 
 public:
-	RemotePlayerStatus remotePlayerStatus;
+	PlayerStatus remotePlayerStatus; // Contains the information on the inputs from the remote player for this frame to be applied locally
+	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote
 	SyncState currentSyncState;
 	bool peerDisconnected = false;
+	bool receivedRemoteUpdateThisFrame = false;
 
 	float localHP = 100;
 	float localPosX = 0;
