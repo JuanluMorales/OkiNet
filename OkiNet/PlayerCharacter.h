@@ -17,12 +17,17 @@ public:
 	enum class AttackState { None, FastPunch, HeavyPunch, FastKick, HeavyKick, DragonPunch, Defend };
 
 	PlayerCharacter();
+	~PlayerCharacter();
+
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);
+
 	void InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos, std::shared_ptr<NetworkPeer> peerRef, bool isLocalCharacter);
 	SyncState GetSyncState() { return thisPeer->currentSyncState; }
 	NetworkTechnique GetNetworkTechnique() { return thisPeer->currentNetworkTechnique; }
 	void SetNetworkTechnique(NetworkTechnique nt) { thisPeer->currentNetworkTechnique = nt; }
-	~PlayerCharacter();
+	bool HasReceivedRemoteUpdateThisFrame() { return thisPeer->receivedRemoteUpdateThisFrame; }
+	void UpdateNetworkState();
+
 
 	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
 

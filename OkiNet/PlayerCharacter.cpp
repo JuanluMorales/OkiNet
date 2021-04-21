@@ -128,6 +128,14 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 	CharacterSetUp = true;
 }
 
+void PlayerCharacter::UpdateNetworkState()
+{
+	thisPeer->Update();
+	// Pass the info on local player state
+	thisPeer->localHP = currentHealthPoints;
+	thisPeer->localPosX = getPosition().x;
+}
+
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
@@ -136,10 +144,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		if (thisPeer->IsConnected())
 		{
-			thisPeer->Update();
-			// Pass the info on local player state
-			thisPeer->localHP = currentHealthPoints;
-			thisPeer->localPosX = getPosition().x;
+			UpdateNetworkState();
 		}
 	}
 	else if (networkAuthority == NetworkAuthority::Remote)

@@ -26,9 +26,10 @@ enum class SyncState
 
 enum class NetworkTechnique
 {
-	DeterministicLockstep,
-	Delay,
-	Rollback
+	None, // Just send the input state and goodluck
+	DeterministicLockstep, // Wait for the other player state before updating
+	Delay, // Add input delay 
+	Rollback // "Rollback" to previous states
 };
 
 // Inherit from the base peer class to override and add functionality
@@ -38,7 +39,7 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced;
-		currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
+		currentNetworkTechnique = NetworkTechnique::None;
 	}
 
 	// Call at the end of the frame to set all remote statuses to false

@@ -17,6 +17,8 @@ public:
 	void OverrideUpdate(float dt);
 	void OverrideHandleInput(float dt);
 
+	bool shouldSkipThisFrame = false;
+
 	enum class MatchState { Start, OnGoing, P1Win, P2Win, Restart };
 	void Restart();
 	int restartTime = 200; // Time in frames until restart
