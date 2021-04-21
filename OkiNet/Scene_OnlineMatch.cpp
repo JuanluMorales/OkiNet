@@ -11,10 +11,10 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	// Setup debug font and text
 	DebugFont.loadFromFile("font/arial.ttf");
 	DebugText.setFont(DebugFont);
-	DebugText.setString("[DEBUG_OUTPUT] SCENE: ONLINE_SCENE");
+	DebugText.setString("Debug:\n");
 	DebugText.setCharacterSize(15);
 	DebugText.setOrigin(sf::Vector2f(DebugText.getGlobalBounds().width / 2, DebugText.getGlobalBounds().height / 2));
-	DebugText.setPosition(sf::Vector2f(0, -200));
+	DebugText.setPosition(sf::Vector2f(-600, 280));
 	DebugText.setFillColor(sf::Color::Red);
 
 	// Setup initialization for the host and joiner
@@ -119,11 +119,11 @@ void Scene_OnlineMatch::Init(GameState* stateMan)
 	p2ScoreText.setFont(DebugFont);
 	p1ScoreText.setString("0");
 	p2ScoreText.setString("0");
-	p1ScoreText.setOrigin(sf::Vector2f(DebugText.getGlobalBounds().width / 2, DebugText.getGlobalBounds().height / 2));
-	p1ScoreText.setPosition(sf::Vector2f(0, -300));
+	p1ScoreText.setOrigin(sf::Vector2f(p1ScoreText.getGlobalBounds().width / 2, p1ScoreText.getGlobalBounds().height / 2));
+	p1ScoreText.setPosition(sf::Vector2f(-150, -300));
 	p1ScoreText.setFillColor(sf::Color::Black);
-	p2ScoreText.setOrigin(sf::Vector2f(DebugText.getGlobalBounds().width / 2, DebugText.getGlobalBounds().height / 2));
-	p2ScoreText.setPosition(sf::Vector2f(250, -300));
+	p2ScoreText.setOrigin(sf::Vector2f(p2ScoreText.getGlobalBounds().width / 2, p2ScoreText.getGlobalBounds().height / 2));
+	p2ScoreText.setPosition(sf::Vector2f(125, -300));
 	p2ScoreText.setFillColor(sf::Color::Black);
 	p1ScoreText.setCharacterSize(55);
 	p2ScoreText.setCharacterSize(55);
@@ -341,8 +341,6 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		{
 			localPlayer.NoCollisionRegistered();
 			remotePlayer.NoCollisionRegistered();
-
-			DebugText.setString("NO COLLISION");
 		}
 
 		// Check map collision
@@ -401,8 +399,6 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		{
 			localPlayer.NoCollisionRegistered();
 			remotePlayer.NoCollisionRegistered();
-
-			DebugText.setString("NO COLLISION");
 		}
 
 		// Check map collision
@@ -434,8 +430,8 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		}
 	}
 	
-
-
+	// Update debug text
+	DebugText.setString("[DEBUG]\nSync: HP:Yes, Pos:Yes\nNetwork Technique: Det. Lockstep\nDelay Frames: 0f\nRollBack Frames: 0f\n");
 }
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)
