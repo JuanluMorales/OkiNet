@@ -431,7 +431,20 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	}
 	
 	// Update debug text
-	DebugText.setString("[DEBUG]\nSync: HP:Yes, Pos:Yes\nNetwork Technique: Det. Lockstep\nDelay Frames: 0f\nRollBack Frames: 0f\n");
+	sf::String hpSync;
+	if (localPlayer.GetSyncState() == SyncState::Desync_HP) hpSync = "No";
+	else hpSync = "Yes";
+	sf::String posSync;
+	if (localPlayer.GetSyncState() == SyncState::Desync_Pos) posSync = "No";
+	else posSync = "Yes";
+	if (localPlayer.GetSyncState() == SyncState::Desync_HPandPos)
+	{
+		posSync = "No"; 
+		hpSync = "No";
+	}
+
+	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: Det. Lockstep\nDelay Frames: 0f\nRollBack Frames: 0f\n");
+	DebugText.setString(debugOutput);
 }
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)

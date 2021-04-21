@@ -24,6 +24,15 @@ void NetworkPeer::PingRequest()
 
 }
 
+void NetworkPeer::SyncStateRequest()
+{
+	net::message<MsgTypes> msg;
+	msg.header.id = MsgTypes::SyncStateRequest;
+	msg << localHP << localPosX;
+	Send_UDP(msg);
+}
+
+
 void NetworkPeer::Pressed_A()
 {
 	net::message<MsgTypes> msg;
@@ -121,7 +130,78 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
 	}
 	break;
+	case MsgTypes::SyncStateRequest:
+	{
+		std::cout << "State request from peer.\n";
+		// Check their local state for ourselves
+		float _remoteHP;
+		float _remotePosX;
+		msg >> _remotePosX >> _remoteHP;
 
+		if (remoteHP > _remoteHP || remoteHP < _remoteHP) currentSyncState = SyncState::Desync_HP;
+		if (remotePosX > _remotePosX || remotePosX < _remotePosX)
+		{
+			if(currentSyncState == SyncState::Desync_HP) currentSyncState = SyncState::Desync_HPandPos;
+			else currentSyncState = SyncState::Desync_Pos;			
+		}
+
+		if (currentSyncState != SyncState::Synced)
+		{
+			if (currentSyncState == SyncState::Desync_HP) std::cout << "Health Points State desynced!\n";
+			if (currentSyncState == SyncState::Desync_Pos)
+			{
+				float difference = remotePosX - _remotePosX;
+				std::cout << "Position State desynced by " << difference << " units!\n";
+			}
+			if (currentSyncState == SyncState::Desync_HPandPos) std::cout << "Both HP and Position State desynced!\n";
+
+		}
+		else
+		{
+			std::cout << "State is correctly synced\n";
+		}
+
+
+		// Send our local information to them
+		net::message<MsgTypes> msg2;
+		msg2.header.id = MsgTypes::SyncStateAnswer;
+		msg2 << localHP << localPosX;
+		Send_UDP(msg2);
+	}
+	break;
+	case MsgTypes::SyncStateAnswer:
+	{
+		std::cout << "State answer from peer.\n";
+		// Check their local state for ourselves
+		float _remoteHP;
+		float _remotePosX;
+		msg >> _remotePosX >> _remoteHP;
+
+		// Check the state
+		if (remoteHP > _remoteHP || remoteHP < _remoteHP) currentSyncState = SyncState::Desync_HP;
+		if (remotePosX > _remotePosX || remotePosX < _remotePosX)
+		{
+			if (currentSyncState == SyncState::Desync_HP) currentSyncState = SyncState::Desync_HPandPos;
+			else currentSyncState = SyncState::Desync_Pos;
+		}
+
+		if (currentSyncState != SyncState::Synced)
+		{
+			if (currentSyncState == SyncState::Desync_HP) std::cout << "Health Points State desynced!\n";
+			if (currentSyncState == SyncState::Desync_Pos)
+			{
+				float difference = remotePosX - _remotePosX;
+				std::cout << "Position State desynced by " << difference << " units!\n";
+			}
+			if (currentSyncState == SyncState::Desync_HPandPos) std::cout << "Both HP and Position State desynced!\n";
+
+		}
+		else
+		{
+			std::cout << "State is correctly synced\n";
+		}
+	}
+	break;
 	case MsgTypes::Pressed_A:
 		remotePlayerStatus.Pressed_A = true;
 		break;

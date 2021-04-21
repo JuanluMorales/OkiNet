@@ -8,10 +8,8 @@ enum class MsgTypes : uint32_t
 	PingRequest, 
 	PingAnswer,
 	// For checking if the game is in sync; ask for the local state of the remote player
-	HPRequest,
-	HPAnswer,
-	PosRequest,
-	PosAnswer,
+	SyncStateRequest,
+	SyncStateAnswer,
 	// Input messages sent/received to/from the remote player
 	Pressed_A,
 	Pressed_D,
@@ -26,13 +24,22 @@ enum class MsgTypes : uint32_t
 	HeavyKicked
 };
 
+// The synchronization state of both peers
+enum class SyncState
+{
+	Synced,
+	Desync_HP,
+	Desync_Pos,
+	Desync_HPandPos
+};
+
 // Inherit from the base peer class to override and add functionality
 class NetworkPeer : public net::Peer<MsgTypes>
 {
 public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
-
+		currentSyncState = SyncState::Synced;
 	}
 
 	// Call at the end of the frame to set all remote statuses to false
@@ -41,6 +48,9 @@ public:
 
 	// Send a ping request to retrieve the roundtrip time
 	void PingRequest();
+	// Send a state request. Pass local player state as argument
+	void SyncStateRequest();
+
 
 	// Input messages sent to the remote player
 	void Pressed_A();
@@ -83,6 +93,12 @@ private:
 
 public:
 	RemotePlayerStatus remotePlayerStatus;
+	SyncState currentSyncState;
 	bool peerDisconnected = false;
+
+	float localHP = 100;
+	float localPosX = 0;
+	float remoteHP = 100;
+	float remotePosX = 0;
 };
 

@@ -111,6 +111,17 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 
 	// Position character at designated start position
 	setPosition(startPos);
+	if (isLocalCharacter)
+	{
+		thisPeer->localHP = currentHealthPoints;
+		thisPeer->localPosX = getPosition().x;
+	}
+	else
+	{
+		thisPeer->remoteHP = currentHealthPoints;
+		thisPeer->remotePosX = getPosition().x;
+	}
+
 	// Setup Animations
 	SetUpAnimationFrames();
 
@@ -126,10 +137,20 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		if (thisPeer->IsConnected())
 		{
 			thisPeer->Update();
+
+			// Pass the info on local player state
+			thisPeer->localHP = currentHealthPoints;
+			thisPeer->localPosX = getPosition().x;
 		}
 	}
+	else if (networkAuthority == NetworkAuthority::Remote)
+	{
+		// Pass the info on local image of the remote player state
+		thisPeer->remoteHP = currentHealthPoints;
+		thisPeer->remotePosX = getPosition().x;
+	}
 
-	// Check damage and life status
+	// Check local damage and life status
 	if (receivedDamage)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
@@ -167,12 +188,21 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	// If this is the second local networked character use player 1 scheme for both players
 	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
-		// Send ping request for roundtrip time
-		if (input->IsKeyDown(sf::Keyboard::P))
+		if (networkAuthority == NetworkAuthority::Local)
 		{
-			input->SetKeyUp(sf::Keyboard::P);
-			thisPeer->PingRequest();
+			// Send ping request for roundtrip time
+			if (input->IsKeyDown(sf::Keyboard::P))
+			{
+				input->SetKeyUp(sf::Keyboard::P);
+				thisPeer->PingRequest();
+			}
+			if (input->IsKeyDown(sf::Keyboard::O))
+			{
+				input->SetKeyUp(sf::Keyboard::O);
+				thisPeer->SyncStateRequest();
+			}
 		}
+
 
 		// Check timers and counters
 		if (dashTimer >= dashTime) // Check dashing timer
