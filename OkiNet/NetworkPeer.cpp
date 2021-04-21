@@ -27,6 +27,7 @@ void NetworkPeer::ResetLocalPlayerStatus()
 	localPlayerStatus.HeavyKicked = false;
 	localPlayerStatus.HeavyPunched = false;
 	receivedRemoteUpdateThisFrame = false;
+	localInputThisFrame = false;
 }
 
 void NetworkPeer::PingRequest()
@@ -51,31 +52,37 @@ void NetworkPeer::SyncStateRequest()
 void NetworkPeer::Pressed_A()
 {
 	localPlayerStatus.Pressed_A = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::Dashed_A()
 {
 	localPlayerStatus.Dashed_A = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::Pressed_D()
 {
 	localPlayerStatus.Pressed_D = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::Dashed_D()
 {
 	localPlayerStatus.Dashed_D = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::HeavyPunched()
 {
 	localPlayerStatus.HeavyPunched = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::HeavyKicked()
 {
 	localPlayerStatus.HeavyKicked = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::SendPlayerStatus()
@@ -89,21 +96,25 @@ void NetworkPeer::SendPlayerStatus()
 void NetworkPeer::Pressed_S()
 {
 	localPlayerStatus.Pressed_S = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::Pressed_Q()
 {
 	localPlayerStatus.Pressed_Q = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::Pressed_E()
 {
 	localPlayerStatus.Pressed_E = true;
+	localInputThisFrame = true;
 }
 
 void NetworkPeer::Pressed_W()
 {
 	localPlayerStatus.Pressed_W = true;
+	localInputThisFrame = true;
 }
 
 bool NetworkPeer::OnPeerConnect()

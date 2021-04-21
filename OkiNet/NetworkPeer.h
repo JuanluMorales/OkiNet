@@ -102,6 +102,7 @@ public:
 	NetworkTechnique currentNetworkTechnique;
 	bool peerDisconnected = false;
 	bool receivedRemoteUpdateThisFrame = false;
+	bool localInputThisFrame = false;
 
 	float localHP = 100;
 	float localPosX = 0;

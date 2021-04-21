@@ -365,8 +365,16 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 		if (networkAuthority == NetworkAuthority::Local)
 		{
+			// Limit the sending of messages when not using techniques -> only send if there is a change in the frame
+			if (thisPeer->currentNetworkTechnique == NetworkTechnique::None)
+			{
+				if(thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus();
+			}
+			else
+			{
+				thisPeer->SendPlayerStatus();
+			}
 		
-			thisPeer->SendPlayerStatus();
 			thisPeer->ResetLocalPlayerStatus();
 		}
 	}
