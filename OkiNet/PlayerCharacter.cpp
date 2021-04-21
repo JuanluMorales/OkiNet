@@ -215,7 +215,11 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				if (attackState == AttackState::Defend) attackState = AttackState::None;
 				shouldAcceptInput = true;
 			}
-			else return;
+			else
+			{
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
+				return;
+			}
 		}
 
 		// Defend
@@ -233,12 +237,24 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
 			attackState = AttackState::DragonPunch;
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_W();
 		}
 		// Punch
-		if (input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D))
+		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) ||playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
 		{
-			input->SetKeyUp(sf::Keyboard::D);
-			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+			if (playerID == PlayerID::PlayerTwo)
+			{
+				input->SetKeyUp(sf::Keyboard::A);
+				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
+			}
+			else
+			{
+				input->SetKeyUp(sf::Keyboard::D);
+				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
+			}
+			
 			attackState = AttackState::HeavyPunch;
 
 		}
@@ -246,14 +262,23 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		{
 			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::FastPunch;
-			std::cout << "Pressed Q!\n";
 
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
 		}
 		// Kick
-		if (input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D))
+		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
 		{
-			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+			if (playerID == PlayerID::PlayerTwo)
+			{
+				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
+			}
+			else
+			{
+				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
+			}
+			
 			attackState = AttackState::HeavyKick;
 
 		}
@@ -262,7 +287,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
 			attackState = AttackState::FastKick;
-
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
 
 		}
 		//-------------------
@@ -495,7 +520,6 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				if (attackState == AttackState::Defend) attackState = AttackState::None;
 				shouldAcceptInput = true;
 			}
-			else return;
 		}
 
 		// Defend
@@ -512,7 +536,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				attackState = AttackState::DragonPunch;
 			}
 			// Punch
-			if (thisPeer->remotePlayerStatus.Pressed_Q && thisPeer->remotePlayerStatus.Pressed_D)
+			if (thisPeer->remotePlayerStatus.Pressed_Q && thisPeer->remotePlayerStatus.Pressed_A)
 			{
 				attackState = AttackState::HeavyPunch;
 			}
@@ -521,7 +545,8 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				attackState = AttackState::FastPunch;
 			}
 			// Kick
-			if (thisPeer->remotePlayerStatus.Pressed_E && thisPeer->remotePlayerStatus.Pressed_D)
+			if (playerID == PlayerID::PlayerOne && thisPeer->remotePlayerStatus.Pressed_E && thisPeer->remotePlayerStatus.Pressed_D
+				|| playerID == PlayerID::PlayerTwo && thisPeer->remotePlayerStatus.Pressed_E && thisPeer->remotePlayerStatus.Pressed_A)
 			{
 				attackState = AttackState::HeavyKick;
 

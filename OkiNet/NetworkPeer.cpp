@@ -8,12 +8,6 @@ void NetworkPeer::ResetRemotePlayerStatus()
 	remotePlayerStatus.Pressed_Q = false;
 	remotePlayerStatus.Pressed_E = false;
 	remotePlayerStatus.Pressed_W = false;
-	remotePlayerStatus.Released_A = false;
-	remotePlayerStatus.Released_D = false;
-	remotePlayerStatus.Released_Q = false;
-	remotePlayerStatus.Released_S = false;
-	remotePlayerStatus.Released_E = false;
-	remotePlayerStatus.Released_W = false;
 }
 
 void NetworkPeer::PingRequest()
@@ -68,46 +62,6 @@ void NetworkPeer::Pressed_W()
 	Send_UDP(msg);
 }
 
-
-void NetworkPeer::Released_A()
-{
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Released_A;
-	Send_UDP(msg);
-}
-void NetworkPeer::Released_D()
-{
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Released_D;
-	Send_UDP(msg);
-}
-void NetworkPeer::Released_S()
-{
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Released_S;
-	Send_UDP(msg);
-}
-void NetworkPeer::Released_Q()
-{
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Released_Q;
-	Send_UDP(msg);
-}
-
-void NetworkPeer::Released_E()
-{
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Released_E;
-	Send_UDP(msg);
-}
-
-void NetworkPeer::Released_W()
-{
-	net::message<MsgTypes> msg;
-	msg.header.id = MsgTypes::Released_W;
-	Send_UDP(msg);
-}
-
 bool NetworkPeer::OnPeerConnect()
 {
 	return true;
@@ -153,24 +107,6 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		break;
 	case MsgTypes::Pressed_W:
 		remotePlayerStatus.Pressed_W = true;
-		break;
-	case MsgTypes::Released_A:
-		remotePlayerStatus.Released_A = true;
-		break;
-	case MsgTypes::Released_D:
-		remotePlayerStatus.Released_D = true;
-		break;
-	case MsgTypes::Released_S:
-		remotePlayerStatus.Released_S = true;
-		break;
-	case MsgTypes::Released_Q:
-		remotePlayerStatus.Released_Q = true;
-		break;
-	case MsgTypes::Released_E:
-		remotePlayerStatus.Released_E = true;
-		break;
-	case MsgTypes::Released_W:
-		remotePlayerStatus.Released_W = true;
 		break;
 	default:
 		break;
