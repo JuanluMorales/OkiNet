@@ -217,7 +217,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			}
 			else
 			{
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S(); // Inform remote player we are still guarding
+				if (networkAuthority == NetworkAuthority::Local && attackState == AttackState::Defend) thisPeer->Pressed_S(); // Inform remote player we are still guarding
 				return;
 			}
 		}
@@ -240,7 +240,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_W();
 		}
 		// Punch
-		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) ||playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
 		{
 			if (playerID == PlayerID::PlayerTwo)
 			{
@@ -252,7 +252,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
 			}
-			
+
 			attackState = AttackState::HeavyPunch;
 
 		}
@@ -276,7 +276,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
 				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
 			}
-			
+
 			attackState = AttackState::HeavyKick;
 
 		}
@@ -549,31 +549,31 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 			//-------------------
 			// Movement ---------
+						//Check dashes first
+			if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
+			{
+				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+				moveState = MoveState::DashL;
+			}else
+			if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
+			{
+				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+				moveState = MoveState::DashR;
+			}else
 			if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left
 			{
-				if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
-				{
-					setPosition(getPosition().x - dashDistance * dt, getPosition().y);
-					moveState = MoveState::DashL;
-				}
-				else // Walk
-				{
-					setPosition(getPosition().x - moveDistance * dt, getPosition().y);
-					moveState = MoveState::Left;
-				}
+				// Walk
+				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+				moveState = MoveState::Left;
+
 			}
 			else if (thisPeer->remotePlayerStatus.Pressed_D && CanGoRight) // Right
 			{
-				if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
-				{
-					setPosition(getPosition().x + dashDistance * dt, getPosition().y);
-					moveState = MoveState::DashR;
-				}
-				else // Walk
-				{
-					setPosition(getPosition().x + moveDistance * dt, getPosition().y);
-					moveState = MoveState::Right;
-				}
+				// Walk
+
+				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+				moveState = MoveState::Right;
+
 			}
 			else // idle
 			{
@@ -592,7 +592,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 	{
 		currentAnim->SetFlipped(true);
 	}
-	
+
 	// ATTACK --------------------------------------------------------
 	// Assign correct attack animation
 	switch (attackState)
@@ -645,7 +645,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 	}
 
 
-		
+
 	// MOVE - Calculate the move state if we are not attacking
 	if (attackState == AttackState::None)
 	{
