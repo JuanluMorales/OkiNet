@@ -24,6 +24,13 @@ enum class SyncState
 	Desync_HPandPos
 };
 
+enum class NetworkTechnique
+{
+	DeterministicLockstep,
+	Delay,
+	Rollback
+};
+
 // Inherit from the base peer class to override and add functionality
 class NetworkPeer : public net::Peer<MsgTypes>
 {
@@ -31,6 +38,7 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced;
+		currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
 	}
 
 	// Call at the end of the frame to set all remote statuses to false
@@ -90,6 +98,7 @@ public:
 	PlayerStatus remotePlayerStatus; // Contains the information on the inputs from the remote player for this frame to be applied locally
 	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote
 	SyncState currentSyncState;
+	NetworkTechnique currentNetworkTechnique;
 	bool peerDisconnected = false;
 	bool receivedRemoteUpdateThisFrame = false;
 

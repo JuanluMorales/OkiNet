@@ -25,7 +25,6 @@ public:
 	void CreateRectShape(sf::RectangleShape rectShape, float sizeX, float sizeY, float posX, float posY, sf::Color color);
 
 private:
-	void EarlyUpdate(float dt);
 	void HandleInput(float dt);
 	void Update(float dt);
 	void Render();
@@ -40,5 +39,10 @@ protected:
 	sf::View* view;
 	InputManager* input;
 	sf::Color clearColor;
+
+	// Flags to control game execution flow
+	bool ShouldHandleInput = true;
+	bool ShouldUpdate = true;
+	bool ShouldRender = true;
 };
 

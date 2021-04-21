@@ -38,14 +38,9 @@ void Scene::OverrideHandleInput(float dt)
 
 void Scene::RunScene(float dt)
 {
-	HandleInput(dt);
-	Update(dt);
-	Render();
-}
-
-void Scene::EarlyUpdate(float dt)
-{
-	OverrideEarlyUpdate(dt);
+	if(ShouldHandleInput) HandleInput(dt);
+	if(ShouldUpdate) Update(dt);
+	if(ShouldRender) Render();
 }
 
 void Scene::HandleInput(float dt)

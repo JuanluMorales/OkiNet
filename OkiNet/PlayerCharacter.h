@@ -20,6 +20,8 @@ public:
 	void InitCharacter(PlayerID id, sf::Vector2f startPos);
 	void InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos, std::shared_ptr<NetworkPeer> peerRef, bool isLocalCharacter);
 	SyncState GetSyncState() { return thisPeer->currentSyncState; }
+	NetworkTechnique GetNetworkTechnique() { return thisPeer->currentNetworkTechnique; }
+	void SetNetworkTechnique(NetworkTechnique nt) { thisPeer->currentNetworkTechnique = nt; }
 	~PlayerCharacter();
 
 	void Update(float dt, sf::Window* wnd); // Update states and apply transformations

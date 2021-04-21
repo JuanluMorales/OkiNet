@@ -137,7 +137,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		if (thisPeer->IsConnected())
 		{
 			thisPeer->Update();
-
 			// Pass the info on local player state
 			thisPeer->localHP = currentHealthPoints;
 			thisPeer->localPosX = getPosition().x;
@@ -181,6 +180,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	// Update frame advantage
 	if (frameAdvantage > 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery) frameAdvantage -= 1;
 	if (frameAdvantage < 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery) frameAdvantage += 1;
+
+
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
