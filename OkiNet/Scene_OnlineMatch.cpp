@@ -296,171 +296,163 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
-	if (!shouldSkipThisFrame)
+	if (localPlayer.currentHealthPoints <= 0 || remotePlayer.currentHealthPoints <= 0)
 	{
-		if (localPlayer.currentHealthPoints <= 0 || remotePlayer.currentHealthPoints <= 0)
+		if (restartCounter >= restartTime) Restart();
+		restartCounter++;
+	}
+
+	remotePlayerConnected = thisPeer->IsConnected();
+
+	// Update players, if connection fails go back to menu
+	localPlayer.Update(dt, window);
+	if (remotePlayerConnected) remotePlayer.Update(dt, window);
+
+	// Update score text
+	p1ScoreText.setString(std::to_string(p1Score));
+	p2ScoreText.setString(std::to_string(p2Score));
+
+	// Update collisions for both users
+	if (isHost)
+	{
+		// Iterate all current's frame collision boxes for both players
+		bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
+		for (auto collA : localPlayer.GetCurrentCollision())
 		{
-			if (restartCounter >= restartTime) Restart();
-			restartCounter++;
-		}
-
-		remotePlayerConnected = thisPeer->IsConnected();
-
-		// Update players, if connection fails go back to menu
-		localPlayer.Update(dt, window);
-		if (remotePlayerConnected) remotePlayer.Update(dt, window);
-
-		// Update score text
-		p1ScoreText.setString(std::to_string(p1Score));
-		p2ScoreText.setString(std::to_string(p2Score));
-
-		// Update collisions for both users
-		if (isHost)
-		{
-			// Iterate all current's frame collision boxes for both players
-			bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
-			for (auto collA : localPlayer.GetCurrentCollision())
+			for (auto collB : remotePlayer.GetCurrentCollision())
 			{
-				for (auto collB : remotePlayer.GetCurrentCollision())
+				if (collA->IsActive() && collB->IsActive())
 				{
-					if (collA->IsActive() && collB->IsActive())
-					{
-						// Check collision between players
-						Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, localPlayer.GetCurrentAnimation(), remotePlayer.GetCurrentAnimation());
+					// Check collision between players
+					Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, localPlayer.GetCurrentAnimation(), remotePlayer.GetCurrentAnimation());
 
-						if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
-						{
-							interPlayerCollision = true;
-							localPlayer.CollisionResponseToPlayer(&newColl);
-							remotePlayer.CollisionResponseToPlayer(&newColl);
-						}
-					}
-				}
-			}
-
-
-			if (!interPlayerCollision)
-			{
-				localPlayer.NoCollisionRegistered();
-				remotePlayer.NoCollisionRegistered();
-			}
-
-			// Check map collision
-			for (auto collA : localPlayer.GetCurrentCollision())
-			{
-				for (auto collB : remotePlayer.GetCurrentCollision())
-				{
-					// Check collision between the players and the map limits
-					Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
-					if (newColl2.None)
+					if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
 					{
-						localPlayer.CanGoLeft = true;
-					}
-					else
-					{
-						localPlayer.CanGoLeft = false;
-					}
-
-					Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
-					if (newColl3.None)
-					{
-						remotePlayer.CanGoRight = true;
-					}
-					else
-					{
-						remotePlayer.CanGoRight = false;
-					}
-				}
-			}
-		}
-		else
-		{
-			// Iterate all current's frame collision boxes for both players
-			bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
-			for (auto collA : remotePlayer.GetCurrentCollision())
-			{
-				for (auto collB : localPlayer.GetCurrentCollision())
-				{
-					if (collA->IsActive() && collB->IsActive())
-					{
-						// Check collision between players
-						Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, remotePlayer.GetCurrentAnimation(), localPlayer.GetCurrentAnimation());
-
-						if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
-						{
-							interPlayerCollision = true;
-							localPlayer.CollisionResponseToPlayer(&newColl);
-							remotePlayer.CollisionResponseToPlayer(&newColl);
-						}
-					}
-				}
-			}
-
-
-			if (!interPlayerCollision)
-			{
-				localPlayer.NoCollisionRegistered();
-				remotePlayer.NoCollisionRegistered();
-			}
-
-			// Check map collision
-			for (auto collA : remotePlayer.GetCurrentCollision())
-			{
-				for (auto collB : localPlayer.GetCurrentCollision())
-				{
-					// Check collision between the players and the map limits
-					Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
-					if (newColl2.None)
-					{
-						remotePlayer.CanGoLeft = true;
-					}
-					else
-					{
-						remotePlayer.CanGoLeft = false;
-					}
-
-					Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
-					if (newColl3.None)
-					{
-						localPlayer.CanGoRight = true;
-					}
-					else
-					{
-						localPlayer.CanGoRight = false;
+						interPlayerCollision = true;
+						localPlayer.CollisionResponseToPlayer(&newColl);
+						remotePlayer.CollisionResponseToPlayer(&newColl);
 					}
 				}
 			}
 		}
 
-		// Update debug text
-		sf::String hpSync;
-		if (localPlayer.GetSyncState() == SyncState::Desync_HP) hpSync = "No";
-		else hpSync = "Yes";
-		sf::String posSync;
-		if (localPlayer.GetSyncState() == SyncState::Desync_Pos) posSync = "No";
-		else posSync = "Yes";
-		if (localPlayer.GetSyncState() == SyncState::Desync_HPandPos)
-		{
-			posSync = "No";
-			hpSync = "No";
-		}
-		sf::String netTech;
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::None) netTech = "None";
-		else
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep) netTech = "Det. Lockstep";
-		else
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Delay) netTech = "Input Delay";
-		else
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
 
-		sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: 0f\nRollBack Frames: 0f\n");
-		DebugText.setString(debugOutput);
+		if (!interPlayerCollision)
+		{
+			localPlayer.NoCollisionRegistered();
+			remotePlayer.NoCollisionRegistered();
+		}
+
+		// Check map collision
+		for (auto collA : localPlayer.GetCurrentCollision())
+		{
+			for (auto collB : remotePlayer.GetCurrentCollision())
+			{
+				// Check collision between the players and the map limits
+				Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
+				if (newColl2.None)
+				{
+					localPlayer.CanGoLeft = true;
+				}
+				else
+				{
+					localPlayer.CanGoLeft = false;
+				}
+
+				Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
+				if (newColl3.None)
+				{
+					remotePlayer.CanGoRight = true;
+				}
+				else
+				{
+					remotePlayer.CanGoRight = false;
+				}
+			}
+		}
 	}
 	else
 	{
-		// Make sure we listen to the network messages
-		localPlayer.UpdateNetworkState();
+		// Iterate all current's frame collision boxes for both players
+		bool interPlayerCollision = false; // Bool to check if there was a collision between players at all so that damage is only applied once per collision
+		for (auto collA : remotePlayer.GetCurrentCollision())
+		{
+			for (auto collB : localPlayer.GetCurrentCollision())
+			{
+				if (collA->IsActive() && collB->IsActive())
+				{
+					// Check collision between players
+					Collision::CollisionResponse newColl = Collision::checkBoundingBox_Sides(collA, collB, remotePlayer.GetCurrentAnimation(), localPlayer.GetCurrentAnimation());
+
+					if (!newColl.None) // There was no collision between the checked colliders (but could be a collision with future colliders
+					{
+						interPlayerCollision = true;
+						localPlayer.CollisionResponseToPlayer(&newColl);
+						remotePlayer.CollisionResponseToPlayer(&newColl);
+					}
+				}
+			}
+		}
+
+
+		if (!interPlayerCollision)
+		{
+			localPlayer.NoCollisionRegistered();
+			remotePlayer.NoCollisionRegistered();
+		}
+
+		// Check map collision
+		for (auto collA : remotePlayer.GetCurrentCollision())
+		{
+			for (auto collB : localPlayer.GetCurrentCollision())
+			{
+				// Check collision between the players and the map limits
+				Collision::CollisionResponse newColl2 = Collision::checkBoundingBox_Sides(collA, leftColl);
+				if (newColl2.None)
+				{
+					remotePlayer.CanGoLeft = true;
+				}
+				else
+				{
+					remotePlayer.CanGoLeft = false;
+				}
+
+				Collision::CollisionResponse newColl3 = Collision::checkBoundingBox_Sides(collB, rightColl);
+				if (newColl3.None)
+				{
+					localPlayer.CanGoRight = true;
+				}
+				else
+				{
+					localPlayer.CanGoRight = false;
+				}
+			}
+		}
 	}
+
+	// Update debug text
+	sf::String hpSync;
+	if (localPlayer.GetSyncState() == SyncState::Desync_HP) hpSync = "No";
+	else hpSync = "Yes";
+	sf::String posSync;
+	if (localPlayer.GetSyncState() == SyncState::Desync_Pos) posSync = "No";
+	else posSync = "Yes";
+	if (localPlayer.GetSyncState() == SyncState::Desync_HPandPos)
+	{
+		posSync = "No";
+		hpSync = "No";
+	}
+	sf::String netTech;
+	if (localPlayer.GetNetworkTechnique() == NetworkTechnique::None) netTech = "None";
+	else
+		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep) netTech = "Det. Lockstep";
+		else
+			if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Delay) netTech = "Input Delay";
+			else
+				if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
+
+	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: 0f\nRollBack Frames: 0f\n");
+	DebugText.setString(debugOutput);
 
 	// Start executing network techniques when remote player connects
 	if (remotePlayerConnected)
@@ -468,18 +460,12 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		// Handle lockstep
 		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep)
 		{
-			// IF we have not yet received update this frame, keep waiting by not updating or rendering
-			if (!localPlayer.HasReceivedRemoteUpdateThisFrame())
+			// IF we have not yet received update this frame, keep waiting by not updating or rendering			
+			while (!localPlayer.HasReceivedRemoteUpdateThisFrame())
 			{
-				ShouldRender = false;
-				shouldSkipThisFrame = true;
-				return;
-			}
-			else
-			{
-				ShouldRender = true;
-				shouldSkipThisFrame = false;
-			}
+				// Make sure we listen to the network messages
+				localPlayer.UpdateNetworkState();
+			} 						
 		}
 	}
 }

@@ -39,7 +39,7 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced;
-		currentNetworkTechnique = NetworkTechnique::None;
+		currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
 	}
 
 	// Call at the end of the frame to set all remote statuses to false
