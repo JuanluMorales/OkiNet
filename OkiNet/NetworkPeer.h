@@ -14,13 +14,16 @@ enum class MsgTypes : uint32_t
 	PosAnswer,
 	// Input messages sent/received to/from the remote player
 	Pressed_A,
-	Dashed_A,
 	Pressed_D,
-	Dashed_D,
 	Pressed_S,
 	Pressed_Q,
 	Pressed_E,
-	Pressed_W
+	Pressed_W,
+	// Input messages that are a combination of presses and so must be sent individually
+	Dashed_A,
+	Dashed_D,
+	HeavyPunched,
+	HeavyKicked
 };
 
 // Inherit from the base peer class to override and add functionality
@@ -41,13 +44,16 @@ public:
 
 	// Input messages sent to the remote player
 	void Pressed_A();
-	void Dashed_A();
 	void Pressed_D();
-	void Dashed_D();
 	void Pressed_S();
 	void Pressed_Q();
 	void Pressed_E();
 	void Pressed_W();
+
+	void Dashed_A();
+	void Dashed_D();
+	void HeavyPunched();
+	void HeavyKicked();
 
 protected:
 	// Called when a client connects to this peer
@@ -62,13 +68,17 @@ private:
 	struct RemotePlayerStatus
 	{
 		bool Pressed_A = false;
-		bool Dashed_A = false;
 		bool Pressed_D = false;
-		bool Dashed_D = false;
 		bool Pressed_S = false;
 		bool Pressed_Q = false;
 		bool Pressed_E = false;
 		bool Pressed_W = false;
+
+		bool Dashed_A = false;
+		bool Dashed_D = false;
+
+		bool HeavyPunched = false;
+		bool HeavyKicked = false;
 	};
 
 public:

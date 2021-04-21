@@ -10,6 +10,8 @@ void NetworkPeer::ResetRemotePlayerStatus()
 	remotePlayerStatus.Pressed_Q = false;
 	remotePlayerStatus.Pressed_E = false;
 	remotePlayerStatus.Pressed_W = false;
+	remotePlayerStatus.HeavyKicked = false;
+	remotePlayerStatus.HeavyPunched = false;
 }
 
 void NetworkPeer::PingRequest()
@@ -47,6 +49,20 @@ void NetworkPeer::Dashed_D()
 {
 	net::message<MsgTypes> msg;
 	msg.header.id = MsgTypes::Dashed_D;
+	Send_UDP(msg);
+}
+
+void NetworkPeer::HeavyPunched()
+{
+	net::message<MsgTypes> msg;
+	msg.header.id = MsgTypes::HeavyPunched;
+	Send_UDP(msg);
+}
+
+void NetworkPeer::HeavyKicked()
+{
+	net::message<MsgTypes> msg;
+	msg.header.id = MsgTypes::HeavyKicked;
 	Send_UDP(msg);
 }
 
@@ -129,6 +145,12 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		break;
 	case MsgTypes::Pressed_W:
 		remotePlayerStatus.Pressed_W = true;
+		break;
+	case MsgTypes::HeavyKicked:
+		remotePlayerStatus.HeavyKicked = true;
+		break;
+	case MsgTypes::HeavyPunched:
+		remotePlayerStatus.HeavyPunched = true;
 		break;
 	default:
 		break;

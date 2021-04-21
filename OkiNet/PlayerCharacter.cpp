@@ -242,18 +242,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		// Punch
 		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
 		{
-			if (playerID == PlayerID::PlayerTwo)
-			{
-				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
-			}
-			else
-			{
-				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
-			}
 
+			input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
 			attackState = AttackState::HeavyPunch;
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyPunched();
 
 		}
 		else if (input->IsKeyDown(sf::Keyboard::Q))
@@ -266,18 +258,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		// Kick
 		if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
 		{
-			if (playerID == PlayerID::PlayerTwo)
-			{
-				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
-			}
-			else
-			{
-				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
-			}
 
+			input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
 			attackState = AttackState::HeavyKick;
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyKicked();
 
 		}
 		else if (input->IsKeyDown(sf::Keyboard::E))
@@ -527,7 +511,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				attackState = AttackState::DragonPunch;
 			}
 			// Punch
-			if (thisPeer->remotePlayerStatus.Pressed_Q && thisPeer->remotePlayerStatus.Pressed_A)
+			if (thisPeer->remotePlayerStatus.HeavyPunched)
 			{
 				attackState = AttackState::HeavyPunch;
 			}
@@ -536,11 +520,9 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				attackState = AttackState::FastPunch;
 			}
 			// Kick
-			if (playerID == PlayerID::PlayerOne && thisPeer->remotePlayerStatus.Pressed_E && thisPeer->remotePlayerStatus.Pressed_D
-				|| playerID == PlayerID::PlayerTwo && thisPeer->remotePlayerStatus.Pressed_E && thisPeer->remotePlayerStatus.Pressed_A)
+			if (thisPeer->remotePlayerStatus.HeavyKicked)
 			{
 				attackState = AttackState::HeavyKick;
-
 			}
 			else if (thisPeer->remotePlayerStatus.Pressed_E)
 			{
@@ -554,31 +536,33 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 			{
 				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
 				moveState = MoveState::DashL;
-			}else
-			if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
-			{
-				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
-				moveState = MoveState::DashR;
-			}else
-			if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left
-			{
-				// Walk
-				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
-				moveState = MoveState::Left;
-
 			}
-			else if (thisPeer->remotePlayerStatus.Pressed_D && CanGoRight) // Right
-			{
-				// Walk
+			else
+				if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
+				{
+					setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+					moveState = MoveState::DashR;
+				}
+				else
+					if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left
+					{
+						// Walk
+						setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+						moveState = MoveState::Left;
 
-				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
-				moveState = MoveState::Right;
+					}
+					else if (thisPeer->remotePlayerStatus.Pressed_D && CanGoRight) // Right
+					{
+						// Walk
 
-			}
-			else // idle
-			{
-				moveState = MoveState::Idle;
-			}
+						setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+						moveState = MoveState::Right;
+
+					}
+					else // idle
+					{
+						moveState = MoveState::Idle;
+					}
 		}
 	}
 	// Resets all inputs this frame
