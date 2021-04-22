@@ -247,17 +247,18 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				shouldAcceptInput = false;
 			}
 
+			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
+
 			if (!shouldAcceptInput)
 			{
 				if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::Down) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
 				{
 					if (attackState == AttackState::Defend) attackState = AttackState::None;
 					shouldAcceptInput = true;
+					thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
 				}
 			}else
-			{
-				NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
-
+			{				
 				// Cache delayed input
 				// Defend
 				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
@@ -267,24 +268,33 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				// Special punch
 				if (input->IsKeyDown(sf::Keyboard::W))
 				{
+					input->SetKeyUp(sf::Keyboard::W);
 					newPlayerStatus->Pressed_W = true;
 				}
 				// Punch
 				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
 				{
+					input->SetKeyUp(sf::Keyboard::Q);
+					input->SetKeyUp(sf::Keyboard::D);
+					input->SetKeyUp(sf::Keyboard::A);
 					newPlayerStatus->HeavyPunched = true;
 				}
 				else if (input->IsKeyDown(sf::Keyboard::Q))
 				{
+					input->SetKeyUp(sf::Keyboard::Q);
 					newPlayerStatus->Pressed_Q = true;
 				}
 				// Kick
 				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
 				{
+					input->SetKeyUp(sf::Keyboard::E);
+					input->SetKeyUp(sf::Keyboard::D);
+					input->SetKeyUp(sf::Keyboard::A);
 					newPlayerStatus->HeavyKicked = true;
 				}
 				else if (input->IsKeyDown(sf::Keyboard::E))
 				{
+					input->SetKeyUp(sf::Keyboard::E);
 					newPlayerStatus->Pressed_E = true;
 				}
 				//-------------------
@@ -304,13 +314,13 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 						newPlayerStatus->Dashed_D = true;
 					}
 						newPlayerStatus->Pressed_D = true;	
-				}
-
-				 thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
+				}		 
 			}
+
+			thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
 			
 			// Execute this frame's input 
-			if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter)
+			if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter && !thisPeer->delayedPlayerStatuses.empty())
 			{
 				if (shouldAcceptInput)
 				{
@@ -328,8 +338,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 						attackState = AttackState::DragonPunch;
 					}
 					// Punch
-					if (playerID == PlayerID::PlayerOne && thisPeer->delayedPlayerStatuses.front().Pressed_Q && thisPeer->delayedPlayerStatuses.front().Pressed_D
-						|| playerID == PlayerID::PlayerTwo && thisPeer->delayedPlayerStatuses.front().Pressed_Q && thisPeer->delayedPlayerStatuses.front().Pressed_A)
+					if (playerID == PlayerID::PlayerOne && thisPeer->delayedPlayerStatuses.front().HeavyPunched 
+						|| playerID == PlayerID::PlayerTwo && thisPeer->delayedPlayerStatuses.front().HeavyPunched)
 					{
 						attackState = AttackState::HeavyPunch;
 
@@ -339,8 +349,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 						attackState = AttackState::FastPunch;
 					}
 					// Kick
-					if (playerID == PlayerID::PlayerOne && thisPeer->delayedPlayerStatuses.front().Pressed_E && thisPeer->delayedPlayerStatuses.front().Pressed_D
-						|| playerID == PlayerID::PlayerTwo && thisPeer->delayedPlayerStatuses.front().Pressed_E && thisPeer->delayedPlayerStatuses.front().Pressed_A)
+					if (playerID == PlayerID::PlayerOne && thisPeer->delayedPlayerStatuses.front().HeavyKicked
+						|| playerID == PlayerID::PlayerTwo && thisPeer->delayedPlayerStatuses.front().HeavyKicked)
 					{
 						attackState = AttackState::HeavyKick;
 
