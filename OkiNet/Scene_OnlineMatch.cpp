@@ -470,20 +470,20 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		else // Handle input delay
 		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Delay)
 		{
-			//delayFrameCounter += 1; // Increase the frames we have been waiting for the next input
+			delayFrameCounter += 1; // Increase the frames we have been waiting for the next input
 
-			//// If we have run out of waiting frames...
-			//if (thisPeer->DELAY_FRAMES < delayFrameCounter)
-			//{
-			//	// Force lockstep until we get new updates		
-			//	while (!localPlayer.HasReceivedRemoteUpdateThisFrame())
-			//	{
-			//		// Make sure we listen to the network messages
-			//		localPlayer.UpdateNetworkState();
-			//	}
+			// If we have run out of waiting frames...
+			if (thisPeer->DELAY_FRAMES < delayFrameCounter)
+			{
+				// Force lockstep until we get new updates		
+				while (!localPlayer.HasReceivedRemoteUpdateThisFrame())
+				{
+					// Make sure we listen to the network messages
+					localPlayer.UpdateNetworkState();
+				}
 
-			//	delayFrameCounter = 0; // reset the counter when we receive a new update
-			//}
+				delayFrameCounter = 0; // reset the counter when we receive a new update
+			}
 
 		}
 	}
