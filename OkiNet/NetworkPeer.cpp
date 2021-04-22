@@ -85,11 +85,11 @@ void NetworkPeer::HeavyKicked()
 	localInputThisFrame = true;
 }
 
-void NetworkPeer::SendPlayerStatus()
+void NetworkPeer::SendPlayerStatus(PlayerStatus& status)
 {
 	net::message<MsgTypes> msg;
 	msg.header.id = MsgTypes::ReceivePlayerState;
-	msg << localPlayerStatus;
+	msg << status;
 	Send_UDP(msg);
 }
 

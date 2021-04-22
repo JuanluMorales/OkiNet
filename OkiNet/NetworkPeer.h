@@ -57,30 +57,6 @@ public:
 	// Send a state request. Pass local player state as argument
 	void SyncStateRequest();
 
-
-	// Change the player status 
-	void Pressed_A();
-	void Pressed_D();
-	void Pressed_S();
-	void Pressed_Q();
-	void Pressed_E();
-	void Pressed_W();
-
-	void Dashed_A();
-	void Dashed_D();
-	void HeavyPunched();
-	void HeavyKicked();
-
-	void SendPlayerStatus();
-
-protected:
-	// Called when a client connects to this peer
-	virtual bool OnPeerConnect();
-	// Called when a client disconnects to this peer
-	virtual void OnPeerDisconnect();
-	// Called when a client receives a message from the remote peer connection
-	virtual void OnMessageReceived(net::message<MsgTypes>& msg);
-
 public:
 	//Struct that represents the remote player's input status to update the local representation of the remote player
 	// Sent at the end of the frame 
@@ -99,6 +75,31 @@ public:
 		bool HeavyPunched = false;
 		bool HeavyKicked = false;
 	};
+
+	// Change the player status 
+	void Pressed_A();
+	void Pressed_D();
+	void Pressed_S();
+	void Pressed_Q();
+	void Pressed_E();
+	void Pressed_W();
+
+	void Dashed_A();
+	void Dashed_D();
+	void HeavyPunched();
+	void HeavyKicked();
+
+	void SendPlayerStatus(PlayerStatus & status);
+
+protected:
+	// Called when a client connects to this peer
+	virtual bool OnPeerConnect();
+	// Called when a client disconnects to this peer
+	virtual void OnPeerDisconnect();
+	// Called when a client receives a message from the remote peer connection
+	virtual void OnMessageReceived(net::message<MsgTypes>& msg);
+
+public:
 
 	PlayerStatus remotePlayerStatus; // Contains the information on the inputs from the remote player for this frame to be applied locally
 	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote

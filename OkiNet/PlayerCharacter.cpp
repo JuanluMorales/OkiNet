@@ -303,6 +303,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (b_dashTriggerL) // Dash 
 					{
+						input->SetKeyUp(sf::Keyboard::A);
 						newPlayerStatus->Dashed_A = true;
 					}
 						newPlayerStatus->Pressed_A = true;	
@@ -311,6 +312,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (b_dashTriggerR) // Dash 
 					{
+						input->SetKeyUp(sf::Keyboard::D);
 						newPlayerStatus->Dashed_D = true;
 					}
 						newPlayerStatus->Pressed_D = true;	
@@ -570,27 +572,29 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					moveState = MoveState::Idle;
 				}
 				// -------------------
-			}
-			if (networkAuthority == NetworkAuthority::Local)
+			}			
+		}
+
+		// Send network message to peer
+		if (networkAuthority == NetworkAuthority::Local)
+		{
+			// Limit the sending of messages when not using techniques -> only send if there is a change in the frame
+			if (thisPeer->currentNetworkTechnique == NetworkTechnique::None)
 			{
-				// Limit the sending of messages when not using techniques -> only send if there is a change in the frame
-				if (thisPeer->currentNetworkTechnique == NetworkTechnique::None)
+				if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
+			}
+			else
+				if (thisPeer->currentNetworkTechnique == NetworkTechnique::Delay)
 				{
-					if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus();
+					// Assign the input delay frames
+					if(!thisPeer->delayedPlayerStatuses.empty()) thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
 				}
 				else
-					if (thisPeer->currentNetworkTechnique == NetworkTechnique::Delay)
-					{
-						// Assign the input delay frames
-						if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus();
-					}
-					else
-					{
-						thisPeer->SendPlayerStatus();
-					}
+				{
+					thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
+				}
 
-				thisPeer->ResetLocalPlayerStatus();
-			}
+			thisPeer->ResetLocalPlayerStatus();
 		}
 	}
 	else if (playerID == PlayerID::PlayerTwo)
