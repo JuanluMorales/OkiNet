@@ -451,7 +451,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 			else
 				if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
 
-	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: 0f\nRollBack Frames: 0f\n");
+	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: " + std::to_string(thisPeer->DELAY_FRAMES) +"f\nRollBack Frames: " + std::to_string(thisPeer->ROLLBACK_FRAMES) + "f\n");
 	DebugText.setString(debugOutput);
 
 	// Start executing network techniques when remote player connects
@@ -465,7 +465,26 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 			{
 				// Make sure we listen to the network messages
 				localPlayer.UpdateNetworkState();
-			} 						
+			}
+		}
+		else // Handle input delay
+		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Delay)
+		{
+			//delayFrameCounter += 1; // Increase the frames we have been waiting for the next input
+
+			//// If we have run out of waiting frames...
+			//if (thisPeer->DELAY_FRAMES < delayFrameCounter)
+			//{
+			//	// Force lockstep until we get new updates		
+			//	while (!localPlayer.HasReceivedRemoteUpdateThisFrame())
+			//	{
+			//		// Make sure we listen to the network messages
+			//		localPlayer.UpdateNetworkState();
+			//	}
+
+			//	delayFrameCounter = 0; // reset the counter when we receive a new update
+			//}
+
 		}
 	}
 }

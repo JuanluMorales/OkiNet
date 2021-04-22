@@ -225,10 +225,6 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		msg >> newRemoteStatus;
 		remotePlayerStatus = newRemoteStatus;
 
-		if (remotePlayerStatus.Pressed_Q) {
-			std::cout << "Remote press of Q\n";
-		}
-
 		break;
 	}
 }

@@ -18,6 +18,7 @@ public:
 	void OverrideHandleInput(float dt);
 
 	bool shouldSkipThisFrame = false;
+	int delayFrameCounter = 0; // Used to count the frames that have passed for input delay purposes: when this counter surpasses the delay frames, the game will enter lockstep
 
 	enum class MatchState { Start, OnGoing, P1Win, P2Win, Restart };
 	void Restart();

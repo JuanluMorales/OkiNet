@@ -194,6 +194,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	// If this is the second local networked character use player 1 scheme for both players
 	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
+		// If we are online and this is the local player
 		if (networkAuthority == NetworkAuthority::Local)
 		{
 			// Send ping request for roundtrip time
@@ -207,175 +208,379 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				input->SetKeyUp(sf::Keyboard::O);
 				thisPeer->SyncStateRequest();
 			}
+
 		}
 
-
-		// Check timers and counters
-		if (dashTimer >= dashTime) // Check dashing timer
+		// If we are using delay, check this frames' input and apply the input that should be applied this frame
+		if (networkAuthority == NetworkAuthority::Local && thisPeer->currentNetworkTechnique == NetworkTechnique::Delay)
 		{
-			b_dashTriggerR = false;
-			b_dashTriggerL = false;
-			dashTimer = 0.0f;
-		}
-		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
-
-		if (frameAdvantage < 0)
-		{
-			shouldAcceptInput = false;
-			return;
-		}
-
-		// Check this frame's type to decide if input should be accepted
-		switch (animState)
-		{
-		case AnimationFrameType::Idle:
-			shouldAcceptInput = true;
-			break;
-		case AnimationFrameType::StartUp:
-			shouldAcceptInput = false;
-			break;
-		case AnimationFrameType::Active:
-			shouldAcceptInput = false;
-			break;
-		case AnimationFrameType::Recovery:
-			shouldAcceptInput = true;
-			break;
-		default:
-			break;
-		}
-
-		if (!shouldAcceptInput)
-		{
-			if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::S) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+			// Check timers and counters
+			if (dashTimer >= dashTime) // Check dashing timer
 			{
-				if (attackState == AttackState::Defend) attackState = AttackState::None;
+				b_dashTriggerR = false;
+				b_dashTriggerL = false;
+				dashTimer = 0.0f;
+			}
+			else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
+			// Check this frame's type to decide if input should be accepted
+			switch (animState)
+			{
+			case AnimationFrameType::Idle:
 				shouldAcceptInput = true;
-			}
-			else
-			{
-				if (networkAuthority == NetworkAuthority::Local && attackState == AttackState::Defend) thisPeer->Pressed_S(); // Inform remote player we are still guarding
-			}
-		}
-
-		if (shouldAcceptInput)
-		{
-			// Defend
-			if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
-			{
-				attackState = AttackState::Defend;
+				break;
+			case AnimationFrameType::StartUp:
 				shouldAcceptInput = false;
-
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
+				break;
+			case AnimationFrameType::Active:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Recovery:
+				shouldAcceptInput = true;
+				break;
+			default:
+				break;
 			}
 
-			// Attack
-			// Special punch
-			if (input->IsKeyDown(sf::Keyboard::W))
+			if (frameAdvantage < 0)
 			{
-				input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
-				attackState = AttackState::DragonPunch;
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_W();
+				shouldAcceptInput = false;
 			}
-			// Punch
-			if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+
+			if (!shouldAcceptInput)
 			{
-
-				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-				attackState = AttackState::HeavyPunch;
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyPunched();
-
-			}
-			else if (input->IsKeyDown(sf::Keyboard::Q))
-			{
-				input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
-				attackState = AttackState::FastPunch;
-
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
-			}
-			// Kick
-			if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
-			{
-
-				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
-				attackState = AttackState::HeavyKick;
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyKicked();
-
-			}
-			else if (input->IsKeyDown(sf::Keyboard::E))
-			{
-
-				input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
-				attackState = AttackState::FastKick;
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
-
-			}
-			//-------------------
-			// Movement ---------
-			if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
-			{
-				if (b_dashTriggerL) // Dash 
+				if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::Down) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
 				{
-					input->SetKeyUp(sf::Keyboard::A);
-					dashTimer = dashTime;
-					setPosition(getPosition().x - dashDistance * dt, getPosition().y);
-					moveState = MoveState::DashL;
-					if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
+					if (attackState == AttackState::Defend) attackState = AttackState::None;
+					shouldAcceptInput = true;
 				}
-				else // Walk
-				{
-					setPosition(getPosition().x - moveDistance * dt, getPosition().y);
-					moveState = MoveState::Left;
-				}
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
-			}
-			else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+			}else
 			{
-				if (b_dashTriggerR) // Dash 
+				NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
+
+				// Cache delayed input
+				// Defend
+				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
 				{
-					input->SetKeyUp(sf::Keyboard::D);
-					dashTimer = dashTime;
-					setPosition(getPosition().x + dashDistance * dt, getPosition().y);
-					moveState = MoveState::DashR;
-					if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_D();
+					newPlayerStatus->Pressed_S = true;
 				}
-				else // Walk
+				// Special punch
+				if (input->IsKeyDown(sf::Keyboard::W))
 				{
-					setPosition(getPosition().x + moveDistance * dt, getPosition().y);
-					moveState = MoveState::Right;
+					newPlayerStatus->Pressed_W = true;
 				}
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
-			}
-			else // idle
-			{
-				// if last move state was walking, check the dash relevant trigger
-				if (moveState == MoveState::Left)
+				// Punch
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
 				{
-					b_dashTriggerL = true;
-					dashTimer = 0.0f;
+					newPlayerStatus->HeavyPunched = true;
 				}
-				if (moveState == MoveState::Right)
+				else if (input->IsKeyDown(sf::Keyboard::Q))
 				{
-					b_dashTriggerR = true;
-					dashTimer = 0.0f;
+					newPlayerStatus->Pressed_Q = true;
+				}
+				// Kick
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
+				{
+					newPlayerStatus->HeavyKicked = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::E))
+				{
+					newPlayerStatus->Pressed_E = true;
+				}
+				//-------------------
+				// Movement ---------
+				if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+				{
+					if (b_dashTriggerL) // Dash 
+					{
+						newPlayerStatus->Dashed_A = true;
+					}
+						newPlayerStatus->Pressed_A = true;	
+				}
+				else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+				{
+					if (b_dashTriggerR) // Dash 
+					{
+						newPlayerStatus->Dashed_D = true;
+					}
+						newPlayerStatus->Pressed_D = true;	
 				}
 
-				moveState = MoveState::Idle;
+				 thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
 			}
-			// -------------------
+			
+			// Execute this frame's input 
+			if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter)
+			{
+				if (shouldAcceptInput)
+				{
+					// Defend
+					if (thisPeer->delayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
+					{
+						attackState = AttackState::Defend;
+						shouldAcceptInput = false;
+					}
+
+					// Attack
+					// Special punch
+					if (thisPeer->delayedPlayerStatuses.front().Pressed_W)
+					{
+						attackState = AttackState::DragonPunch;
+					}
+					// Punch
+					if (playerID == PlayerID::PlayerOne && thisPeer->delayedPlayerStatuses.front().Pressed_Q && thisPeer->delayedPlayerStatuses.front().Pressed_D
+						|| playerID == PlayerID::PlayerTwo && thisPeer->delayedPlayerStatuses.front().Pressed_Q && thisPeer->delayedPlayerStatuses.front().Pressed_A)
+					{
+						attackState = AttackState::HeavyPunch;
+
+					}
+					else if (thisPeer->delayedPlayerStatuses.front().Pressed_Q)
+					{
+						attackState = AttackState::FastPunch;
+					}
+					// Kick
+					if (playerID == PlayerID::PlayerOne && thisPeer->delayedPlayerStatuses.front().Pressed_E && thisPeer->delayedPlayerStatuses.front().Pressed_D
+						|| playerID == PlayerID::PlayerTwo && thisPeer->delayedPlayerStatuses.front().Pressed_E && thisPeer->delayedPlayerStatuses.front().Pressed_A)
+					{
+						attackState = AttackState::HeavyKick;
+
+					}
+					else if (thisPeer->delayedPlayerStatuses.front().Pressed_E)
+					{
+						attackState = AttackState::FastKick;
+					}
+					//-------------------
+					// Movement ---------
+					if (thisPeer->delayedPlayerStatuses.front().Pressed_A && CanGoLeft) // Left
+					{
+						if (b_dashTriggerL) // Dash 
+						{
+							input->SetKeyUp(sf::Keyboard::A);
+							dashTimer = dashTime;
+							setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+							moveState = MoveState::DashL;
+							if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
+						}
+						else // Walk
+						{
+							setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+							moveState = MoveState::Left;
+						}
+						if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
+					}
+					else if (thisPeer->delayedPlayerStatuses.front().Pressed_D && CanGoRight) // Right
+					{
+						if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
+						{
+							dashTimer = dashTime;
+							setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+							moveState = MoveState::DashR;
+						}
+						else // Walk
+						{
+							setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+							moveState = MoveState::Right;
+						}
+					}
+					else // idle
+					{
+						// if last move state was walking, check the dash relevant trigger
+						if (moveState == MoveState::Left)
+						{
+							b_dashTriggerL = true;
+							dashTimer = 0.0f;
+						}
+						if (moveState == MoveState::Right)
+						{
+							b_dashTriggerR = true;
+							dashTimer = 0.0f;
+						}
+
+						moveState = MoveState::Idle;
+					}
+					// -------------------
+				}
+				// Get rid of the executed input
+				thisPeer->delayedPlayerStatuses.pop_front();
+			}
+			else if(frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
+
 		}
-		if (networkAuthority == NetworkAuthority::Local)
+		else // Run update without delay ------------------------
 		{
-			// Limit the sending of messages when not using techniques -> only send if there is a change in the frame
-			if (thisPeer->currentNetworkTechnique == NetworkTechnique::None)
+			// Check timers and counters
+			if (dashTimer >= dashTime) // Check dashing timer
 			{
-				if(thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus();
+				b_dashTriggerR = false;
+				b_dashTriggerL = false;
+				dashTimer = 0.0f;
 			}
-			else
+			else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
+			// Check this frame's type to decide if input should be accepted
+			switch (animState)
 			{
-				thisPeer->SendPlayerStatus();
+			case AnimationFrameType::Idle:
+				shouldAcceptInput = true;
+				break;
+			case AnimationFrameType::StartUp:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Active:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Recovery:
+				shouldAcceptInput = true;
+				break;
+			default:
+				break;
 			}
-		
-			thisPeer->ResetLocalPlayerStatus();
+
+			if (frameAdvantage < 0)
+			{
+				shouldAcceptInput = false;
+				return;
+			}
+
+			if (!shouldAcceptInput)
+			{
+				if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::S) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+				{
+					if (attackState == AttackState::Defend) attackState = AttackState::None;
+					shouldAcceptInput = true;
+				}
+				else
+				{
+					if (networkAuthority == NetworkAuthority::Local && attackState == AttackState::Defend) thisPeer->Pressed_S(); // Inform remote player we are still guarding
+				}
+			}
+
+			if (shouldAcceptInput)
+			{
+				// Defend
+				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+				{
+					attackState = AttackState::Defend;
+					shouldAcceptInput = false;
+
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
+				}
+
+				// Attack
+				// Special punch
+				if (input->IsKeyDown(sf::Keyboard::W))
+				{
+					input->SetKeyUp(sf::Keyboard::W); // Lift key so it acts as trigger
+					attackState = AttackState::DragonPunch;
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_W();
+				}
+				// Punch
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+				{
+
+					input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+					attackState = AttackState::HeavyPunch;
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyPunched();
+
+				}
+				else if (input->IsKeyDown(sf::Keyboard::Q))
+				{
+					input->SetKeyUp(sf::Keyboard::Q); // Lift key so it acts as trigger
+					attackState = AttackState::FastPunch;
+
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_Q();
+				}
+				// Kick
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
+				{
+
+					input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+					attackState = AttackState::HeavyKick;
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->HeavyKicked();
+
+				}
+				else if (input->IsKeyDown(sf::Keyboard::E))
+				{
+
+					input->SetKeyUp(sf::Keyboard::E); // Lift key so it acts as trigger
+					attackState = AttackState::FastKick;
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
+
+				}
+				//-------------------
+				// Movement ---------
+				if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+				{
+					if (b_dashTriggerL) // Dash 
+					{
+						input->SetKeyUp(sf::Keyboard::A);
+						dashTimer = dashTime;
+						setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+						moveState = MoveState::DashL;
+						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
+					}
+					else // Walk
+					{
+						setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+						moveState = MoveState::Left;
+					}
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
+				}
+				else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+				{
+					if (b_dashTriggerR) // Dash 
+					{
+						input->SetKeyUp(sf::Keyboard::D);
+						dashTimer = dashTime;
+						setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+						moveState = MoveState::DashR;
+						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_D();
+					}
+					else // Walk
+					{
+						setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+						moveState = MoveState::Right;
+					}
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
+				}
+				else // idle
+				{
+					// if last move state was walking, check the dash relevant trigger
+					if (moveState == MoveState::Left)
+					{
+						b_dashTriggerL = true;
+						dashTimer = 0.0f;
+					}
+					if (moveState == MoveState::Right)
+					{
+						b_dashTriggerR = true;
+						dashTimer = 0.0f;
+					}
+
+					moveState = MoveState::Idle;
+				}
+				// -------------------
+			}
+			if (networkAuthority == NetworkAuthority::Local)
+			{
+				// Limit the sending of messages when not using techniques -> only send if there is a change in the frame
+				if (thisPeer->currentNetworkTechnique == NetworkTechnique::None)
+				{
+					if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus();
+				}
+				else
+					if (thisPeer->currentNetworkTechnique == NetworkTechnique::Delay)
+					{
+						// Assign the input delay frames
+						if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus();
+					}
+					else
+					{
+						thisPeer->SendPlayerStatus();
+					}
+
+				thisPeer->ResetLocalPlayerStatus();
+			}
 		}
 	}
 	else if (playerID == PlayerID::PlayerTwo)
@@ -406,6 +611,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			break;
 		default:
 			break;
+		}
+
+		if (frameAdvantage < 0)
+		{
+			shouldAcceptInput = false;
+			return;
 		}
 
 		if (!shouldAcceptInput)
@@ -514,12 +725,6 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 {
 	if (networkAuthority == NetworkAuthority::Remote)
 	{
-		if (frameAdvantage < 0)
-		{
-			shouldAcceptInput = false;
-			return;
-		}
-
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
 		{
@@ -537,6 +742,12 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 			break;
 		default:
 			break;
+		}
+
+		if (frameAdvantage < 0)
+		{
+			shouldAcceptInput = false;
+			return;
 		}
 
 		if (!shouldAcceptInput)

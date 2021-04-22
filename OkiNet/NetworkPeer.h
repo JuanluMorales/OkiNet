@@ -1,5 +1,6 @@
 #pragma once
 #include <net_common_headers.h>
+#include <deque>
 
 // Holds the IDs to interpret the messages
 enum class MsgTypes : uint32_t
@@ -39,8 +40,12 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced;
-		currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
+		currentNetworkTechnique = NetworkTechnique::Delay;
 	}
+
+	// FRAME CONSTANTS
+	const int DELAY_FRAMES = 30; // 3 to 8 is enough, 1 frame = 16 ms of leeway but less responsive input
+	const int ROLLBACK_FRAMES = 8; // 5 to 10 is enough
 
 	// Call at the end of the frame to set all remote statuses to false
 	// This way the inputs are treated as triggers
@@ -76,7 +81,7 @@ protected:
 	// Called when a client receives a message from the remote peer connection
 	virtual void OnMessageReceived(net::message<MsgTypes>& msg);
 
-private:
+public:
 	//Struct that represents the remote player's input status to update the local representation of the remote player
 	// Sent at the end of the frame 
 	struct PlayerStatus
@@ -95,9 +100,9 @@ private:
 		bool HeavyKicked = false;
 	};
 
-public:
 	PlayerStatus remotePlayerStatus; // Contains the information on the inputs from the remote player for this frame to be applied locally
 	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote
+	std::deque<PlayerStatus> delayedPlayerStatuses; // When using input delay, the localPlayerStatus will be stored in these delayed statuses and execute after DELAY_FRAMES have passed
 	SyncState currentSyncState;
 	NetworkTechnique currentNetworkTechnique;
 	bool peerDisconnected = false;

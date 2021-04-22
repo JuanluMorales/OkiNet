@@ -105,5 +105,7 @@ private:
 
 	enum class NetworkAuthority { Offline, Local, Remote };
 	NetworkAuthority networkAuthority; // Assuming multiplayer, is this the local or the remote character?
+
+	int frameDelayCounter = 0; // Helper to track the current frames we have waited until delay input can be executed
 };
 
