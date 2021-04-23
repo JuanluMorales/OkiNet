@@ -174,7 +174,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		else playerState = PlayerState::Alive;
 	}
 
-	if (frameAdvantage == 0 || currentAnim->GetCurrentFrame().GetFrameType() != AnimationFrameType::Recovery) HandleAnimation(dt);
+	 HandleAnimation(dt);
 
 	// Position the colliders in animation 
 	for (auto coll : GetCurrentCollision())
@@ -183,8 +183,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	}
 
 	// Update frame advantage
-	if (frameAdvantage > 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery) frameAdvantage -= 1;
-	if (frameAdvantage < 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery) frameAdvantage += 1;
+	if (frameAdvantage > 0) frameAdvantage -= 1;
+	if (frameAdvantage < 0) frameAdvantage += 1;
 
 
 }
@@ -378,7 +378,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 							setPosition(getPosition().x - moveDistance * dt, getPosition().y);
 							moveState = MoveState::Left;
 						}
-						if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
 					}
 					else if (thisPeer->delayedPlayerStatuses.front().Pressed_D && CanGoRight) // Right
 					{
@@ -737,7 +736,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 {
-	if (networkAuthority == NetworkAuthority::Remote)
+	if (networkAuthority == NetworkAuthority::Remote /*&& thisPeer->currentNetworkTechnique != NetworkTechnique::Delay*/)
 	{
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
@@ -841,6 +840,206 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 					}
 		}
 	}
+	/*
+else // Handle remote inputs delayed
+	{
+		// Check this frame's type to decide if input should be accepted
+		switch (animState)
+		{
+		case AnimationFrameType::Idle:
+			shouldAcceptInput = true;
+			break;
+		case AnimationFrameType::StartUp:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Active:
+			shouldAcceptInput = false;
+			break;
+		case AnimationFrameType::Recovery:
+			shouldAcceptInput = true;
+			break;
+		default:
+			break;
+		}
+
+		if (frameAdvantage < 0)
+		{
+			shouldAcceptInput = false;
+		}
+
+		NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
+
+		if (!shouldAcceptInput)
+		{
+			if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::Down) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+			{
+				if (attackState == AttackState::Defend) attackState = AttackState::None;
+				shouldAcceptInput = true;
+				thisPeer->remoteDelayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
+			}
+		}
+		else
+		{
+			// Cache delayed input
+			// Defend
+			if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+			{
+				newPlayerStatus->Pressed_S = true;
+			}
+			// Special punch
+			if (input->IsKeyDown(sf::Keyboard::W))
+			{
+				input->SetKeyUp(sf::Keyboard::W);
+				newPlayerStatus->Pressed_W = true;
+			}
+			// Punch
+			if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+			{
+				input->SetKeyUp(sf::Keyboard::Q);
+				input->SetKeyUp(sf::Keyboard::D);
+				input->SetKeyUp(sf::Keyboard::A);
+				newPlayerStatus->HeavyPunched = true;
+			}
+			else if (input->IsKeyDown(sf::Keyboard::Q))
+			{
+				input->SetKeyUp(sf::Keyboard::Q);
+				newPlayerStatus->Pressed_Q = true;
+			}
+			// Kick
+			if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
+			{
+				input->SetKeyUp(sf::Keyboard::E);
+				input->SetKeyUp(sf::Keyboard::D);
+				input->SetKeyUp(sf::Keyboard::A);
+				newPlayerStatus->HeavyKicked = true;
+			}
+			else if (input->IsKeyDown(sf::Keyboard::E))
+			{
+				input->SetKeyUp(sf::Keyboard::E);
+				newPlayerStatus->Pressed_E = true;
+			}
+			//-------------------
+			// Movement ---------
+			if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+			{
+				if (b_dashTriggerL) // Dash 
+				{
+					input->SetKeyUp(sf::Keyboard::A);
+					newPlayerStatus->Dashed_A = true;
+				}
+				newPlayerStatus->Pressed_A = true;
+			}
+			else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+			{
+				if (b_dashTriggerR) // Dash 
+				{
+					input->SetKeyUp(sf::Keyboard::D);
+					newPlayerStatus->Dashed_D = true;
+				}
+				newPlayerStatus->Pressed_D = true;
+			}
+		}
+
+		thisPeer->remoteDelayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
+
+		// Execute this frame's input 
+		if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter && !thisPeer->remoteDelayedPlayerStatuses.empty())
+		{
+			if (shouldAcceptInput)
+			{
+				// Defend
+				if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
+				{
+					attackState = AttackState::Defend;
+					shouldAcceptInput = false;
+				}
+
+				// Attack
+				// Special punch
+				if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_W)
+				{
+					attackState = AttackState::DragonPunch;
+				}
+				// Punch
+				if (playerID == PlayerID::PlayerOne && thisPeer->remoteDelayedPlayerStatuses.front().HeavyPunched
+					|| playerID == PlayerID::PlayerTwo && thisPeer->remoteDelayedPlayerStatuses.front().HeavyPunched)
+				{
+					attackState = AttackState::HeavyPunch;
+
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_Q)
+				{
+					attackState = AttackState::FastPunch;
+				}
+				// Kick
+				if (playerID == PlayerID::PlayerOne && thisPeer->remoteDelayedPlayerStatuses.front().HeavyKicked
+					|| playerID == PlayerID::PlayerTwo && thisPeer->remoteDelayedPlayerStatuses.front().HeavyKicked)
+				{
+					attackState = AttackState::HeavyKick;
+
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_E)
+				{
+					attackState = AttackState::FastKick;
+				}
+				//-------------------
+				// Movement ---------
+				if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_A && CanGoLeft) // Left
+				{
+					if (b_dashTriggerL) // Dash 
+					{
+						input->SetKeyUp(sf::Keyboard::A);
+						dashTimer = dashTime;
+						setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+						moveState = MoveState::DashL;
+						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
+					}
+					else // Walk
+					{
+						setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+						moveState = MoveState::Left;
+					}
+				}
+				else if (thisPeer->delayedPlayerStatuses.front().Pressed_D && CanGoRight) // Right
+				{
+					if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
+					{
+						dashTimer = dashTime;
+						setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+						moveState = MoveState::DashR;
+					}
+					else // Walk
+					{
+						setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+						moveState = MoveState::Right;
+					}
+				}
+				else // idle
+				{
+					// if last move state was walking, check the dash relevant trigger
+					if (moveState == MoveState::Left)
+					{
+						b_dashTriggerL = true;
+						dashTimer = 0.0f;
+					}
+					if (moveState == MoveState::Right)
+					{
+						b_dashTriggerR = true;
+						dashTimer = 0.0f;
+					}
+
+					moveState = MoveState::Idle;
+				}
+				// -------------------
+			}
+			// Get rid of the executed input
+			thisPeer->delayedPlayerStatuses.pop_front();
+		}
+		else if (frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
+
+	}
+	*/
+	
 	// Resets all inputs this frame
 	thisPeer->ResetRemotePlayerStatus();
 }
@@ -851,6 +1050,21 @@ void PlayerCharacter::HandleAnimation(float dt)
 	if (flipped)
 	{
 		currentAnim->SetFlipped(true);
+	}
+
+	// Stall with disadvantaged frames
+	if (frameAdvantage < 0)
+	{
+		if (receivedGuardBox && currentEnergyPoints <= 0)
+		{
+			currentAnim = &anim_hurt;
+			setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw
+			setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250)); // Set the color information of the rect to fill it
+			animState = currentAnim->GetCurrentFrame().GetFrameType(); // Set the animation state (startup, active, recovery...)
+			currentAnim->Animate(dt); // Set to advance frames
+		}
+
+		return;
 	}
 
 	// ATTACK --------------------------------------------------------
@@ -1054,8 +1268,11 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				if (currentEnergyPoints <= 0)
 				{
 					receivedDamage = true; // so we dont get hit through the broken guard
+					frameAdvantage -= 50;
 					currentEnergyPoints = 0;
-				}
+					attackState = AttackState::None;
+					moveState = MoveState::Idle;
+				}else frameAdvantage -= 2 * modifier;
 				receivedGuardBox = true;
 				hitGuardBox = true;
 			}
@@ -1154,8 +1371,12 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				if (currentEnergyPoints <= 0)
 				{
 					receivedDamage = true; // so we dont get hit through the broken guard
+					frameAdvantage -= 50;
 					currentEnergyPoints = 0;
+					attackState = AttackState::None;
+					moveState = MoveState::Idle;
 				}
+				else frameAdvantage -= 2 * modifier;
 				receivedGuardBox = true;
 				hitGuardBox = true;
 			}
@@ -1213,7 +1434,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dashFWD.AddFrame(sf::IntRect(156, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_dashFWD.AddFrame(sf::IntRect(234, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
-	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
+	anim_dashFWD.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dashFWD.SetLooping(false);
 	anim_dashFWD.SetFrameSpeed(0.1f);
 	anim_dashFWD.SetID(3);
@@ -1221,7 +1442,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_dashBKW.AddFrame(sf::IntRect(390, 110, 78, 55), AnimationFrameType::StartUp, *bodyColl);
 	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
 	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
-	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Idle, *bodyColl);
+	anim_dashBKW.AddFrame(sf::IntRect(312, 110, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_dashBKW.SetLooping(false);
 	anim_dashBKW.SetFrameSpeed(0.1f);
 	anim_dashBKW.SetID(4);
@@ -1230,6 +1451,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	anim_hurt.AddFrame(sf::IntRect(78, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
 	anim_hurt.AddFrame(sf::IntRect(156, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
 	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Active, *bodyColl);
+	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_hurt.AddFrame(sf::IntRect(234, 165, 78, 55), AnimationFrameType::Recovery, *bodyColl);
 	anim_hurt.SetLooping(false);
 	anim_hurt.SetFrameSpeed(0.1f);

@@ -104,6 +104,7 @@ public:
 	PlayerStatus remotePlayerStatus; // Contains the information on the inputs from the remote player for this frame to be applied locally
 	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote
 	std::deque<PlayerStatus> delayedPlayerStatuses; // When using input delay, the localPlayerStatus will be stored in these delayed statuses and execute after DELAY_FRAMES have passed
+	std::deque<PlayerStatus> remoteDelayedPlayerStatuses; // deque containing the remote inputs that we must delay locally
 	SyncState currentSyncState;
 	NetworkTechnique currentNetworkTechnique;
 	bool peerDisconnected = false;
