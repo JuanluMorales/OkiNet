@@ -181,12 +181,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		coll->SetCollisionBoxPosition(getPosition());
 	}
-
-	// Update frame advantage
-	if (frameAdvantage > 0) frameAdvantage -= 1;
-	if (frameAdvantage < 0) frameAdvantage += 1;
-
-
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
@@ -1052,8 +1046,8 @@ void PlayerCharacter::HandleAnimation(float dt)
 		currentAnim->SetFlipped(true);
 	}
 
-	// Stall with disadvantaged frames
-	if (frameAdvantage < 0)
+	// Manage advantage frames
+	if (frameAdvantage != 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery)
 	{
 		if (receivedGuardBox && currentEnergyPoints <= 0)
 		{
@@ -1063,6 +1057,10 @@ void PlayerCharacter::HandleAnimation(float dt)
 			animState = currentAnim->GetCurrentFrame().GetFrameType(); // Set the animation state (startup, active, recovery...)
 			currentAnim->Animate(dt); // Set to advance frames
 		}
+
+		// Update frame advantage
+		if (frameAdvantage > 0) frameAdvantage -= 1;
+		if (frameAdvantage < 0) frameAdvantage += 1;
 
 		return;
 	}
@@ -1272,7 +1270,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 					currentEnergyPoints = 0;
 					attackState = AttackState::None;
 					moveState = MoveState::Idle;
-				}else frameAdvantage -= 2 * modifier;
+				}else frameAdvantage -= 2 * static_cast<int>(modifier);
 				receivedGuardBox = true;
 				hitGuardBox = true;
 			}
@@ -1376,7 +1374,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 					attackState = AttackState::None;
 					moveState = MoveState::Idle;
 				}
-				else frameAdvantage -= 2 * modifier;
+				else frameAdvantage -= 2 * static_cast<int>(modifier);
 				receivedGuardBox = true;
 				hitGuardBox = true;
 			}
