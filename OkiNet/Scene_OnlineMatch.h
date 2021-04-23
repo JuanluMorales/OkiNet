@@ -15,10 +15,7 @@ public:
 	void InitAsClient(GameState* stateMan, std::string& ip, std::string& port); // Initialize attempting to join the address provided
 	void OverrideRender();
 	void OverrideUpdate(float dt);
-	void OverrideHandleInput(float dt);
-
-	bool shouldSkipThisFrame = false;
-	int delayFrameCounter = 0; // Used to count the frames that have passed for input delay purposes: when this counter surpasses the delay frames, the game will enter lockstep
+	void OverrideHandleInput(float dt);	
 
 	enum class MatchState { Start, OnGoing, P1Win, P2Win, Restart };
 	void Restart();

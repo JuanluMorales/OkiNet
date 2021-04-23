@@ -134,18 +134,66 @@ void PlayerCharacter::UpdateNetworkState()
 	// Pass the info on local player state
 	thisPeer->localHP = currentHealthPoints;
 	thisPeer->localPosX = getPosition().x;
+
+	//// Send ping request for roundtrip time
+	//if (sf::Keyboard::isKeyPressed(sf::Keyboard::P) && !pingRequestThisFrame)
+	//{
+	//	thisPeer->PingRequest();
+	//	pingRequestThisFrame = true;
+	//}
+	//else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::P)) pingRequestThisFrame = false;
+
+	//if (sf::Keyboard::isKeyPressed(sf::Keyboard::O) && !syncStateRequestThisFrame)
+	//{
+	//	thisPeer->SyncStateRequest();
+	//	syncStateRequestThisFrame = true;
+	//}
+	//else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::O)) syncStateRequestThisFrame = false;
 }
 
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd)
 {
 	// Update network component
-	if (networkAuthority == NetworkAuthority::Local)
+	if (networkAuthority == NetworkAuthority::Local && thisPeer->IsConnected())
 	{
-		if (thisPeer->IsConnected())
+		// Handle lockstep
+		if (GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep)
 		{
-			UpdateNetworkState();
+			// IF we have not yet received update this frame, keep waiting by not updating or rendering			
+			while (!HasReceivedRemoteUpdateThisFrame())
+			{
+				// Make sure we listen to the network messages
+				UpdateNetworkState();
+			}
 		}
+		else // Handle input delay
+			if (GetNetworkTechnique() == NetworkTechnique::Delay)
+			{
+				frameDelayCounter += 1; // Increase the frames we have been waiting for the next input
+
+				// If we have run out of waiting frames...
+				if (thisPeer->DELAY_FRAMES < frameDelayCounter)
+				{
+					// Force lockstep until we get new updates		
+					while (!HasReceivedRemoteUpdateThisFrame())
+					{
+						// Make sure we listen to the network messages
+						UpdateNetworkState();
+					}
+
+					frameDelayCounter = 0; // reset the counter when we receive a new update
+				}
+
+			}
+			else
+			{
+				UpdateNetworkState();
+			}
+	}
+	if (thisPeer->IsConnected())
+	{
+		UpdateNetworkState();
 	}
 	else if (networkAuthority == NetworkAuthority::Remote)
 	{
@@ -416,7 +464,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				// Get rid of the executed input
 				thisPeer->delayedPlayerStatuses.pop_front();
 			}
-			else if(frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
+			
 
 		}
 		else // Run update without delay ------------------------
@@ -549,7 +597,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 						dashTimer = dashTime;
 						setPosition(getPosition().x + dashDistance, getPosition().y);
 						moveState = MoveState::DashR;
-						std::cout << "Dashing to: " << getPosition().x + dashDistance << "\n";
 						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_D();
 					}
 					else // Walk

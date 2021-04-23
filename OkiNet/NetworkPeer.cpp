@@ -132,16 +132,20 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 	switch (msg.header.id)
 	{
 	case MsgTypes::PingRequest:
+	{
 		std::cout << "Ping request from peer.\n";
 		msg.header.id = MsgTypes::PingAnswer; // change msg id
 		Send_UDP(msg); // Bounce back message
+	}
 		break;
 	case MsgTypes::PingAnswer:
 	{
 		std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 		std::chrono::system_clock::time_point timeThen;
 		msg >> timeThen;
-		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() << " ms. Ping: " << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2 << " ms." << "\n";
+		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() 
+			<< " (" << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() << ") ms. Ping: "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2 << " ms." << "\n";
 	}
 	break;
 	case MsgTypes::SyncStateRequest:

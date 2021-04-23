@@ -296,13 +296,13 @@ void Scene_OnlineMatch::OverrideRender()
 
 void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
+	remotePlayerConnected = thisPeer->IsConnected();
+
 	if (localPlayer.currentHealthPoints <= 0 || remotePlayer.currentHealthPoints <= 0)
 	{
 		if (restartCounter >= restartTime) Restart();
 		restartCounter++;
 	}
-
-	remotePlayerConnected = thisPeer->IsConnected();
 
 	// Update players, if connection fails go back to menu
 	localPlayer.Update(dt, window);
@@ -454,39 +454,6 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: " + std::to_string(thisPeer->DELAY_FRAMES) +"f\nRollBack Frames: " + std::to_string(thisPeer->ROLLBACK_FRAMES) + "f\n");
 	DebugText.setString(debugOutput);
 
-	// Start executing network techniques when remote player connects
-	if (remotePlayerConnected)
-	{
-		// Handle lockstep
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep)
-		{
-			// IF we have not yet received update this frame, keep waiting by not updating or rendering			
-			while (!localPlayer.HasReceivedRemoteUpdateThisFrame())
-			{
-				// Make sure we listen to the network messages
-				localPlayer.UpdateNetworkState();
-			}
-		}
-		else // Handle input delay
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Delay)
-		{
-			delayFrameCounter += 1; // Increase the frames we have been waiting for the next input
-
-			// If we have run out of waiting frames...
-			if (thisPeer->DELAY_FRAMES < delayFrameCounter)
-			{
-				// Force lockstep until we get new updates		
-				while (!localPlayer.HasReceivedRemoteUpdateThisFrame())
-				{
-					// Make sure we listen to the network messages
-					localPlayer.UpdateNetworkState();
-				}
-
-				delayFrameCounter = 0; // reset the counter when we receive a new update
-			}
-
-		}
-	}
 }
 
 void Scene_OnlineMatch::OverrideHandleInput(float dt)
