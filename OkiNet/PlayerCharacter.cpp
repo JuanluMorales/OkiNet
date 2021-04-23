@@ -159,10 +159,14 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
 		playerState = PlayerState::Hurt;
+		moveState = MoveState::Idle;
+		attackState = AttackState::None;
 	}
 	else if (hitGuardBox)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
+		moveState = MoveState::Idle;
+		attackState = AttackState::None;
 	}
 	else
 	{
@@ -1233,11 +1237,11 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				}
 				if (collResponse->s2anim->GetID() == anim_heavyPunch.GetID() || collResponse->s2anim->GetID() == anim_heavyKick.GetID())
 				{
-					modifier = 2.0f;
+					modifier = 3.0f;
 				}
 				if (collResponse->s2anim->GetID() == anim_dragonPunch.GetID())
 				{
-					modifier = 5.0f;
+					modifier = 4.f;
 				}
 
 				currentHealthPoints -= 10 * modifier;
@@ -1338,11 +1342,11 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 				}
 				if (collResponse->s1anim->GetID() == anim_heavyPunch.GetID() || collResponse->s1anim->GetID() == anim_heavyKick.GetID())
 				{
-					modifier = 2.0f;
+					modifier = 3.0f;
 				}
 				if (collResponse->s1anim->GetID() == anim_dragonPunch.GetID())
 				{
-					modifier = 5.0f;
+					modifier = 4.0f;
 				}
 
 				currentHealthPoints -= 10 * modifier;
