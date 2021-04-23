@@ -279,6 +279,11 @@ void Scene_OfflineMatch::Restart()
 {
 	thisMatchState = MatchState::Restart;
 
+	if (playerOne.currentHealthPoints <= 0) {
+		p2Score += 1;
+	}
+	else p1Score += 1;
+
 	playerOne.setPosition(playerOneStartPos);
 	playerTwo.setPosition(playerTwoStartPos);
 	playerOne.currentHealthPoints = 100;
@@ -287,10 +292,7 @@ void Scene_OfflineMatch::Restart()
 	playerTwo.currentEnergyPoints = 100;
 	thisMatchState = MatchState::Start;
 
-	if (playerOne.currentHealthPoints <= 0) {
-		p2Score += 1;
-	}
-	else p1Score += 1;
+
 
 	restartCounter = 0;
 }

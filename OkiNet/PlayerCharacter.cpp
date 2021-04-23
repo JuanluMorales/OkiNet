@@ -169,6 +169,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		if (currentHealthPoints <= 0)
 		{
 			playerState = PlayerState::Dead;
+			moveState = MoveState::Idle;
+			attackState = AttackState::None;
+
 			shouldAcceptInput = false;
 		}
 		else playerState = PlayerState::Alive;

@@ -108,11 +108,13 @@ public:
 	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote
 	std::deque<PlayerStatus> delayedPlayerStatuses; // When using input delay, the localPlayerStatus will be stored in these delayed statuses and execute after DELAY_FRAMES have passed
 	std::deque<PlayerStatus> remoteDelayedPlayerStatuses; // deque containing the remote inputs that we must delay locally
+	
 	SyncState currentSyncState;
 	NetworkTechnique currentNetworkTechnique;
+
 	bool peerDisconnected = false;
-	bool receivedRemoteUpdateThisFrame = false;
-	bool localInputThisFrame = false;
+	bool receivedRemoteUpdateThisFrame = false; // Has the local player received a player status received message this frame?
+	bool localInputThisFrame = false; // To save on bandwith when not using lockstep, only send 
 
 	float localHP = 100;
 	float localPosX = 0;

@@ -507,6 +507,18 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 void Scene_OnlineMatch::Restart()
 {
 	thisMatchState = MatchState::Restart;
+
+	if (isHost)
+	{
+		if (localPlayer.currentHealthPoints <= 0) p2Score += 1;
+		else p1Score += 1;
+	}
+	else
+	{
+		if (localPlayer.currentHealthPoints <= 0) p1Score += 1;
+		else p2Score += 1;
+	}
+
 	if (isHost)
 	{
 		localPlayer.setPosition(playerOneStartPos);
@@ -524,10 +536,7 @@ void Scene_OnlineMatch::Restart()
 	remotePlayer.currentEnergyPoints = 100;
 	thisMatchState = MatchState::Start;
 
-	if (localPlayer.currentHealthPoints <= 0) {
-		p2Score += 1;
-	}
-	else p1Score += 1;
+
 
 	restartCounter = 0;
 }
