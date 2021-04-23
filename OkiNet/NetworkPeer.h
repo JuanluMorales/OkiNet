@@ -39,8 +39,8 @@ class NetworkPeer : public net::Peer<MsgTypes>
 public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
-		currentSyncState = SyncState::Synced;
-		currentNetworkTechnique = NetworkTechnique::Delay;
+		currentSyncState = SyncState::Synced; // Both players are synced when they connect by default
+		currentNetworkTechnique = NetworkTechnique::None;
 	}
 
 	// FRAME CONSTANTS
@@ -56,6 +56,9 @@ public:
 	void PingRequest();
 	// Send a state request. Pass local player state as argument
 	void SyncStateRequest();
+
+	// Set the network technique to deal with latency
+	void SetNetworkTechnique(NetworkTechnique nw) { currentNetworkTechnique = nw; }
 
 public:
 	//Struct that represents the remote player's input status to update the local representation of the remote player

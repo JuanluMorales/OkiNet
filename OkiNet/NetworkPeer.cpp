@@ -141,7 +141,7 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 		std::chrono::system_clock::time_point timeThen;
 		msg >> timeThen;
-		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() << "\n";
+		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() << " ms. Ping: " << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2 << " ms." << "\n";
 	}
 	break;
 	case MsgTypes::SyncStateRequest:
@@ -218,13 +218,18 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 	break;
 
 	case MsgTypes::ReceivePlayerState:
+	{
 		receivedRemoteUpdateThisFrame = true; // Raise the flag of having received notification from the other player (as he should every frame)
 
 		// Interpret the message
 		PlayerStatus newRemoteStatus;
 		msg >> newRemoteStatus;
 		remotePlayerStatus = newRemoteStatus;
-
+	}
+		break;
+	default:
+		std::cout << "Received a message that was not recognisable.\n";
 		break;
 	}
+
 }

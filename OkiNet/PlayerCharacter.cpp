@@ -326,6 +326,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 						attackState = AttackState::Defend;
 						shouldAcceptInput = false;
 					}
+					else if (attackState == AttackState::Defend) attackState = AttackState::None;
 
 					// Attack
 					// Special punch
@@ -460,17 +461,18 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				}
 			}
 
+			// Defend
+			if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+			{
+				attackState = AttackState::Defend;
+				shouldAcceptInput = false;
+
+				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
+			}
+			else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
 			if (shouldAcceptInput)
 			{
-				// Defend
-				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
-				{
-					attackState = AttackState::Defend;
-					shouldAcceptInput = false;
-
-					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
-				}
-
 				// Attack
 				// Special punch
 				if (input->IsKeyDown(sf::Keyboard::W))
@@ -512,6 +514,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_E();
 
 				}
+
 				//-------------------
 				// Movement ---------
 				if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
@@ -626,6 +629,13 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			return;
 		}
 
+		if (input->IsKeyDown(sf::Keyboard::Down) && currentEnergyPoints > 0)
+		{
+			attackState = AttackState::Defend;
+			shouldAcceptInput = false;
+		}
+		else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
 		if (!shouldAcceptInput)
 		{
 			if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::Down) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
@@ -636,14 +646,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			else return;
 		}
 
-		// Defend
-		if (input->IsKeyDown(sf::Keyboard::Down) && currentEnergyPoints > 0)
-		{
-			attackState = AttackState::Defend;
-			shouldAcceptInput = false;
-
-			if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
-		}
 
 		// Attack
 		if (input->IsKeyDown(sf::Keyboard::Up))
@@ -772,6 +774,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 			attackState = AttackState::Defend;
 			shouldAcceptInput = false;
 		}
+		else if (attackState == AttackState::Defend) attackState = AttackState::None;
 
 		if (shouldAcceptInput)
 		{
@@ -1047,7 +1050,8 @@ void PlayerCharacter::HandleAnimation(float dt)
 	}
 
 	// Manage advantage frames
-	if (frameAdvantage != 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery)
+	if (frameAdvantage != 0 && currentAnim->GetCurrentFrame().GetFrameType() == AnimationFrameType::Recovery
+		|| frameAdvantage < 0 && currentAnim->IsAnimationCompleted())
 	{
 		if (receivedGuardBox && currentEnergyPoints <= 0)
 		{
@@ -1115,8 +1119,6 @@ void PlayerCharacter::HandleAnimation(float dt)
 			attackState = AttackState::None;
 		}
 	}
-
-
 
 	// MOVE - Calculate the move state if we are not attacking
 	if (attackState == AttackState::None)
@@ -1425,6 +1427,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	// Defend ---
 	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize, bodyCollOffset);
 	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Active, *GuardColl);
+	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Recovery, *GuardColl);
 	anim_defend.SetLooping(false);
 	anim_defend.SetID(2);
 
