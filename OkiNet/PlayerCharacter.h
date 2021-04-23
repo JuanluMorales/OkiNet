@@ -93,7 +93,6 @@ private:
 
 	bool grounded; //Sets the player able to jump when true
 
-
 	const float maxHealthPoints = 100; //Total hit points the player can suffer before dying
 	const float maxEnergyPoints = 100;
 

@@ -33,9 +33,9 @@ PlayerCharacter::PlayerCharacter()
 	currentHealthPoints = maxHealthPoints; //Current health 
 	currentEnergyPoints = maxEnergyPoints;
 
-	moveDistance = 180;
-	dashDistance = 5000;
-	smallPushDistance = 180;
+	moveDistance = 3;
+	dashDistance = 100;
+	smallPushDistance = 2;
 
 }
 
@@ -530,13 +530,13 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					{
 						input->SetKeyUp(sf::Keyboard::A);
 						dashTimer = dashTime;
-						setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+						setPosition(getPosition().x - dashDistance, getPosition().y);
 						moveState = MoveState::DashL;
 						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
 					}
 					else // Walk
 					{
-						setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+						setPosition(getPosition().x - moveDistance, getPosition().y);
 						moveState = MoveState::Left;
 					}
 					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
@@ -547,13 +547,14 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					{
 						input->SetKeyUp(sf::Keyboard::D);
 						dashTimer = dashTime;
-						setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+						setPosition(getPosition().x + dashDistance, getPosition().y);
 						moveState = MoveState::DashR;
+						std::cout << "Dashing to: " << getPosition().x + dashDistance << "\n";
 						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_D();
 					}
 					else // Walk
 					{
-						setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+						setPosition(getPosition().x + moveDistance, getPosition().y);
 						moveState = MoveState::Right;
 					}
 					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
@@ -692,12 +693,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			if (b_dashTriggerL) // Dash 
 			{
 				dashTimer = dashTime;
-				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+				setPosition(getPosition().x - dashDistance, getPosition().y);
 				moveState = MoveState::DashL;
 			}
 			else // Walk
 			{
-				setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+				setPosition(getPosition().x - moveDistance, getPosition().y);
 				moveState = MoveState::Left;
 			}
 
@@ -707,12 +708,12 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			if (b_dashTriggerR) // Dash 
 			{
 				dashTimer = dashTime;
-				setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+				setPosition(getPosition().x + dashDistance, getPosition().y);
 				moveState = MoveState::DashR;
 			}
 			else // Walk
 			{
-				setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+				setPosition(getPosition().x + moveDistance, getPosition().y);
 				moveState = MoveState::Right;
 			}
 
@@ -813,20 +814,20 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 						//Check dashes first
 			if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
 			{
-				setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+				setPosition(getPosition().x - dashDistance, getPosition().y);
 				moveState = MoveState::DashL;
 			}
 			else
 				if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
 				{
-					setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+					setPosition(getPosition().x + dashDistance, getPosition().y);
 					moveState = MoveState::DashR;
 				}
 				else
 					if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left
 					{
 						// Walk
-						setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+						setPosition(getPosition().x - moveDistance, getPosition().y);
 						moveState = MoveState::Left;
 
 					}
@@ -834,7 +835,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 					{
 						// Walk
 
-						setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+						setPosition(getPosition().x + moveDistance, getPosition().y);
 						moveState = MoveState::Right;
 
 					}
@@ -994,13 +995,13 @@ else // Handle remote inputs delayed
 					{
 						input->SetKeyUp(sf::Keyboard::A);
 						dashTimer = dashTime;
-						setPosition(getPosition().x - dashDistance * dt, getPosition().y);
+						setPosition(getPosition().x - dashDistance, getPosition().y);
 						moveState = MoveState::DashL;
 						if (networkAuthority == NetworkAuthority::Local) thisPeer->Dashed_A();
 					}
 					else // Walk
 					{
-						setPosition(getPosition().x - moveDistance * dt, getPosition().y);
+						setPosition(getPosition().x - moveDistance, getPosition().y);
 						moveState = MoveState::Left;
 					}
 				}
@@ -1009,12 +1010,12 @@ else // Handle remote inputs delayed
 					if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
 					{
 						dashTimer = dashTime;
-						setPosition(getPosition().x + dashDistance * dt, getPosition().y);
+						setPosition(getPosition().x + dashDistance, getPosition().y);
 						moveState = MoveState::DashR;
 					}
 					else // Walk
 					{
-						setPosition(getPosition().x + moveDistance * dt, getPosition().y);
+						setPosition(getPosition().x + moveDistance, getPosition().y);
 						moveState = MoveState::Right;
 					}
 				}
@@ -1587,8 +1588,8 @@ void PlayerCharacter::PushPlayer(sf::Vector2f distance, float dt)
 {
 	if (flipped)
 	{
-		setPosition(getPosition() + distance * dt);
+		setPosition(getPosition() + distance);
 	}
-	else setPosition(getPosition() - distance * dt);
+	else setPosition(getPosition() - distance);
 
 }
