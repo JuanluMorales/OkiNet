@@ -134,21 +134,6 @@ void PlayerCharacter::UpdateNetworkState()
 	// Pass the info on local player state
 	thisPeer->localHP = currentHealthPoints;
 	thisPeer->localPosX = getPosition().x;
-
-	//// Send ping request for roundtrip time
-	//if (sf::Keyboard::isKeyPressed(sf::Keyboard::P) && !pingRequestThisFrame)
-	//{
-	//	thisPeer->PingRequest();
-	//	pingRequestThisFrame = true;
-	//}
-	//else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::P)) pingRequestThisFrame = false;
-
-	//if (sf::Keyboard::isKeyPressed(sf::Keyboard::O) && !syncStateRequestThisFrame)
-	//{
-	//	thisPeer->SyncStateRequest();
-	//	syncStateRequestThisFrame = true;
-	//}
-	//else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::O)) syncStateRequestThisFrame = false;
 }
 
 //Manages the movement and animation of the player
@@ -169,41 +154,47 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 				UpdateNetworkState();
 			}
 		}
-		else // Handle input delay
-			if (GetNetworkTechnique() == NetworkTechnique::InputDelay)
+		else if (GetNetworkTechnique() == NetworkTechnique::InputDelay) // Handle input delay
+		{
+			// Send the delayed status update
+			if (!thisPeer->delayedPlayerStatuses.empty())
 			{
-				// Send the delayed status update
-				if (!thisPeer->delayedPlayerStatuses.empty()) thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
+				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
+				
+			}
 
-				remoteFrameWaitCounter += 1; // Increase the frames we have been waiting for the next input
+			
 
-				// Lockstep listen for delayed updates --
-				// If we have run out of waiting frames...
-				if (thisPeer->DELAY_FRAMES < remoteFrameWaitCounter)
+			// Lockstep listen for delayed updates --
+			// If we have run out of waiting frames...
+			if (thisPeer->DELAY_FRAMES < remoteFrameWaitCounter)
+			{
+				// Force lockstep until we get new updates		
+				while (!HasReceivedRemoteUpdateThisFrame())
 				{
-					// Force lockstep until we get new updates		
-					while (!HasReceivedRemoteUpdateThisFrame())
-					{
-						// Make sure we listen to the network messages
-						UpdateNetworkState();
-					}
-
-					remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
+					// Make sure we listen to the network messages
+					UpdateNetworkState();
 				}
-
-			}
-			else
+				remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
+			}else
 			{
-				// Send our state
-				if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
-				// Listen for new messages
 				UpdateNetworkState();
+				remoteFrameWaitCounter += 1; // Increase the frames we have been waiting for the next input
 			}
-		thisPeer->ResetLocalPlayerStatus();
+
+
+		}
+		else if (GetNetworkTechnique() == NetworkTechnique::None)
+		{
+			// Send our state
+			if (thisPeer->localInputThisFrame) thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
+			// Listen for new messages
+			UpdateNetworkState();
+		}
 	}
 
 	// Update our info on the remote player state
-	if(networkAuthority == NetworkAuthority::Remote)
+	if (networkAuthority == NetworkAuthority::Remote)
 	{
 		// Pass the info on local image of the remote player state
 		thisPeer->remoteHP = currentHealthPoints;
@@ -475,7 +466,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			}
 			else if (frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
 
-
+			thisPeer->ResetLocalPlayerStatus();
 		}
 		else // Run update without delay ------------------------
 		{
@@ -775,7 +766,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 {
-	if (networkAuthority == NetworkAuthority::Remote && thisPeer->currentNetworkTechnique != NetworkTechnique::InputDelay)
+	if (networkAuthority == NetworkAuthority::Remote /*&& thisPeer->currentNetworkTechnique != NetworkTechnique::InputDelay*/)
 	{
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
@@ -880,6 +871,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 					}
 		}
 	}
+	/*
 	else // Handle remote inputs delayed
 	{
 		// Check this frame's type to decide if input should be accepted
@@ -910,7 +902,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 		if (!shouldAcceptInput)
 		{
-			if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::Down) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+			if (attackState == AttackState::Defend && !thisPeer->remotePlayerStatus.Pressed_S || attackState == AttackState::Defend && currentEnergyPoints <= 0)
 			{
 				if (attackState == AttackState::Defend) attackState = AttackState::None;
 				shouldAcceptInput = true;
@@ -1066,6 +1058,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 		else if (remoteFrameDelayCounter < thisPeer->DELAY_FRAMES) remoteFrameDelayCounter += 1;
 
 	}
+	*/
 
 	// Resets all inputs this frame
 	thisPeer->ResetRemotePlayerStatus();

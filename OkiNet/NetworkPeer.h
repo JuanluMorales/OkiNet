@@ -40,7 +40,7 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced; // Both players are synced when they connect by default
-		currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
+		currentNetworkTechnique = NetworkTechnique::InputDelay;
 	}
 
 	// FRAME CONSTANTS
