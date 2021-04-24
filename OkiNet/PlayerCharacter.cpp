@@ -191,6 +191,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			// Listen for new messages
 			UpdateNetworkState();
 		}
+
+		thisPeer->ResetLocalPlayerStatus();
 	}
 
 	// Update our info on the remote player state
@@ -465,8 +467,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				thisPeer->delayedPlayerStatuses.pop_front();
 			}
 			else if (frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
-
-			thisPeer->ResetLocalPlayerStatus();
 		}
 		else // Run update without delay ------------------------
 		{
