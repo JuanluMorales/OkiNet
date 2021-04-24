@@ -40,11 +40,11 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced; // Both players are synced when they connect by default
-		currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
+		currentNetworkTechnique = NetworkTechnique::InputDelay;
 	}
 
 	// FRAME CONSTANTS
-	const int DELAY_FRAMES = 10; // 3 to 8 is enough, 1 frame = 16 ms of leeway but less responsive input
+	const int DELAY_FRAMES = 30; // 3 to 8 is enough, 1 frame = 16 ms of leeway but less responsive input
 	const int ROLLBACK_FRAMES = 8; // 5 to 10 is enough
 
 	// Call at the end of the frame to set all remote statuses to false
