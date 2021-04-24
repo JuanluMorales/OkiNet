@@ -296,86 +296,9 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				shouldAcceptInput = false;
 			}
 
-			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
-
-			if(shouldAcceptInput)
-			{
-				// Cache delayed input
-				// Defend
-				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
-				{
-					newPlayerStatus->Pressed_S = true;
-				}
-				// Special punch
-				if (input->IsKeyDown(sf::Keyboard::W))
-				{
-					input->SetKeyUp(sf::Keyboard::W);
-					newPlayerStatus->Pressed_W = true;
-				}
-				// Punch
-				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
-				{
-					input->SetKeyUp(sf::Keyboard::Q);
-					input->SetKeyUp(sf::Keyboard::D);
-					input->SetKeyUp(sf::Keyboard::A);
-					newPlayerStatus->HeavyPunched = true;
-				}
-				else if (input->IsKeyDown(sf::Keyboard::Q))
-				{
-					input->SetKeyUp(sf::Keyboard::Q);
-					newPlayerStatus->Pressed_Q = true;
-				}
-				// Kick
-				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
-				{
-					input->SetKeyUp(sf::Keyboard::E);
-					input->SetKeyUp(sf::Keyboard::D);
-					input->SetKeyUp(sf::Keyboard::A);
-					newPlayerStatus->HeavyKicked = true;
-				}
-				else if (input->IsKeyDown(sf::Keyboard::E))
-				{
-					input->SetKeyUp(sf::Keyboard::E);
-					newPlayerStatus->Pressed_E = true;
-				}
-				//-------------------
-				// Movement ---------
-				if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
-				{
-					if (b_dashTriggerL) // Dash 
-					{
-
-						input->SetKeyUp(sf::Keyboard::A);
-						newPlayerStatus->Dashed_A = true;
-					}
-					newPlayerStatus->Pressed_A = true;
-				}
-				else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
-				{
-					if (b_dashTriggerR) // Dash 
-					{
-						input->SetKeyUp(sf::Keyboard::D);
-						newPlayerStatus->Dashed_D = true;
-					}
-					newPlayerStatus->Pressed_D = true;
-				}
-			}
-
-			thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
-
-			// Execute this frame's input 
+			// Execute this frame's input ..................
 			if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter && !thisPeer->delayedPlayerStatuses.empty())
 			{
-				if (!shouldAcceptInput)
-				{
-					if (attackState == AttackState::Defend && !thisPeer->delayedPlayerStatuses.front().Pressed_S || attackState == AttackState::Defend && currentEnergyPoints <= 0)
-					{
-						if (attackState == AttackState::Defend) attackState = AttackState::None;
-						shouldAcceptInput = true;
-
-					}
-				}
-
 				// Defend
 				if (thisPeer->delayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
 				{
@@ -463,6 +386,82 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				thisPeer->delayedPlayerStatuses.pop_front();
 			}
 			else if (frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
+
+			// CACHE THIS FRAMES INPUT ...................................
+			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
+
+			if (!shouldAcceptInput)
+			{
+				if (attackState == AttackState::Defend && input->IsKeyDown(sf::Keyboard::S))
+				{
+					newPlayerStatus->Pressed_S = true;
+				}
+			}
+
+			if (shouldAcceptInput)
+			{
+				// Cache delayed input
+				// Defend
+				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+				{
+					newPlayerStatus->Pressed_S = true;
+				}
+				// Special punch
+				if (input->IsKeyDown(sf::Keyboard::W))
+				{
+					input->SetKeyUp(sf::Keyboard::W);
+					newPlayerStatus->Pressed_W = true;
+				}
+				// Punch
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+				{
+					input->SetKeyUp(sf::Keyboard::Q);
+					input->SetKeyUp(sf::Keyboard::D);
+					input->SetKeyUp(sf::Keyboard::A);
+					newPlayerStatus->HeavyPunched = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::Q))
+				{
+					input->SetKeyUp(sf::Keyboard::Q);
+					newPlayerStatus->Pressed_Q = true;
+				}
+				// Kick
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
+				{
+					input->SetKeyUp(sf::Keyboard::E);
+					input->SetKeyUp(sf::Keyboard::D);
+					input->SetKeyUp(sf::Keyboard::A);
+					newPlayerStatus->HeavyKicked = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::E))
+				{
+					input->SetKeyUp(sf::Keyboard::E);
+					newPlayerStatus->Pressed_E = true;
+				}
+				//-------------------
+				// Movement ---------
+				if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+				{
+					if (b_dashTriggerL) // Dash 
+					{
+
+						input->SetKeyUp(sf::Keyboard::A);
+						newPlayerStatus->Dashed_A = true;
+					}
+					newPlayerStatus->Pressed_A = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+				{
+					if (b_dashTriggerR) // Dash 
+					{
+						input->SetKeyUp(sf::Keyboard::D);
+						newPlayerStatus->Dashed_D = true;
+					}
+					newPlayerStatus->Pressed_D = true;
+				}
+			}
+
+			thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
 		}
 		else // Run update without delay ------------------------
 		{
@@ -867,8 +866,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 					}
 		}
 	}
-	/*
-	else // Handle remote inputs delayed
+	/*else // Handle remote inputs delayed
 	{
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
@@ -896,7 +894,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 		NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
 
-		if (!shouldAcceptInput)
+		if (shouldAcceptInput)
 		{
 			if (attackState == AttackState::Defend && !thisPeer->remotePlayerStatus.Pressed_S || attackState == AttackState::Defend && currentEnergyPoints <= 0)
 			{
@@ -904,9 +902,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				shouldAcceptInput = true;
 				thisPeer->remoteDelayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
 			}
-		}
-		else
-		{
+
 			// Cache delayed input
 			// Defend
 			if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
