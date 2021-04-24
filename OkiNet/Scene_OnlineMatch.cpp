@@ -447,7 +447,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	else
 		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep) netTech = "Det. Lockstep";
 		else
-			if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Delay) netTech = "Input Delay";
+			if (localPlayer.GetNetworkTechnique() == NetworkTechnique::InputDelay) netTech = "Input Delay";
 			else
 				if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
 
