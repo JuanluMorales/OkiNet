@@ -87,10 +87,8 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 	thisPeer = peerRef;
 	playerID = id;
 	isLocalCharacter ? networkAuthority = NetworkAuthority::Local : networkAuthority = NetworkAuthority::Remote;
-
 	// Use the dynamic delay or the fixed delay
 	thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
-
 
 	// Assign the corresponding graphics to each player 
 	if (id == PlayerID::PlayerOne)
@@ -159,7 +157,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			}
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::InputDelay) // Handle input delay
-		{
+		{			
 			// Send the delayed status update starting when the frameDelayCounter is equal to the framedelay
 			if (!thisPeer->delayedPlayerStatuses.empty())
 				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
@@ -175,7 +173,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 					UpdateNetworkState();
 				}
 
-				remoteFrameWaitCounter -= 1; // reset the counter when we receive a new update
+				remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
 			}else UpdateNetworkState();
 
 			remoteFrameWaitCounter += 1; // Increase the frames we have been waiting for the next input
@@ -187,6 +185,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			// Listen for new messages
 			UpdateNetworkState();
 		}
+
+		// Use the dynamic delay or the fixed delay
+		thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
 
 		thisPeer->ResetLocalPlayerStatus();
 	}
@@ -336,6 +337,15 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				thisPeer->delayedPlayerStatuses.pop_front();
 			}
 			else if (localInputDelayCounter <= FRAME_DELAY) localInputDelayCounter += 1;
+
+			// if we moved down from a higher dynamic delay amount, shave the input down to the amount of frames
+			if (thisPeer->useDynamicDelay && !thisPeer->delayedPlayerStatuses.empty())
+			{
+				while (thisPeer->delayedPlayerStatuses.size() > FRAME_DELAY)
+				{
+					thisPeer->delayedPlayerStatuses.pop_front();
+				}
+			}
 
 			// CACHE THIS FRAMES INPUT ...................................
 			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
