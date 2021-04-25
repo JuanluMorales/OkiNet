@@ -169,7 +169,7 @@ namespace net
 		// Function that will iterate linearly the incoming messages and include them into the message queue
 		void Update()
 		{
-			while (!messagesIn.empty())
+			if (!messagesIn.empty())
 			{
 				auto msg = messagesIn.pop_front();
 

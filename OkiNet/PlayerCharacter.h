@@ -113,5 +113,7 @@ private:
 
 	bool pingRequestThisFrame = false; // Helper for input to act as button
 	bool syncStateRequestThisFrame = false; // Same as ping
+
+	int tempStepCount = 0;
 };
 
