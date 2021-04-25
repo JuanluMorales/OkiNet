@@ -244,11 +244,8 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		{
 			// Calculate the frames to delay based on ping
 			dynamicDelayFrames = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
-
 			if (dynamicDelayFrames == 0) dynamicDelayFrames = 1;
-
-			std::cout << "Player State update from peer. Frames to delay: " << dynamicDelayFrames << "\n";
-
+			//std::cout << "Player State update from peer. Frames to delay: " << dynamicDelayFrames << "\n";
 		}
 
 	}

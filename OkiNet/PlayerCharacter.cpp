@@ -157,7 +157,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			}
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::InputDelay) // Handle input delay
-		{			
+		{
 			// Send the delayed status update starting when the frameDelayCounter is equal to the framedelay
 			if (!thisPeer->delayedPlayerStatuses.empty())
 				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
@@ -174,7 +174,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 				}
 
 				remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
-			}else UpdateNetworkState();
+			}
+			else UpdateNetworkState();
 
 			remoteFrameWaitCounter += 1; // Increase the frames we have been waiting for the next input
 		}
@@ -212,7 +213,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
 		moveState = MoveState::Idle;
-		attackState = AttackState::None;
+		attackState = AttackState::Defend;
 	}
 	else
 	{
@@ -305,6 +306,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (thisPeer->delayedPlayerStatuses.front().Dashed_A) // Dash 
 					{
+						dashTimer = dashTime;
 						setPosition(getPosition().x - dashDistance, getPosition().y);
 						moveState = MoveState::DashL;
 					}
@@ -318,6 +320,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
 					{
+						dashTimer = dashTime;
 						setPosition(getPosition().x + dashDistance, getPosition().y);
 						moveState = MoveState::DashR;
 					}
@@ -329,6 +332,17 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				}
 				else // idle
 				{
+					// if last move state was walking, check the dash relevant trigger
+					if (moveState == MoveState::Left)
+					{
+						b_dashTriggerL = true;
+						dashTimer = 0.0f;
+					}
+					if (moveState == MoveState::Right)
+					{
+						b_dashTriggerR = true;
+						dashTimer = 0.0f;
+					}
 					moveState = MoveState::Idle;
 				}
 				// -------------------
@@ -441,7 +455,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (b_dashTriggerL) // Dash 
 					{
-						dashTimer = dashTime;
 						input->SetKeyUp(sf::Keyboard::A);
 						newPlayerStatus->Dashed_A = true;
 					}
@@ -451,25 +464,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (b_dashTriggerR) // Dash 
 					{
-						dashTimer = dashTime;
 						input->SetKeyUp(sf::Keyboard::D);
 						newPlayerStatus->Dashed_D = true;
 					}
 					newPlayerStatus->Pressed_D = true;
-				}
-				else
-				{
-					// if last move state was walking, check the dash relevant trigger
-					if (moveState == MoveState::Left)
-					{
-						b_dashTriggerL = true;
-						dashTimer = 0.0f;
-					}
-					if (moveState == MoveState::Right)
-					{
-						b_dashTriggerR = true;
-						dashTimer = 0.0f;
-					}
 				}
 			}
 
@@ -775,6 +773,15 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 {
 	if (networkAuthority == NetworkAuthority::Remote)
 	{
+		// Check timers and counters
+		if (dashTimer >= dashTime) // Check dashing timer
+		{
+			b_dashTriggerR = false;
+			b_dashTriggerL = false;
+			dashTimer = 0.0f;
+		}
+		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
 		{
@@ -797,7 +804,6 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 		if (frameAdvantage < 0)
 		{
 			shouldAcceptInput = false;
-			return;
 		}
 
 		if (!shouldAcceptInput)
@@ -844,38 +850,39 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 			//-------------------
 			// Movement ---------
-						//Check dashes first
-			if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
+			if (thisPeer->remotePlayerStatus.Pressed_A) // Left
 			{
-				setPosition(getPosition().x - dashDistance, getPosition().y);
-				moveState = MoveState::DashL;
+				if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
+				{
+					setPosition(getPosition().x - dashDistance, getPosition().y);
+					moveState = MoveState::DashL;
+				}
+				else
+				{
+					// Walk
+					setPosition(getPosition().x - moveDistance, getPosition().y);
+					moveState = MoveState::Left;
+				}
+
 			}
-			else
+			else if (thisPeer->remotePlayerStatus.Pressed_D) // Right
+			{
 				if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
 				{
 					setPosition(getPosition().x + dashDistance, getPosition().y);
 					moveState = MoveState::DashR;
 				}
 				else
-					if (thisPeer->remotePlayerStatus.Pressed_A && CanGoLeft) // Left
-					{
-						// Walk
-						setPosition(getPosition().x - moveDistance, getPosition().y);
-						moveState = MoveState::Left;
-
-					}
-					else if (thisPeer->remotePlayerStatus.Pressed_D && CanGoRight) // Right
-					{
-						// Walk
-
-						setPosition(getPosition().x + moveDistance, getPosition().y);
-						moveState = MoveState::Right;
-
-					}
-					else // idle
-					{
-						moveState = MoveState::Idle;
-					}
+				{
+					// Walk
+					setPosition(getPosition().x + moveDistance, getPosition().y);
+					moveState = MoveState::Right;
+				}
+			}
+			else // idle
+			{
+				moveState = MoveState::Idle;
+			}
 		}
 	}
 
@@ -899,6 +906,14 @@ void PlayerCharacter::HandleAnimation(float dt)
 		if (receivedGuardBox && currentEnergyPoints <= 0)
 		{
 			currentAnim = &anim_hurt;
+			setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw
+			setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250)); // Set the color information of the rect to fill it
+			animState = currentAnim->GetCurrentFrame().GetFrameType(); // Set the animation state (startup, active, recovery...)
+			currentAnim->Animate(dt); // Set to advance frames
+		}
+		else if(receivedGuardBox)
+		{
+			currentAnim = &anim_defend;
 			setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw
 			setFillColor(sf::Color(getFillColor().r, getFillColor().g, getFillColor().b, 250)); // Set the color information of the rect to fill it
 			animState = currentAnim->GetCurrentFrame().GetFrameType(); // Set the animation state (startup, active, recovery...)
