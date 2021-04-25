@@ -26,7 +26,7 @@ public:
 	NetworkTechnique GetNetworkTechnique() { return thisPeer->currentNetworkTechnique; }
 	void SetNetworkTechnique(NetworkTechnique nt) { thisPeer->currentNetworkTechnique = nt; }
 	bool HasReceivedRemoteUpdateThisFrame() { return thisPeer->receivedRemoteUpdateThisFrame; }
-	const int GetCurrentDelayFrames() { return thisFramesDelay; }
+	const int GetCurrentDelayFrames() { return FRAME_DELAY; }
 
 
 	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
@@ -109,7 +109,7 @@ private:
 	// input delay
 	int remoteFrameWaitCounter = 0; // Tracks the frame we have waited to receive further notice of the remote player for input delay purposes
 	int localInputDelayCounter = 0; // Helper to track the current frames we have waited until delay input can be executed
-	int thisFramesDelay = 0; //Tracks the frames to delay the input
+	int FRAME_DELAY = 1; //Tracks the frames to delay the input
 
 	bool pingRequestThisFrame = false; // Helper for input to act as button
 	bool syncStateRequestThisFrame = false; // Same as ping
