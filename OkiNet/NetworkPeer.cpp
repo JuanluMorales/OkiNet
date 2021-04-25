@@ -144,7 +144,7 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		std::chrono::system_clock::time_point timeThen;
 		msg >> timeThen;
 		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() 
-			<< " (" << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() << ") ms. Ping: "
+			<< " (" << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() << "ms). Ping: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2 << " ms." << "\n";
 	}
 	break;
