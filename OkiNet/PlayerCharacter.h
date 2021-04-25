@@ -26,10 +26,11 @@ public:
 	NetworkTechnique GetNetworkTechnique() { return thisPeer->currentNetworkTechnique; }
 	void SetNetworkTechnique(NetworkTechnique nt) { thisPeer->currentNetworkTechnique = nt; }
 	bool HasReceivedRemoteUpdateThisFrame() { return thisPeer->receivedRemoteUpdateThisFrame; }
-	void UpdateNetworkState();
+	const int GetCurrentDelayFrames() { return thisFramesDelay; }
 
 
 	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
+	void UpdateNetworkState();
 
 	void HandleInput(InputManager* input, float dt); // Register input
 	void HandleRemotePlayerInput(InputManager* input, float dt); // update the remote player input based on the network state
@@ -105,9 +106,11 @@ private:
 	enum class NetworkAuthority { Offline, Local, Remote };
 	NetworkAuthority networkAuthority; // Assuming multiplayer, is this the local or the remote character?
 
+	// input delay
 	int remoteFrameWaitCounter = 0; // Tracks the frame we have waited to receive further notice of the remote player for input delay purposes
-	int frameDelayCounter = 0; // Helper to track the current frames we have waited until delay input can be executed
-	int remoteFrameDelayCounter = 0; // Helper to track the current frames we have waited for the remote player input to be executed
+	int localInputDelayCounter = 0; // Helper to track the current frames we have waited until delay input can be executed
+	int thisFramesDelay = 0; //Tracks the frames to delay the input
+
 	bool pingRequestThisFrame = false; // Helper for input to act as button
 	bool syncStateRequestThisFrame = false; // Same as ping
 };

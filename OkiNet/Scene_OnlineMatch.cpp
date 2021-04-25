@@ -451,7 +451,7 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 			else
 				if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
 
-	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: " + std::to_string(thisPeer->DELAY_FRAMES) +"f\nRollBack Frames: " + std::to_string(thisPeer->ROLLBACK_FRAMES) + "f\n");
+	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: " + std::to_string(localPlayer.GetCurrentDelayFrames()) +"f\nRollBack Frames: " + std::to_string(thisPeer->ROLLBACK_FRAMES) + "f\n");
 	DebugText.setString(debugOutput);
 
 }

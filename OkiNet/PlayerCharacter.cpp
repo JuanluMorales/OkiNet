@@ -156,31 +156,32 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::InputDelay) // Handle input delay
 		{
-			if (thisPeer->useDynamicDelay)
-			{
+			int thisFramesDelay = 1;
 
-			}
-			else // Used fixed delay amount
-			{
-				// Send the delayed status update
-				if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter && !thisPeer->delayedPlayerStatuses.empty()) thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
+			// Use the dynamic delay or the fixed delay
+			thisPeer->useDynamicDelay ? thisFramesDelay = thisPeer->dynamicDelayFrames : thisFramesDelay = thisPeer->DELAY_FRAMES;	
 
-				// Lockstep listen for delayed updates --
-				// If we have run out of waiting frames...
-				if (thisPeer->DELAY_FRAMES < remoteFrameWaitCounter)
+			// Send the delayed status update starting when the frameDelayCounter is equal to the framedelay
+			if (thisFramesDelay - 1 <= localInputDelayCounter && !thisPeer->delayedPlayerStatuses.empty()) thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
+
+			// Lockstep listen for delayed updates --
+			// If we have run out of waiting frames...
+			if (thisFramesDelay < remoteFrameWaitCounter)
+			{
+				// Force lockstep until we get new updates		
+				while (!HasReceivedRemoteUpdateThisFrame())
 				{
-					// Force lockstep until we get new updates		
-					while (!HasReceivedRemoteUpdateThisFrame())
-					{
-						// Make sure we listen to the network messages
-						UpdateNetworkState();
-					}
+					// Make sure we listen to the network messages
+					UpdateNetworkState();
+				}
 
-					remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
-				}else UpdateNetworkState();
-
+				remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
+			}
+			else
+			{
+				UpdateNetworkState(); // Make sure we listen to the network messages
 				remoteFrameWaitCounter += 1; // Increase the frames we have been waiting for the next input
-			}			
+			}
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
 		{
@@ -261,42 +262,9 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 		// If we are using delay, check this frames' input and apply the input that should be applied this frame
 		if (networkAuthority == NetworkAuthority::Local && thisPeer->currentNetworkTechnique == NetworkTechnique::InputDelay)
-		{
-			// Check timers and counters
-			if (dashTimer >= dashTime) // Check dashing timer
-			{
-				b_dashTriggerR = false;
-				b_dashTriggerL = false;
-				dashTimer = 0.0f;
-			}
-			else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
-
-			// Check this frame's type to decide if input should be accepted
-			switch (animState)
-			{
-			case AnimationFrameType::Idle:
-				shouldAcceptInput = true;
-				break;
-			case AnimationFrameType::StartUp:
-				shouldAcceptInput = false;
-				break;
-			case AnimationFrameType::Active:
-				shouldAcceptInput = false;
-				break;
-			case AnimationFrameType::Recovery:
-				shouldAcceptInput = true;
-				break;
-			default:
-				break;
-			}
-
-			if (frameAdvantage < 0)
-			{
-				shouldAcceptInput = false;
-			}
-
+		{		
 			// Execute this frame's input ..................
-			if (thisPeer->DELAY_FRAMES - 1 <= frameDelayCounter && !thisPeer->delayedPlayerStatuses.empty())
+			if (thisPeer->DELAY_FRAMES - 1 <= localInputDelayCounter && !thisPeer->delayedPlayerStatuses.empty())
 			{
 				// Defend
 				if (thisPeer->delayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
@@ -354,7 +322,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
 					{
-						dashTimer = dashTime;
 						setPosition(getPosition().x + dashDistance, getPosition().y);
 						moveState = MoveState::DashR;
 					}
@@ -366,17 +333,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				}
 				else // idle
 				{
-					// if last move state was walking, check the dash relevant trigger
-					if (moveState == MoveState::Left)
-					{
-						b_dashTriggerL = true;
-						dashTimer = 0.0f;
-					}
-					if (moveState == MoveState::Right)
-					{
-						b_dashTriggerR = true;
-						dashTimer = 0.0f;
-					}
 					moveState = MoveState::Idle;
 				}
 				// -------------------
@@ -384,14 +340,64 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			// Get rid of the executed input
 				thisPeer->delayedPlayerStatuses.pop_front();
 			}
-			else if (frameDelayCounter < thisPeer->DELAY_FRAMES) frameDelayCounter += 1;
+			else if (localInputDelayCounter < thisPeer->DELAY_FRAMES) localInputDelayCounter += 1;
 
 			// CACHE THIS FRAMES INPUT ...................................
 			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
 
+			// Check timers and counters
+			if (dashTimer >= dashTime) // Check dashing timer
+			{
+				b_dashTriggerR = false;
+				b_dashTriggerL = false;
+				dashTimer = 0.0f;
+			}
+			else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
+			// Check this frame's type to decide if input should be accepted
+			switch (animState)
+			{
+			case AnimationFrameType::Idle:
+				shouldAcceptInput = true;
+				break;
+			case AnimationFrameType::StartUp:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Active:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Recovery:
+				shouldAcceptInput = true;
+				break;
+			default:
+				break;
+			}
+
+			if (frameAdvantage < 0)
+			{
+				shouldAcceptInput = false;
+			}
+
 			if (!shouldAcceptInput)
 			{
-				if (attackState == AttackState::Defend && input->IsKeyDown(sf::Keyboard::S))
+				if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::S) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+				{
+					if (attackState == AttackState::Defend) attackState = AttackState::None;
+					shouldAcceptInput = true;
+				}
+				else
+				{
+					if (networkAuthority == NetworkAuthority::Local && attackState == AttackState::Defend) thisPeer->Pressed_S(); // Inform remote player we are still guarding
+				}
+			}
+			if (!shouldAcceptInput)
+			{
+				if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::S) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+				{
+					if (attackState == AttackState::Defend) attackState = AttackState::None;
+					shouldAcceptInput = true;
+				}
+				else if (attackState == AttackState::Defend && input->IsKeyDown(sf::Keyboard::S))
 				{
 					newPlayerStatus->Pressed_S = true;
 				}
@@ -443,7 +449,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (b_dashTriggerL) // Dash 
 					{
-
+						dashTimer = dashTime;
 						input->SetKeyUp(sf::Keyboard::A);
 						newPlayerStatus->Dashed_A = true;
 					}
@@ -453,10 +459,25 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				{
 					if (b_dashTriggerR) // Dash 
 					{
+						dashTimer = dashTime;
 						input->SetKeyUp(sf::Keyboard::D);
 						newPlayerStatus->Dashed_D = true;
 					}
 					newPlayerStatus->Pressed_D = true;
+				}
+				else
+				{
+					// if last move state was walking, check the dash relevant trigger
+					if (moveState == MoveState::Left)
+					{
+						b_dashTriggerL = true;
+						dashTimer = 0.0f;
+					}
+					if (moveState == MoveState::Right)
+					{
+						b_dashTriggerR = true;
+						dashTimer = 0.0f;
+					}
 				}
 			}
 
