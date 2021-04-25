@@ -89,7 +89,12 @@ void NetworkPeer::SendPlayerStatus(PlayerStatus& status)
 {
 	net::message<MsgTypes> msg;
 	msg.header.id = MsgTypes::ReceivePlayerState;
-	msg << status;
+
+	// attach a time stamp as well
+	std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
+
+	msg << status << timeNow;
+
 	Send_UDP(msg);
 }
 
@@ -226,11 +231,24 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		receivedRemoteUpdateThisFrame = true; // Raise the flag of having received notification from the other player (as he should every frame)
 
 		// Interpret the message
+		std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
+		std::chrono::system_clock::time_point timeThen;
+
 		PlayerStatus newRemoteStatus;
-		msg >> newRemoteStatus;
+
+		msg >> timeThen >> newRemoteStatus;
+
 		remotePlayerStatus = newRemoteStatus;
 
-		if (remotePlayerStatus.Pressed_Q) std::cout << "Received message with Q pressed\n";
+		if (useDynamicDelay)
+		{
+			// Calculate the frames to delay based on ping
+			dynamicDelayFrames = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+
+			std::cout << "Player State update from peer. Frames to delay: " << dynamicDelayFrames << "\n";
+
+		}
+
 	}
 		break;
 	default:

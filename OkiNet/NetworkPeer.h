@@ -44,7 +44,7 @@ public:
 	}
 
 	// FRAME CONSTANTS
-	bool useDynamicDelay = false; // whether to calculate frame delay every frame or use the fixed delay
+	bool useDynamicDelay = true; // whether to calculate frame delay every frame or use the fixed delay
 	int dynamicDelayFrames = 1; // The dynamic (updated each frame) frames of delay to be used
 	const int DELAY_FRAMES = 30; // 3 to 8 is enough, 1 frame = 16 ms of leeway but less responsive input
 	const int ROLLBACK_FRAMES = 8; // 5 to 10 is enough
