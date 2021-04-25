@@ -142,13 +142,13 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		msg.header.id = MsgTypes::PingAnswer; // change msg id
 		Send_UDP(msg); // Bounce back message
 	}
-		break;
+	break;
 	case MsgTypes::PingAnswer:
 	{
 		std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 		std::chrono::system_clock::time_point timeThen;
 		msg >> timeThen;
-		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count() 
+		std::cout << "Ping answer from peer. Roundtrip time: " << std::chrono::duration<double>(timeNow - timeThen).count()
 			<< " (" << std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() << "ms). Ping: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2 << " ms." << "\n";
 	}
@@ -164,8 +164,8 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		if (remoteHP > _remoteHP || remoteHP < _remoteHP) currentSyncState = SyncState::Desync_HP;
 		if (remotePosX > _remotePosX || remotePosX < _remotePosX)
 		{
-			if(currentSyncState == SyncState::Desync_HP) currentSyncState = SyncState::Desync_HPandPos;
-			else currentSyncState = SyncState::Desync_Pos;			
+			if (currentSyncState == SyncState::Desync_HP) currentSyncState = SyncState::Desync_HPandPos;
+			else currentSyncState = SyncState::Desync_Pos;
 		}
 
 		if (currentSyncState != SyncState::Synced)
@@ -243,13 +243,23 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		if (useDynamicDelay)
 		{
 			// Calculate the frames to delay based on ping
+			int lastFrameDelay = dynamicDelayFrames;
+
 			dynamicDelayFrames = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
 			if (dynamicDelayFrames == 0) dynamicDelayFrames = 1;
-			//std::cout << "Player State update from peer. Frames to delay: " << dynamicDelayFrames << "\n";
+
+			// shave unneeded messages over the delay count
+			if (!IsMessageListEmpty())
+			{
+				while (GetIncomingMessages().count() > dynamicDelayFrames)
+				{
+					PopFrontMessage();
+				}
+			}
 		}
 
 	}
-		break;
+	break;
 	default:
 		std::cout << "Received a message that was not recognisable.\n";
 		break;

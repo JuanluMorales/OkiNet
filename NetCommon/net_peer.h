@@ -224,6 +224,21 @@ namespace net
 
 		}
 
+		bool IsMessageListEmpty() 
+		{ 
+			return messagesIn.empty(); 
+		}
+
+		void PopFrontMessage()
+		{
+			messagesIn.pop_front();
+		}
+
+		void PopBackMessage()
+		{
+			messagesIn.pop_back();
+		}
+
 	protected:
 		// Context for asio
 		asio::io_context context;

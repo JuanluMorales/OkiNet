@@ -304,19 +304,19 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				}
 				//-------------------
 				// Movement ---------
-				//if (thisPeer->delayedPlayerStatuses.front().Dashed_A) // Dash 
-				//{
-				//	dashTimer = dashTime;
-				//	setPosition(getPosition().x - dashDistance, getPosition().y);
-				//	moveState = MoveState::DashL;
-				//}
-				//else if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
-				//{
-				//	dashTimer = dashTime;
-				//	setPosition(getPosition().x + dashDistance, getPosition().y);
-				//	moveState = MoveState::DashR;
-				//}
-				//else 
+				if (thisPeer->delayedPlayerStatuses.front().Dashed_A) // Dash 
+				{
+					dashTimer = dashTime;
+					setPosition(getPosition().x - dashDistance, getPosition().y);
+					moveState = MoveState::DashL;
+				}
+				else if (thisPeer->delayedPlayerStatuses.front().Dashed_D) // Dash 
+				{
+					dashTimer = dashTime;
+					setPosition(getPosition().x + dashDistance, getPosition().y);
+					moveState = MoveState::DashR;
+				}
+				else 
 				if (thisPeer->delayedPlayerStatuses.front().Pressed_A) // Left
 				{
 					setPosition(getPosition().x - moveDistance, getPosition().y);
@@ -445,8 +445,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					if (b_dashTriggerL) // Dash 
 					{
 						dashTimer = dashTime;
-						//input->SetKeyUp(sf::Keyboard::A);
-						//newPlayerStatus->Dashed_A = true;
+						input->SetKeyUp(sf::Keyboard::A);
+						newPlayerStatus->Dashed_A = true;
 					}
 					newPlayerStatus->Pressed_A = true;
 				}
@@ -455,12 +455,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					if (b_dashTriggerR) // Dash 
 					{
 						dashTimer = dashTime;
-						//input->SetKeyUp(sf::Keyboard::D);
-						//newPlayerStatus->Dashed_D = true;
+						input->SetKeyUp(sf::Keyboard::D);
+						newPlayerStatus->Dashed_D = true;
 					}
 					newPlayerStatus->Pressed_D = true;
-					std::cout << tempStepCount << std::endl;
-					tempStepCount += 1;
 				}
 				else
 				{
@@ -822,36 +820,32 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 		//-------------------
 		// Movement ---------
-		//if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
-		//{
-		//	setPosition(getPosition().x - dashDistance, getPosition().y);
-		//	moveState = MoveState::DashL;
-		//}
-		//else 
-			if (thisPeer->remotePlayerStatus.Pressed_A) // Left
+		if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
+		{
+			setPosition(getPosition().x - dashDistance, getPosition().y);
+			moveState = MoveState::DashL;
+		}
+		else if (thisPeer->remotePlayerStatus.Pressed_A) // Left
 		{
 			// Walk
 			setPosition(getPosition().x - moveDistance, getPosition().y);
 			moveState = MoveState::Left;
 		}
-		//else if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
-		//{
-		//	setPosition(getPosition().x + dashDistance, getPosition().y);
-		//	moveState = MoveState::DashR;
-		//}
-		else 
-				if (thisPeer->remotePlayerStatus.Pressed_D) // Right
+		else if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
+		{
+			setPosition(getPosition().x + dashDistance, getPosition().y);
+			moveState = MoveState::DashR;
+		}
+		else if (thisPeer->remotePlayerStatus.Pressed_D) // Right
 		{
 			// Walk
 			setPosition(getPosition().x + moveDistance, getPosition().y);
 			moveState = MoveState::Right;
-			std::cout << tempStepCount << std::endl;
-			tempStepCount += 1;
 		}
 		else // idle
 		{
 			moveState = MoveState::Idle;
-			
+
 		}
 
 	}
