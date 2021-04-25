@@ -506,7 +506,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			if (frameAdvantage < 0)
 			{
 				shouldAcceptInput = false;
-				return;
 			}
 
 			if (!shouldAcceptInput)
@@ -522,18 +521,18 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 				}
 			}
 
-			// Defend
-			if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
-			{
-				attackState = AttackState::Defend;
-				shouldAcceptInput = false;
-
-				if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
-			}
-			else if (attackState == AttackState::Defend) attackState = AttackState::None;
-
 			if (shouldAcceptInput)
 			{
+				// Defend
+				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+				{
+					attackState = AttackState::Defend;
+					shouldAcceptInput = false;
+
+					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_S();
+				}
+				else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
 				// Attack
 				// Special punch
 				if (input->IsKeyDown(sf::Keyboard::W))
@@ -592,8 +591,9 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					{
 						setPosition(getPosition().x - moveDistance, getPosition().y);
 						moveState = MoveState::Left;
+						if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
 					}
-					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_A();
+
 				}
 				else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
 				{
@@ -609,8 +609,9 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 					{
 						setPosition(getPosition().x + moveDistance, getPosition().y);
 						moveState = MoveState::Right;
+						if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
 					}
-					if (networkAuthority == NetworkAuthority::Local) thisPeer->Pressed_D();
+
 				}
 				else // idle
 				{
@@ -665,7 +666,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		if (frameAdvantage < 0)
 		{
 			shouldAcceptInput = false;
-			return;
 		}
 
 		if (input->IsKeyDown(sf::Keyboard::Down) && currentEnergyPoints > 0)
@@ -684,7 +684,6 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			}
 			else return;
 		}
-
 
 		// Attack
 		if (input->IsKeyDown(sf::Keyboard::Up))
@@ -773,15 +772,6 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 {
 	if (networkAuthority == NetworkAuthority::Remote)
 	{
-		// Check timers and counters
-		if (dashTimer >= dashTime) // Check dashing timer
-		{
-			b_dashTriggerR = false;
-			b_dashTriggerL = false;
-			dashTimer = 0.0f;
-		}
-		else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
-
 		// Check this frame's type to decide if input should be accepted
 		switch (animState)
 		{
@@ -815,16 +805,16 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 			}
 		}
 
-		// Defend
-		if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
-		{
-			attackState = AttackState::Defend;
-			shouldAcceptInput = false;
-		}
-		else if (attackState == AttackState::Defend) attackState = AttackState::None;
-
 		if (shouldAcceptInput)
 		{
+			// Defend
+			if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
+			{
+				attackState = AttackState::Defend;
+				shouldAcceptInput = false;
+			}
+			else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
 			if (thisPeer->remotePlayerStatus.Pressed_W)
 			{
 				attackState = AttackState::DragonPunch;
@@ -850,34 +840,29 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 			//-------------------
 			// Movement ---------
-			if (thisPeer->remotePlayerStatus.Pressed_A) // Left
+			if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
 			{
-				if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
-				{
-					setPosition(getPosition().x - dashDistance, getPosition().y);
-					moveState = MoveState::DashL;
-				}
-				else
-				{
-					// Walk
-					setPosition(getPosition().x - moveDistance, getPosition().y);
-					moveState = MoveState::Left;
-				}
-
+				dashTimer = dashTime;
+				setPosition(getPosition().x - dashDistance, getPosition().y);
+				moveState = MoveState::DashL;
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_A) // Left
+			{
+				// Walk
+				setPosition(getPosition().x - moveDistance, getPosition().y);
+				moveState = MoveState::Left;
+			}
+			else if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
+			{
+				dashTimer = dashTime;
+				setPosition(getPosition().x + dashDistance, getPosition().y);
+				moveState = MoveState::DashR;
 			}
 			else if (thisPeer->remotePlayerStatus.Pressed_D) // Right
 			{
-				if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
-				{
-					setPosition(getPosition().x + dashDistance, getPosition().y);
-					moveState = MoveState::DashR;
-				}
-				else
-				{
-					// Walk
-					setPosition(getPosition().x + moveDistance, getPosition().y);
-					moveState = MoveState::Right;
-				}
+				// Walk
+				setPosition(getPosition().x + moveDistance, getPosition().y);
+				moveState = MoveState::Right;
 			}
 			else // idle
 			{
@@ -911,7 +896,7 @@ void PlayerCharacter::HandleAnimation(float dt)
 			animState = currentAnim->GetCurrentFrame().GetFrameType(); // Set the animation state (startup, active, recovery...)
 			currentAnim->Animate(dt); // Set to advance frames
 		}
-		else if(receivedGuardBox)
+		else if (receivedGuardBox)
 		{
 			currentAnim = &anim_defend;
 			setTextureRect(currentAnim->GetCurrentFrame().GetRect()); // Set the part of the sprite sheet to draw

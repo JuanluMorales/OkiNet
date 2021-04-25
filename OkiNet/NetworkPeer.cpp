@@ -201,8 +201,8 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		msg >> _remotePosX >> _remoteHP;
 
 		// Check the state
-		if (remoteHP > _remoteHP || remoteHP < _remoteHP) currentSyncState = SyncState::Desync_HP;
-		if (remotePosX > _remotePosX || remotePosX < _remotePosX)
+		if (remoteHP != _remoteHP) currentSyncState = SyncState::Desync_HP;
+		if (remotePosX != _remotePosX)
 		{
 			if (currentSyncState == SyncState::Desync_HP) currentSyncState = SyncState::Desync_HPandPos;
 			else currentSyncState = SyncState::Desync_Pos;
