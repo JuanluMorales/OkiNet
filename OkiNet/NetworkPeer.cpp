@@ -238,7 +238,6 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 
 		msg >> timeThen >> newRemoteStatus;
 
-
 		if (currentNetworkTechnique == NetworkTechnique::InputDelay)
 		{
 			if (useDynamicDelay)
@@ -260,10 +259,11 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 			}
 			else
 			{
+				// calculate the time we should delay the remote input locally
 				int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
 				int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
 
-				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << "f.\n";
+				//std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << "f.\n";
 				newRemoteStatus.appliedDelay = delayFrames;
 			}
 
