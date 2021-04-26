@@ -158,6 +158,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::InputDelay) // Handle input delay
 		{
+			// Use the dynamic delay or the fixed delay
+			thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
+
 			// Send the delayed status update starting when the frameDelayCounter is equal to the framedelay
 			if (!thisPeer->delayedPlayerStatuses.empty())
 				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
@@ -173,7 +176,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 					UpdateNetworkState();
 				}
 
-				remoteFrameWaitCounter = 0; // reset the counter when we receive a new update
+				remoteFrameWaitCounter = -1; // reset the counter when we receive a new update
 			}
 			else
 			{
@@ -188,9 +191,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			// Listen for new messages
 			UpdateNetworkState();
 		}
-
-		// Use the dynamic delay or the fixed delay
-		thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
 
 		thisPeer->ResetLocalPlayerStatus();
 	}
@@ -348,7 +348,10 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			// Get rid of the executed input
 				thisPeer->delayedPlayerStatuses.pop_front();
 			}
-			else if (localInputDelayCounter <= FRAME_DELAY) localInputDelayCounter += 1;
+			else
+			{
+				if (localInputDelayCounter <= FRAME_DELAY) localInputDelayCounter += 1;
+			}
 
 			// CACHE THIS FRAMES INPUT ...................................
 			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
@@ -477,16 +480,18 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 			}
 
+			newPlayerStatus->appliedDelay = FRAME_DELAY;
+
 			thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
 
 			// if we moved down from a higher dynamic delay amount, shave the input down to the amount of frames
-			if (thisPeer->useDynamicDelay && !thisPeer->delayedPlayerStatuses.empty())
-			{
-				while (thisPeer->delayedPlayerStatuses.size() > FRAME_DELAY)
-				{
-					thisPeer->delayedPlayerStatuses.pop_front();
-				}
-			}
+			//if (thisPeer->useDynamicDelay && !thisPeer->delayedPlayerStatuses.empty())
+			//{
+			//	while (thisPeer->delayedPlayerStatuses.size() > FRAME_DELAY)
+			//	{
+			//		thisPeer->delayedPlayerStatuses.pop_front();
+			//	}
+			//}
 		}
 		else // Run update without delay ------------------------
 		{
@@ -787,72 +792,142 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 {
 	if (networkAuthority == NetworkAuthority::Remote)
 	{
-		// Defend
-		if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
+		if (thisPeer->currentNetworkTechnique == NetworkTechnique::InputDelay)
 		{
-			attackState = AttackState::Defend;
-			shouldAcceptInput = false;
-		}
-		else if (attackState == AttackState::Defend) attackState = AttackState::None;
+			// Execute this frame's input ..................
+			if (!thisPeer->remoteDelayedPlayerStatuses.empty())
+			{
+				// Defend
+				if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
+				{
+					attackState = AttackState::Defend;
+				}
+				else if (attackState == AttackState::Defend) attackState = AttackState::None;
 
-		if (thisPeer->remotePlayerStatus.Pressed_W)
-		{
-			attackState = AttackState::DragonPunch;
-		}
-		// Punch
-		if (thisPeer->remotePlayerStatus.HeavyPunched)
-		{
-			attackState = AttackState::HeavyPunch;
-		}
-		else if (thisPeer->remotePlayerStatus.Pressed_Q)
-		{
-			attackState = AttackState::FastPunch;
-		}
-		// Kick
-		if (thisPeer->remotePlayerStatus.HeavyKicked)
-		{
-			attackState = AttackState::HeavyKick;
-		}
-		else if (thisPeer->remotePlayerStatus.Pressed_E)
-		{
-			attackState = AttackState::FastKick;
-		}
+				if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_W)
+				{
+					attackState = AttackState::DragonPunch;
+				}
+				// Punch
+				if (thisPeer->remoteDelayedPlayerStatuses.front().HeavyPunched)
+				{
+					attackState = AttackState::HeavyPunch;
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_Q)
+				{
+					attackState = AttackState::FastPunch;
+				}
+				// Kick
+				if (thisPeer->remoteDelayedPlayerStatuses.front().HeavyKicked)
+				{
+					attackState = AttackState::HeavyKick;
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_E)
+				{
+					attackState = AttackState::FastKick;
+				}
 
-		//-------------------
-		// Movement ---------
-		if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
-		{
-			setPosition(getPosition().x - dashDistance, getPosition().y);
-			moveState = MoveState::DashL;
-		}
-		else if (thisPeer->remotePlayerStatus.Pressed_A) // Left
-		{
-			// Walk
-			setPosition(getPosition().x - moveDistance, getPosition().y);
-			moveState = MoveState::Left;
-		}
-		else if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
-		{
-			setPosition(getPosition().x + dashDistance, getPosition().y);
-			moveState = MoveState::DashR;
-		}
-		else if (thisPeer->remotePlayerStatus.Pressed_D) // Right
-		{
-			// Walk
-			setPosition(getPosition().x + moveDistance, getPosition().y);
-			moveState = MoveState::Right;
-		}
-		else // idle
-		{
-			moveState = MoveState::Idle;
+				//-------------------
+				// Movement ---------
+				if (thisPeer->remoteDelayedPlayerStatuses.front().Dashed_A) // Dash 
+				{
+					setPosition(getPosition().x - dashDistance, getPosition().y);
+					moveState = MoveState::DashL;
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_A) // Left
+				{
+					// Walk
+					setPosition(getPosition().x - moveDistance, getPosition().y);
+					moveState = MoveState::Left;
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Dashed_D) // Dash 
+				{
+					setPosition(getPosition().x + dashDistance, getPosition().y);
+					moveState = MoveState::DashR;
+				}
+				else if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_D) // Right
+				{
+					// Walk
+					setPosition(getPosition().x + moveDistance, getPosition().y);
+					moveState = MoveState::Right;
+				}
+				else // idle
+				{
+					moveState = MoveState::Idle;
 
-		}
+				}
 
+				// Get rid of the executed input
+				thisPeer->remoteDelayedPlayerStatuses.pop_front();
+			}
+		}
+		else
+		{
+			// Defend
+			if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
+			{
+				attackState = AttackState::Defend;
+				shouldAcceptInput = false;
+			}
+			else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
+			if (thisPeer->remotePlayerStatus.Pressed_W)
+			{
+				attackState = AttackState::DragonPunch;
+			}
+			// Punch
+			if (thisPeer->remotePlayerStatus.HeavyPunched)
+			{
+				attackState = AttackState::HeavyPunch;
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_Q)
+			{
+				attackState = AttackState::FastPunch;
+			}
+			// Kick
+			if (thisPeer->remotePlayerStatus.HeavyKicked)
+			{
+				attackState = AttackState::HeavyKick;
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_E)
+			{
+				attackState = AttackState::FastKick;
+			}
+
+			//-------------------
+			// Movement ---------
+			if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
+			{
+				setPosition(getPosition().x - dashDistance, getPosition().y);
+				moveState = MoveState::DashL;
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_A) // Left
+			{
+				// Walk
+				setPosition(getPosition().x - moveDistance, getPosition().y);
+				moveState = MoveState::Left;
+			}
+			else if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
+			{
+				setPosition(getPosition().x + dashDistance, getPosition().y);
+				moveState = MoveState::DashR;
+			}
+			else if (thisPeer->remotePlayerStatus.Pressed_D) // Right
+			{
+				// Walk
+				setPosition(getPosition().x + moveDistance, getPosition().y);
+				moveState = MoveState::Right;
+			}
+			else // idle
+			{
+				moveState = MoveState::Idle;
+
+			}
+
+			// Resets all inputs this frame
+			thisPeer->ResetRemotePlayerStatus();
+		}
 	}
-
-	// Resets all inputs this frame
-	thisPeer->ResetRemotePlayerStatus();
-
 }
 
 void PlayerCharacter::HandleAnimation(float dt)

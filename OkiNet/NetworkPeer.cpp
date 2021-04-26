@@ -238,25 +238,47 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 
 		msg >> timeThen >> newRemoteStatus;
 
-		remotePlayerStatus = newRemoteStatus;
 
-		if (useDynamicDelay)
+		if (currentNetworkTechnique == NetworkTechnique::InputDelay)
 		{
-			// Calculate the frames to delay based on ping
-			int lastFrameDelay = dynamicDelayFrames;
-
-			dynamicDelayFrames = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
-			if (dynamicDelayFrames == 0) dynamicDelayFrames = 1;
-
-			// shave unneeded messages over the delay count
-			if (!IsMessageListEmpty())
+			if (useDynamicDelay)
 			{
-				while (GetIncomingMessages().count() > dynamicDelayFrames)
-				{
-					PopFrontMessage();
-				}
+				// Calculate the frames to delay based on ping
+				int lastFrameDelay = dynamicDelayFrames;
+
+				dynamicDelayFrames = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+				if (dynamicDelayFrames == 0) dynamicDelayFrames = 1;
+
+				//// shave unneeded messages over the delay count
+				//if (!IsMessageListEmpty())
+				//{
+				//	while (GetIncomingMessages().count() > dynamicDelayFrames)
+				//	{
+				//		PopFrontMessage();
+				//	}
+				//}
 			}
+			else
+			{
+				int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+				int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
+
+				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << "f.\n";
+				newRemoteStatus.appliedDelay = delayFrames;
+			}
+
+			// Add the remote status to the list of delayed statuses
+			remoteDelayedPlayerStatuses.push_back(newRemoteStatus);
+
 		}
+		else
+		{
+			remotePlayerStatus = newRemoteStatus;
+		}
+
+		
+
+
 
 	}
 	break;
