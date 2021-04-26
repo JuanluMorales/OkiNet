@@ -164,54 +164,41 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 
 			// Send the delayed status update
 			if (!thisPeer->delayedPlayerStatuses.empty())
-				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
-
-			// Force lockstep until we get new updates		
-			do
 			{
-				// Debug 
-				if (FRAME_DELAY < remoteFrameWaitCounter)
-				{
-					std::cout << "Lockstep hit. Frames waited: " << remoteFrameWaitCounter << std::endl;
-				}
-
-				// Make sure we listen to the network messages
-				UpdateNetworkState();
-
-				if(!HasReceivedRemoteUpdateThisFrame()) remoteFrameWaitCounter += 1;
-				else if(remoteFrameWaitCounter > 0) remoteFrameWaitCounter -= 1;
-
-
-
-			} while (FRAME_DELAY < remoteFrameWaitCounter);
-
-
-
-
+				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
+			}
+				
 			// DEBUG TEMP
 			if (!thisPeer->delayedPlayerStatuses.empty() && !thisPeer->remoteDelayedPlayerStatuses.empty())
 			{
-				//std::cout << "Frames waiting: " << remoteFrameWaitCounter << " Local inputs: " << thisPeer->delayedPlayerStatuses.size() << " Remote inputs: " << thisPeer->remoteDelayedPlayerStatuses.size() << "\n";
+				std::cout << "Frames waiting: " << remoteFrameWaitCounter << " Local inputs: " << thisPeer->delayedPlayerStatuses.size() << " Remote inputs: " << thisPeer->remoteDelayedPlayerStatuses.size() << " NetMessages: " << thisPeer->GetIncomingMessages().count() << "\n";
 			}
 
-			//if (FRAME_DELAY > remoteFrameWaitCounter ) // IF we are still under our delay budget..
-			//{
-			//	UpdateNetworkState();
+			// Force lockstep until we get new updates		
+			int lockstepCount = 0;
+			do
+			{
+				// Make sure we listen to the network messages
+				UpdateNetworkState();
 
-			//	if (!HasReceivedRemoteUpdateThisFrame())
-			//	{
-			//		remoteFrameWaitCounter += 1; // Increase the frames we have been waiting for the next input
-			//	}					
-			//}
-			//else // If we have run out of waiting frames...
-			//{
-			//	// Force lockstep until we get new updates		
-			//	while (!HasReceivedRemoteUpdateThisFrame())
-			//	{
-			//		// Make sure we listen to the network messages
-			//		UpdateNetworkState();
-			//	}
-			//}
+				if (!HasReceivedRemoteUpdateThisFrame())
+				{
+					remoteFrameWaitCounter += 1;
+				}
+				else
+				{
+					lockstepCount = 0;				
+					if (remoteFrameWaitCounter > 0) remoteFrameWaitCounter -= 1;
+				}
+
+				// If we ran out of waiting frames, enter lockstep -> loop while
+				if (FRAME_DELAY <= remoteFrameWaitCounter)
+				{
+					lockstepCount += 1;
+					std::cout << "Lockstep hit: " << lockstepCount << std::endl;
+				}
+
+			} while (lockstepCount > 0);
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
 		{
@@ -826,15 +813,12 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 			// Execute this frame's input ..................
 			if (!thisPeer->remoteDelayedPlayerStatuses.empty())
 			{
-				for (int i = 0; i < thisPeer->remoteDelayedPlayerStatuses.size(); i++)
-				{
-					thisPeer->remoteDelayedPlayerStatuses.at(i).appliedDelay -= 1;
-				}
+				bool didUpdate = false;
 
-				// If it is time for the input to be applied..
-				if (thisPeer->remoteDelayedPlayerStatuses.front().appliedDelay <= 0)
+				// Search through the list for the delayed status that should be applied (the one with delay == 0)
+				if (thisPeer->remoteDelayedPlayerStatuses.front().appliedDelay == 0)
 				{
-
+					didUpdate = true;
 					// Defend
 					if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
 					{
@@ -897,6 +881,15 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 					// Get rid of the executed input
 					thisPeer->remoteDelayedPlayerStatuses.pop_front();
+				}
+
+				if (didUpdate) std::cout << "update\n";
+				else std::cout << "DID NOT UPDATE***************\n";
+
+				// Reduce the delay by one frame for all delayed statuses
+				for (int i = 0; i < thisPeer->remoteDelayedPlayerStatuses.size(); i++)
+				{
+					if (thisPeer->remoteDelayedPlayerStatuses.at(i).appliedDelay > 0) thisPeer->remoteDelayedPlayerStatuses.at(i).appliedDelay -= 1;
 				}
 
 			}
