@@ -37,10 +37,11 @@ enum class NetworkTechnique
 class NetworkPeer : public net::Peer<MsgTypes>
 {
 public:
+
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced; // Both players are synced when they connect by default
-		currentNetworkTechnique = NetworkTechnique::InputDelay;
+		currentNetworkTechnique = NetworkTechnique::Rollback;
 		useDynamicDelay = true;
 	}
 
@@ -84,6 +85,19 @@ public:
 		int appliedDelay = 0; // Amount of delay the remote applied to this frame status on their local machine. Use for remote input delay calculation
 	};
 
+	// When using rollback, the frames will be stored as a FrameStatus struct so that the game can recalculate up to the current frame based on the contents of these frames
+	struct FrameStatus
+	{
+		PlayerStatus localStatus;
+		PlayerStatus remoteStatus;
+
+		int p1_Health;
+		int p1_PosX;
+
+		int p2_Health;
+		int p2_PosX;
+	};
+
 	// Change the player status 
 	void Pressed_A();
 	void Pressed_D();
@@ -99,6 +113,8 @@ public:
 
 	void SendPlayerStatus(PlayerStatus & status);
 
+	void Rollback_Save(); // In charge of making sure we dont overcap the rollback frames amount set
+
 protected:
 	// Called when a client connects to this peer
 	virtual bool OnPeerConnect();
@@ -109,20 +125,26 @@ protected:
 
 public:
 
+	NetworkTechnique currentNetworkTechnique; 
+
+	SyncState currentSyncState;
+
 	PlayerStatus remotePlayerStatus; // Contains the information on the inputs from the remote player for this frame to be applied locally
 	PlayerStatus localPlayerStatus; // Contains the information on the inputs from the local player for this frame to be sent to remote
+
+	// Input delayed double ended queues
 	std::deque<PlayerStatus> delayedPlayerStatuses; // When using input delay, the localPlayerStatus will be stored in these delayed statuses and execute after DELAY_FRAMES have passed
 	std::deque<PlayerStatus> remoteDelayedPlayerStatuses; // If we should delay a remote status because it arrived earlier than the remote expected 
-	SyncState currentSyncState;
-	NetworkTechnique currentNetworkTechnique;
+
+	std::deque<FrameStatus> rollbackFrames; // Structure that stores up to ROLLBACK_FRAMES amount of frame information 
 
 	bool peerDisconnected = false;
 	bool receivedRemoteUpdateThisFrame = false; // Has the local player received a player status received message this frame?
 	bool localInputThisFrame = false; // To save on bandwith when not using lockstep, only send 
 
-	float localHP = 100;
-	float localPosX = 0;
-	float remoteHP = 100;
-	float remotePosX = 0;
+	int localHP = 100;
+	int localPosX = 0;
+	int remoteHP = 100;
+	int remotePosX = 0;
 };
 

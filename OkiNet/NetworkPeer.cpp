@@ -122,6 +122,32 @@ void NetworkPeer::Pressed_W()
 	localInputThisFrame = true;
 }
 
+void NetworkPeer::Rollback_Save()
+{
+	// Cache this frame's state
+	FrameStatus currentStatus;
+
+	currentStatus.localStatus = localPlayerStatus;
+	currentStatus.remoteStatus = remotePlayerStatus;
+
+	currentStatus.p1_Health = localHP;
+	currentStatus.p1_PosX = localPosX;
+
+	currentStatus.p2_Health = remoteHP;
+	currentStatus.p2_PosX = remotePosX;
+
+	// Save the frame information
+	if (rollbackFrames.size() < ROLLBACK_FRAMES)
+	{
+		rollbackFrames.push_back(currentStatus);
+	}
+	else // If we go above the rollback budgetted frames, pop one out so we can save this one
+	{
+		rollbackFrames.pop_front();
+		rollbackFrames.push_back(currentStatus);
+	}	
+}
+
 bool NetworkPeer::OnPeerConnect()
 {
 	return true;
@@ -157,12 +183,13 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 	{
 		std::cout << "State request from peer.\n";
 		// Check their local state for ourselves
-		float _remoteHP;
-		float _remotePosX;
+		int _remoteHP;
+		int _remotePosX;
 		msg >> _remotePosX >> _remoteHP;
 
-		if (remoteHP > _remoteHP || remoteHP < _remoteHP) currentSyncState = SyncState::Desync_HP;
-		if (remotePosX > _remotePosX || remotePosX < _remotePosX)
+		// Check the state
+		if (remoteHP != _remoteHP) currentSyncState = SyncState::Desync_HP;
+		if (remotePosX != _remotePosX)
 		{
 			if (currentSyncState == SyncState::Desync_HP) currentSyncState = SyncState::Desync_HPandPos;
 			else currentSyncState = SyncState::Desync_Pos;
@@ -173,7 +200,7 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 			if (currentSyncState == SyncState::Desync_HP) std::cout << "Health Points State desynced!\n";
 			if (currentSyncState == SyncState::Desync_Pos)
 			{
-				float difference = remotePosX - _remotePosX;
+				int difference = remotePosX - _remotePosX;
 				std::cout << "Position State desynced by " << difference << " units!\n";
 			}
 			if (currentSyncState == SyncState::Desync_HPandPos) std::cout << "Both HP and Position State desynced!\n";
@@ -196,8 +223,8 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 	{
 		std::cout << "State answer from peer.\n";
 		// Check their local state for ourselves
-		float _remoteHP;
-		float _remotePosX;
+		int _remoteHP;
+		int _remotePosX;
 		msg >> _remotePosX >> _remoteHP;
 
 		// Check the state
@@ -213,7 +240,7 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 			if (currentSyncState == SyncState::Desync_HP) std::cout << "Health Points State desynced!\n";
 			if (currentSyncState == SyncState::Desync_Pos)
 			{
-				float difference = remotePosX - _remotePosX;
+				int difference = remotePosX - _remotePosX;
 				std::cout << "Position State desynced by " << difference << " units!\n";
 			}
 			if (currentSyncState == SyncState::Desync_HPandPos) std::cout << "Both HP and Position State desynced!\n";
@@ -248,12 +275,12 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 			// If the difference of the ping and the input delay is negative, it means we need to move up the delay
 			if (delayFrames < 0)
 			{
-				delayFrames = 0; // As we should have been lockstepping/halting update, we can assume 0 delay and the new delay time
+				delayFrames = 0; // As we should have been lockstepping/halting update, we can assume 0 local delay
 			}
 
 			std::cout << "Their local delay: " << newRemoteStatus.appliedDelay << "f. The ping: " << lagDiff << "ms. Our applied delay: " << delayFrames << "f. Amount of remote statuses: " << remoteDelayedPlayerStatuses.size() << ".\n";
+		
 			newRemoteStatus.appliedDelay = delayFrames;
-
 
 			remoteDelayedPlayerStatuses.push_back(newRemoteStatus);
 		}

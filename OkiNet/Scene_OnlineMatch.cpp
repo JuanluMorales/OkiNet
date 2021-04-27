@@ -444,14 +444,11 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	}
 	sf::String netTech;
 	if (localPlayer.GetNetworkTechnique() == NetworkTechnique::None) netTech = "None";
-	else
-		if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep) netTech = "Det. Lockstep";
-		else
-			if (localPlayer.GetNetworkTechnique() == NetworkTechnique::InputDelay) netTech = "Input Delay";
-			else
-				if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
+	else if (localPlayer.GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep) netTech = "Det. Lockstep";
+	else if (localPlayer.GetNetworkTechnique() == NetworkTechnique::InputDelay) netTech = "Input Delay";
+	else if (localPlayer.GetNetworkTechnique() == NetworkTechnique::Rollback) netTech = "Rollback";
 
-	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: " + std::to_string(localPlayer.GetCurrentDelayFrames()) +"f\nRollBack Frames: " + std::to_string(thisPeer->ROLLBACK_FRAMES) + "f\n");
+	sf::String debugOutput = sf::String("[DEBUG]\nSync: HP: " + hpSync + ",Pos: " + posSync + "\nNetwork Technique: " + netTech + "\nDelay Frames: " + std::to_string(localPlayer.GetCurrentDelayFrames()) + "f\nRollBack Frames: " + std::to_string(thisPeer->ROLLBACK_FRAMES) + "f\n");
 	DebugText.setString(debugOutput);
 
 }

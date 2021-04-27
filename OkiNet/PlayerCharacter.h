@@ -9,8 +9,8 @@ class PlayerCharacter : public SpriteBase
 public:
 	enum class PlayerID { PlayerOne, PlayerTwo };
 	enum class PlayerState { Alive, Dead, Hurt };
-	float currentHealthPoints; //Current health 
-	float currentEnergyPoints;
+	int currentHealthPoints; //Current health 
+	int currentEnergyPoints;
 	enum class MoveState { Idle, Left, Right, DashL, DashR };
 	bool CanGoLeft; //Allows the player to move left 
 	bool CanGoRight;
@@ -94,8 +94,8 @@ private:
 
 	bool grounded; //Sets the player able to jump when true
 
-	const float maxHealthPoints = 100; //Total hit points the player can suffer before dying
-	const float maxEnergyPoints = 100;
+	const int maxHealthPoints = 100; //Total hit points the player can suffer before dying
+	const int maxEnergyPoints = 100;
 
 	bool CharacterSetUp; // Is the character ready for game rendering and updating?
 
@@ -109,7 +109,10 @@ private:
 	// input delay
 	int remoteFrameWaitCounter = 0; // Tracks the frame we have waited to receive further notice of the remote player for input delay purposes
 	int localInputDelayCounter = 0; // Helper to track the current frames we have waited until delay input can be executed
-	int FRAME_DELAY = 1; //Tracks the frames to delay the input
+	int FRAME_DELAY = 0; //Tracks the frames to delay the input
+
+	// Rollback counters and timers/helpers
+	int rollbackBlockCounter = 0; // When rollbackBlockCounter == RollbackFrames.size(), it means we can no longer keep predicting the remote status and we must lockstep
 
 	bool pingRequestThisFrame = false; // Helper for input to act as button
 	bool syncStateRequestThisFrame = false; // Same as ping

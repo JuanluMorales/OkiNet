@@ -88,7 +88,7 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 	playerID = id;
 	isLocalCharacter ? networkAuthority = NetworkAuthority::Local : networkAuthority = NetworkAuthority::Remote;
 	// Use the dynamic delay or the fixed delay
-	thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
+	if(thisPeer->currentNetworkTechnique == NetworkTechnique::InputDelay) thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
 
 	// Assign the corresponding graphics to each player 
 	if (id == PlayerID::PlayerOne)
@@ -116,12 +116,12 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 	if (isLocalCharacter)
 	{
 		thisPeer->localHP = currentHealthPoints;
-		thisPeer->localPosX = getPosition().x;
+		thisPeer->localPosX = static_cast<int>(getPosition().x);
 	}
 	else
 	{
 		thisPeer->remoteHP = currentHealthPoints;
-		thisPeer->remotePosX = getPosition().x;
+		thisPeer->remotePosX = static_cast<int>(getPosition().x);
 	}
 
 	// Setup Animations
@@ -135,7 +135,7 @@ void PlayerCharacter::UpdateNetworkState()
 	thisPeer->Update();
 	// Pass the info on local player state
 	thisPeer->localHP = currentHealthPoints;
-	thisPeer->localPosX = getPosition().x;
+	thisPeer->localPosX = static_cast<int>(getPosition().x);
 }
 
 //Manages the movement and animation of the player
@@ -192,6 +192,32 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 
 			} while (lockstepCount > 0);
 		}
+		else if (GetNetworkTechnique() == NetworkTechnique::Rollback)
+		{
+			// Send our state
+			thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
+			// Listen for new messages
+			while (!HasReceivedRemoteUpdateThisFrame())
+			{
+				// Make sure we listen to the network messages
+				UpdateNetworkState();
+			}
+
+			//if (!HasReceivedRemoteUpdateThisFrame())
+			//{
+			//	// TODO: Predict based on previous frames input what the enemy player should be doing and keep going while we dont go over our rollback budget
+			//	while (rollbackBlockCounter < thisPeer->ROLLBACK_FRAMES)
+			//	{
+
+			//	}
+			//	// // while(!ROLLBACK_PREDICT())
+			//	// Make sure we listen to the network messages
+			//	UpdateNetworkState();
+			//}
+			
+			// Save the frame state
+			thisPeer->Rollback_Save();
+		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
 		{
 			// Send our state
@@ -208,7 +234,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	{
 		// Pass the info on local image of the remote player state
 		thisPeer->remoteHP = currentHealthPoints;
-		thisPeer->remotePosX = getPosition().x;
+		thisPeer->remotePosX = static_cast<int>(getPosition().x);
 	}
 
 	// Check local damage and life status
@@ -1140,18 +1166,18 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			if (!receivedDamage)
 			{
 				// Modify damage receive behaviour based on type of attack
-				float modifier = 0.0f;
+				int modifier = 0;
 				if (collResponse->s2anim->GetID() == anim_fastPunch.GetID() || collResponse->s2anim->GetID() == anim_fastkick.GetID())
 				{
-					modifier = 1.0f;
+					modifier = 1;
 				}
 				if (collResponse->s2anim->GetID() == anim_heavyPunch.GetID() || collResponse->s2anim->GetID() == anim_heavyKick.GetID())
 				{
-					modifier = 3.0f;
+					modifier = 3;
 				}
 				if (collResponse->s2anim->GetID() == anim_dragonPunch.GetID())
 				{
-					modifier = 4.f;
+					modifier = 4;
 				}
 
 				currentHealthPoints -= 10 * modifier;
@@ -1168,20 +1194,20 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			{
 
 				// Modify energy damage receive behaviour based on type of attack
-				float modifier = 0.0f;
+				int modifier = 0;
 				if (collResponse->s2anim->GetID() == anim_fastPunch.GetID() || collResponse->s2anim->GetID() == anim_fastkick.GetID())
 				{
-					modifier = 1.0f;
+					modifier = 1;
 				}
 				if (collResponse->s2anim->GetID() == anim_heavyPunch.GetID() || collResponse->s2anim->GetID() == anim_heavyKick.GetID())
 				{
-					modifier = 2.0f;
+					modifier = 2;
 				}
 				if (collResponse->s2anim->GetID() == anim_dragonPunch.GetID())
 				{
-					modifier = 5.0f;
+					modifier = 5;
 				}
-				currentEnergyPoints -= 10 * modifier * 1.25f;
+				currentEnergyPoints -= 10 * modifier;
 				if (currentEnergyPoints <= 0)
 				{
 					receivedDamage = true; // so we dont get hit through the broken guard
@@ -1190,7 +1216,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 					attackState = AttackState::None;
 					moveState = MoveState::Idle;
 				}
-				else frameAdvantage -= 2 * static_cast<int>(modifier);
+				else frameAdvantage -= 2 * modifier;
 				receivedGuardBox = true;
 				hitGuardBox = true;
 			}
@@ -1246,18 +1272,18 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			if (!receivedDamage)
 			{
 				// Modify damage receive behaviour based on type of attack
-				float modifier = 0.0f;
+				int modifier = 0;
 				if (collResponse->s1anim->GetID() == anim_fastPunch.GetID() || collResponse->s1anim->GetID() == anim_fastkick.GetID())
 				{
-					modifier = 1.0f;
+					modifier = 1;
 				}
 				if (collResponse->s1anim->GetID() == anim_heavyPunch.GetID() || collResponse->s1anim->GetID() == anim_heavyKick.GetID())
 				{
-					modifier = 3.0f;
+					modifier = 3;
 				}
 				if (collResponse->s1anim->GetID() == anim_dragonPunch.GetID())
 				{
-					modifier = 4.0f;
+					modifier = 4;
 				}
 
 				currentHealthPoints -= 10 * modifier;
@@ -1272,20 +1298,20 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			if (!receivedGuardBox)
 			{
 				// Modify energy damage receive behaviour based on type of attack
-				float modifier = 0.0f;
+				int modifier = 0.0f;
 				if (collResponse->s1anim->GetID() == anim_fastPunch.GetID() || collResponse->s1anim->GetID() == anim_fastkick.GetID())
 				{
-					modifier = 1.0f;
+					modifier = 1;
 				}
 				if (collResponse->s1anim->GetID() == anim_heavyPunch.GetID() || collResponse->s1anim->GetID() == anim_heavyKick.GetID())
 				{
-					modifier = 2.0f;
+					modifier = 2;
 				}
 				if (collResponse->s1anim->GetID() == anim_dragonPunch.GetID())
 				{
-					modifier = 5.0f;
+					modifier = 5;
 				}
-				currentEnergyPoints -= 10 * modifier * 1.25f;
+				currentEnergyPoints -= 10 * modifier;
 				if (currentEnergyPoints <= 0)
 				{
 					receivedDamage = true; // so we dont get hit through the broken guard
@@ -1294,7 +1320,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 					attackState = AttackState::None;
 					moveState = MoveState::Idle;
 				}
-				else frameAdvantage -= 2 * static_cast<int>(modifier);
+				else frameAdvantage -= 2 * modifier;
 				receivedGuardBox = true;
 				hitGuardBox = true;
 			}
