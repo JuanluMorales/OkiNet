@@ -194,8 +194,8 @@ void Scene_OfflineMatch::OverrideUpdate(float dt)
 		restartCounter++;
 	}
 
-	playerOne.Update(dt, window);
-	playerTwo.Update(dt, window);
+	playerOne.Update(dt, window, &playerTwo);
+	playerTwo.Update(dt, window, &playerOne);
 
 	// Update score text
 	p1ScoreText.setString(std::to_string(p1Score));

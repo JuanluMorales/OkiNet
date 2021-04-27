@@ -299,8 +299,8 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 	remotePlayerConnected = thisPeer->IsConnected();
 
 	// Update players, if connection fails go back to menu
-	localPlayer.Update(dt, window);
-	if (remotePlayerConnected) remotePlayer.Update(dt, window);
+	localPlayer.Update(dt, window, &remotePlayer);
+	if (remotePlayerConnected) remotePlayer.Update(dt, window, &localPlayer);
 
 	if (localPlayer.currentHealthPoints <= 0 || remotePlayer.currentHealthPoints <= 0)
 	{

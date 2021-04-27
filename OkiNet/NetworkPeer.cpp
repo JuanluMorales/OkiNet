@@ -129,11 +129,21 @@ void NetworkPeer::Rollback_Predict()
 	predictedRemoteStatuses.push_back(remotePlayerStatus);
 }
 
-int NetworkPeer::Rollback_Restore()
+void NetworkPeer::Rollback_Restore()
 {
-	int frameNum = 0;
+	// How many frames we are ahead
+	int rollbackAmount = static_cast<int>(predictedRemoteStatuses.size() + dynamicDelayFrames);
 
-	return frameNum;
+	// find the incorrect frame
+	int rollbackPos = static_cast<int>(rollbackFrames.size() - rollbackAmount);
+
+	// restore that frame
+	localPlayerStatus = rollbackFrames.at(rollbackPos).localStatus;
+	// remotePlayerStatus = rollbackFrames.at(rollbackPos).remoteStatus; // we dont change remote as we want to keep the data received from the peer
+	localHP = rollbackFrames.at(rollbackPos).p1_Health;
+	localPosX = rollbackFrames.at(rollbackPos).p1_PosX;
+	remoteHP = rollbackFrames.at(rollbackPos).p2_Health;
+	remotePosX = rollbackFrames.at(rollbackPos).p2_PosX;
 }
 
 void NetworkPeer::Rollback_Save()

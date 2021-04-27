@@ -29,13 +29,15 @@ public:
 	const int GetCurrentDelayFrames() { return FRAME_DELAY; }
 
 
-	void Update(float dt, sf::Window* wnd); // Update states and apply transformations
+	void Update(float dt, sf::Window* wnd, PlayerCharacter* playerTwo); // Update states and apply transformations, needs a reference to the other local player for rollback purposes
 	void UpdateNetworkState();
 
 	void HandleInput(InputManager* input, float dt); // Register input
 	void HandleRemotePlayerInput(InputManager* input, float dt); // update the remote player input based on the network state
 	void ExecuteInput(); // Updates states and positions based on the input information registered on HandleInput()
 	void ExecuteRemoteInput(); // Update local states for the local representation of the remote player
+
+	void ResimulateFrame(); // Resimulate the frame when using rollback
 
 	Animation* GetCurrentAnimation() { return currentAnim; }; // Return the animation currently being played
 	std::vector<CollisionBox*> GetCurrentCollision() { return currentAnim->GetCurrentBoxes(); }; // Returns a vector of hitboxes for the frame
@@ -49,7 +51,7 @@ private:
 	void HandleAnimation(float dt); // Update animation state
 	void SetUpAnimationFrames(); // Encapsulate the frame setup for the animations (animation frames + collision boxes)
 
-	void PushPlayer(sf::Vector2f distance, float dt);
+	void PushPlayer(sf::Vector2f distance);
 
 	int moveDistance; // Amount of distance moved while walking
 	int dashDistance; // Dash translation factor

@@ -139,7 +139,7 @@ void PlayerCharacter::UpdateNetworkState()
 }
 
 //Manages the movement and animation of the player
-void PlayerCharacter::Update(float dt, sf::Window* wnd)
+void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerTwo)
 {
 	// Update network component (send our state then listen)
 	if (networkAuthority == NetworkAuthority::Local && thisPeer->IsConnected())
@@ -220,8 +220,15 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 						UpdateNetworkState();
 					} while (HasReceivedRemoteUpdateThisFrame());
 
+
+
 					// When we roll out of lockstep, we must reconcile the predicted states with the received new state 
 					// Rollback to the first incorrect frame
+					// Update the local status for both players
+					// TODO:
+
+					// Clear the predictions
+					thisPeer->predictedRemoteStatuses.clear();
 				}
 			}
 			else
@@ -229,24 +236,32 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 				// If we have predicted statuses, it means we need to rollback
 				if (thisPeer->predictedRemoteStatuses.size() > 0)
 				{
-					std::cout << "Rollback in progres. Rolling back: " << thisPeer->predictedRemoteStatuses.size() << " for a " << thisPeer->dynamicDelayFrames << "f delayed message\n";
+					std::cout << "Rollback in progress. Rolling back: " << thisPeer->predictedRemoteStatuses.size() << "frames for a " << thisPeer->dynamicDelayFrames << "frames delayed message\n";
+
 					// Find the first incorrect frame
-					int framesToResimulate = thisPeer->Rollback_Restore();
+					thisPeer->Rollback_Restore();
+
+					int framesToResimulate = static_cast<int>(thisPeer->predictedRemoteStatuses.size() + thisPeer->dynamicDelayFrames);
 
 					// Resimulate up to now again
 					for (int i = 0; i < framesToResimulate; i++)
 					{
 						// do as many update cycles as needed to catch up/resimulate up to the current frame
+						ResimulateFrame();
+						playerTwo->ResimulateFrame();
+
 					}
 
 					// Clear the predictions
 					thisPeer->predictedRemoteStatuses.clear();
-					
+
+				}
+				else
+				{
+					ExecuteInput();
+					playerTwo->ExecuteRemoteInput();
 				}
 			}
-
-			// Update the local status for both players
-			ExecuteInput();
 
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
@@ -267,12 +282,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		thisPeer->remoteHP = currentHealthPoints;
 		thisPeer->remotePosX = static_cast<int>(getPosition().x);
 
-		// Move and update the local status if using rollback
-		if (thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
-		{
-			ExecuteRemoteInput();
-		}
-
 		thisPeer->ResetRemotePlayerStatus();
 
 	}
@@ -280,14 +289,14 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 	// Check local damage and life status
 	if (receivedDamage)
 	{
-		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
+		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0));
 		playerState = PlayerState::Hurt;
 		moveState = MoveState::Idle;
 		attackState = AttackState::None;
 	}
 	else if (hitGuardBox)
 	{
-		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0), dt);
+		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0));
 		moveState = MoveState::Idle;
 		attackState = AttackState::Defend;
 	}
@@ -1273,6 +1282,46 @@ void PlayerCharacter::ExecuteRemoteInput()
 	}
 }
 
+void PlayerCharacter::ResimulateFrame()
+{
+	//Check and apply the inputs
+	if (networkAuthority == NetworkAuthority::Local)
+	{
+		ExecuteInput();
+	}
+	else if (networkAuthority == NetworkAuthority::Remote)
+	{
+		ExecuteRemoteInput();
+	}
+
+	// Check local damage and life status
+	if (receivedDamage)
+	{
+		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0));
+		playerState = PlayerState::Hurt;
+		moveState = MoveState::Idle;
+		attackState = AttackState::None;
+	}
+	else if (hitGuardBox)
+	{
+		PushPlayer(sf::Vector2f(static_cast<float>(smallPushDistance), 0));
+		moveState = MoveState::Idle;
+		attackState = AttackState::Defend;
+	}
+	else
+	{
+		if (currentHealthPoints <= 0)
+		{
+			playerState = PlayerState::Dead;
+			moveState = MoveState::Idle;
+			attackState = AttackState::None;
+
+			shouldAcceptInput = false;
+		}
+		else playerState = PlayerState::Alive;
+	}
+}
+
 void PlayerCharacter::HandleAnimation(float dt)
 {
 	// Remember the animation class of the flip state of the sprite
@@ -1817,7 +1866,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	currentAnim = &anim_idle;
 }
 
-void PlayerCharacter::PushPlayer(sf::Vector2f distance, float dt)
+void PlayerCharacter::PushPlayer(sf::Vector2f distance)
 {
 	if (flipped)
 	{

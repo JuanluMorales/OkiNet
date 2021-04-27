@@ -91,11 +91,11 @@ public:
 		PlayerStatus localStatus;
 		PlayerStatus remoteStatus;
 
-		int p1_Health;
-		int p1_PosX;
+		int p1_Health = 100;
+		int p1_PosX = 0;
 
-		int p2_Health;
-		int p2_PosX;
+		int p2_Health = 100;
+		int p2_PosX = 0;
 	};
 
 	// Change the player status 
@@ -115,7 +115,7 @@ public:
 
 	void Rollback_Save(); // In charge of making sure we dont overcap the rollback frames amount set
 	void Rollback_Predict(); // Predicts what the remote status for this frame will be based on previous frames stored in rollbackFrames
-	int Rollback_Restore(); // Searches for the first incorrect frame and sets our current frame to that frame. Returns the number of frames to resimulate up to the current one
+	void Rollback_Restore(); // Searches for the first incorrect frame and sets our current frame to that frame. Returns the number of frames to resimulate up to the current one
 protected:
 	// Called when a client connects to this peer
 	virtual bool OnPeerConnect();
