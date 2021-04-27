@@ -240,30 +240,20 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 
 		if (currentNetworkTechnique == NetworkTechnique::InputDelay)
 		{
-			if (useDynamicDelay)
+			// calculate the time we should delay the remote input locally
+			int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+			int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
+			dynamicDelayFrames = lagDiff; // Update the dynamic delay
+
+			std::cout << "Their local delay: " << newRemoteStatus.appliedDelay << "f. The ping: " << lagDiff << "ms. Our applied delay: " << delayFrames << "f. Amount of remote statuses: " << remoteDelayedPlayerStatuses.size() << ".\n";
+			newRemoteStatus.appliedDelay = delayFrames;
+
+			// If the difference of the ping and the input delay is negative, it means we need to move up the delay
+			if (delayFrames < 0)
 			{
-				// calculate the time we should delay the remote input locally
-				int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
-				int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
-				dynamicDelayFrames = lagDiff;
-
-				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << " Remote Statuses: " << remoteDelayedPlayerStatuses.size() << "f.\n";
-				newRemoteStatus.appliedDelay = delayFrames;
-
+				
 			}
-			else
-			{
-				// calculate the time we should delay the remote input locally
-				int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
-				int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
-
-				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << " Remote Statuses: " << remoteDelayedPlayerStatuses.size() << "f.\n";
-				newRemoteStatus.appliedDelay = delayFrames;
-			}
-
-			// Add the remote status to the list of delayed statuses
 			remoteDelayedPlayerStatuses.push_back(newRemoteStatus);
-
 		}
 		else
 		{
