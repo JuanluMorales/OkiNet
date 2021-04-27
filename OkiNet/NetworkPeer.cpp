@@ -242,11 +242,14 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		{
 			if (useDynamicDelay)
 			{
-				// Calculate the frames to delay based on ping
-				int lastFrameDelay = dynamicDelayFrames;
-
-				dynamicDelayFrames = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+				// calculate the time we should delay the remote input locally
+				int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+				int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
+				dynamicDelayFrames = lagDiff;
 				if (dynamicDelayFrames == 0) dynamicDelayFrames = 1;
+
+				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << " Remote Statuses: " << remoteDelayedPlayerStatuses.size() << "f.\n";
+				newRemoteStatus.appliedDelay = delayFrames;
 
 				//// shave unneeded messages over the delay count
 				//if (!IsMessageListEmpty())
