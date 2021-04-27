@@ -202,66 +202,95 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 			// Save the frame state
 			thisPeer->Rollback_Save(); // We save the frame even if the remote data is wrong (we have no update from it) as we will later check for discrepancies with the new remote updates
 
-			// Check if we received a remote player state message this frame
+
+			// in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
 			if (!HasReceivedRemoteUpdateThisFrame())
 			{
-
-				// in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
 				// Assume whatever the player was doing, will keep doing (naive aproach) 
 				thisPeer->Rollback_Predict();
 
-				// if we predicted more frames than our rollback frames budget or we did not receive any messages to predict with
-				if (thisPeer->predictedRemoteStatuses.size() >= thisPeer->rollbackFrames.size())
-				{
-					// Enter lockstep
-					do
-					{
-						std::cout << "Entered rollback lockstep!\n";
-						UpdateNetworkState();
-					} while (HasReceivedRemoteUpdateThisFrame());
-
-
-
-					// When we roll out of lockstep, we must reconcile the predicted states with the received new state 
-					// Rollback to the first incorrect frame
-					// Update the local status for both players
-					// TODO:
-
-					// Clear the predictions
-					thisPeer->predictedRemoteStatuses.clear();
-				}
 			}
-			else
+
+			ExecuteInput();
+			playerTwo->ExecuteRemoteInput();
+
+			// If we have predicted (it will probably be wrong) we need to rollback when we get updates from remote
+			if (HasReceivedRemoteUpdateThisFrame() && thisPeer->predictedRemoteStatuses.size() > 0)
 			{
-				// If we have predicted statuses, it means we need to rollback
-				if (thisPeer->predictedRemoteStatuses.size() > 0)
-				{
-					std::cout << "Rollback in progress. Rolling back: " << thisPeer->predictedRemoteStatuses.size() << "frames for a " << thisPeer->dynamicDelayFrames << "frames delayed message\n";
+				// Rollback----
+				// Find the first incorrect frame and restore the state to that frame
+				thisPeer->Rollback_Restore();
 
-					// Find the first incorrect frame
-					thisPeer->Rollback_Restore();
+				int framesToResimulate = static_cast<int>(thisPeer->predictedRemoteStatuses.size() + thisPeer->dynamicDelayFrames);
+				std::cout << "Rolling back: " << framesToResimulate << "frames out of " << thisPeer->rollbackFrames.size() << " available rollback frames.\n";
 
-					int framesToResimulate = static_cast<int>(thisPeer->predictedRemoteStatuses.size() + thisPeer->dynamicDelayFrames);
+				//// Resimulate up to now again
+				//for (int i = 0; i < framesToResimulate; i++)
+				//{
+				//	// do as many update cycles as needed to catch up/resimulate up to the current frame
+				//	ResimulateFrame();
+				//	playerTwo->ResimulateFrame();
 
-					// Resimulate up to now again
-					for (int i = 0; i < framesToResimulate; i++)
-					{
-						// do as many update cycles as needed to catch up/resimulate up to the current frame
-						ResimulateFrame();
-						playerTwo->ResimulateFrame();
+				//}
 
-					}
+				//// Clear the predictions
+				//thisPeer->predictedRemoteStatuses.clear();
 
-					// Clear the predictions
-					thisPeer->predictedRemoteStatuses.clear();
-
-				}
-				else
-				{
-					ExecuteInput();
-					playerTwo->ExecuteRemoteInput();
-				}
+				//// Clear the predicted statuses as we no longer need them
+				thisPeer->predictedRemoteStatuses.clear();
 			}
+
+
+
+
+			//// Check if we received a remote player state message this frame
+			//if (!HasReceivedRemoteUpdateThisFrame())
+			//{
+			//	// in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
+			//	// Assume whatever the player was doing, will keep doing (naive aproach) 
+			//	thisPeer->Rollback_Predict();
+			//	// if we predicted more frames than our rollback frames budget or we did not receive any messages to predict with
+			//	if (thisPeer->predictedRemoteStatuses.size() >= thisPeer->rollbackFrames.size())
+			//	{
+			//		// Enter lockstep
+			//		do
+			//		{
+			//			std::cout << "Entered rollback lockstep!\n";
+			//			UpdateNetworkState();
+			//		} while (HasReceivedRemoteUpdateThisFrame());
+			//		// When we roll out of lockstep, we must reconcile the predicted states with the received new state 
+			//		// Rollback to the first incorrect frame
+			//		// Update the local status for both players
+			//		// TODO:
+			//		// Clear the predictions
+			//		thisPeer->predictedRemoteStatuses.clear();
+			//	}
+			//}
+			//else
+			//{
+			//	// If we have predicted statuses, it means we need to rollback
+			//	if (thisPeer->predictedRemoteStatuses.size() > 0)
+			//	{
+			//		std::cout << "Rollback in progress. Rolling back: " << thisPeer->predictedRemoteStatuses.size() << "frames for a " << thisPeer->dynamicDelayFrames << "frames delayed message\n";
+			//		// Find the first incorrect frame
+			//		thisPeer->Rollback_Restore();
+			//		int framesToResimulate = static_cast<int>(thisPeer->predictedRemoteStatuses.size() + thisPeer->dynamicDelayFrames);
+			//		// Resimulate up to now again
+			//		for (int i = 0; i < framesToResimulate; i++)
+			//		{
+			//			// do as many update cycles as needed to catch up/resimulate up to the current frame
+			//			ResimulateFrame();
+			//			playerTwo->ResimulateFrame();
+			//		}
+			//		// Clear the predictions
+			//		thisPeer->predictedRemoteStatuses.clear();
+			//	}
+			//	else
+			//	{
+			//		ExecuteInput();
+			//		playerTwo->ExecuteRemoteInput();
+			//	}
+			//}
 
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
@@ -281,8 +310,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		// Pass the info on local image of the remote player state
 		thisPeer->remoteHP = currentHealthPoints;
 		thisPeer->remotePosX = static_cast<int>(getPosition().x);
+		//ExecuteRemoteInput();
 
-		thisPeer->ResetRemotePlayerStatus();
+
 
 	}
 
@@ -1083,11 +1113,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				}
 			}
 		}
-		else if (thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
-		{
-			// Do nothing, just wait for the status to be applied on ExecuteRemoteInput()
-		}
-		else
+		else if (thisPeer->currentNetworkTechnique == NetworkTechnique::None || thisPeer->currentNetworkTechnique == NetworkTechnique::DeterministicLockstep)
 		{
 			// Defend
 			if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
@@ -1150,6 +1176,8 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 			}
 		}
+
+		if(thisPeer->currentNetworkTechnique != NetworkTechnique::Rollback) thisPeer->ResetRemotePlayerStatus();
 	}
 }
 
@@ -1220,7 +1248,6 @@ void PlayerCharacter::ExecuteInput()
 
 void PlayerCharacter::ExecuteRemoteInput()
 {
-
 	// Defend
 	if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
 	{
@@ -1288,10 +1315,12 @@ void PlayerCharacter::ResimulateFrame()
 	if (networkAuthority == NetworkAuthority::Local)
 	{
 		ExecuteInput();
+		thisPeer->ResetLocalPlayerStatus();
 	}
 	else if (networkAuthority == NetworkAuthority::Remote)
 	{
 		ExecuteRemoteInput();
+		thisPeer->ResetRemotePlayerStatus();
 	}
 
 	// Check local damage and life status
