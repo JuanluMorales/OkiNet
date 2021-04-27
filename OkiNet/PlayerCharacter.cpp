@@ -230,8 +230,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			}
 
 			// Update the local status for both players
-			if (networkAuthority == NetworkAuthority::Local) ExecuteInput();
-			else if (networkAuthority == NetworkAuthority::Remote) ExecuteRemoteInput();
+			ExecuteInput();
 
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
@@ -242,7 +241,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			UpdateNetworkState();
 		}
 
-		thisPeer->ResetRemotePlayerStatus();
 		thisPeer->ResetLocalPlayerStatus();
 	}
 
@@ -252,6 +250,12 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		// Pass the info on local image of the remote player state
 		thisPeer->remoteHP = currentHealthPoints;
 		thisPeer->remotePosX = static_cast<int>(getPosition().x);
+
+		// Move and update the local status if using rollback
+		if (thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
+		{
+			ExecuteRemoteInput();
+		}
 	}
 
 	// Check local damage and life status
@@ -1185,6 +1189,8 @@ void PlayerCharacter::ExecuteInput()
 		moveState = MoveState::Idle;
 
 	}
+
+
 }
 
 void PlayerCharacter::ExecuteRemoteInput()
