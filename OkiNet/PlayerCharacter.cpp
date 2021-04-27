@@ -206,13 +206,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			if (!HasReceivedRemoteUpdateThisFrame())
 			{
 
-				// If we have not, in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
-				// 
-				// TODO: Predict based on previous frames input what the enemy player should be doing and keep going while we dont go over our rollback budget
-				// Assume whatever the player was doing, will keep doing -> naive aproach 
-				// PlayerStatus newPredictedStatus = thisPeer->PredictRemoteStatus();
-				// remotePlayerStatus = newPredictedStatus
-				std::cout << "PREDICTED!\n";
+				// in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
+				// Assume whatever the player was doing, will keep doing (naive aproach) 
+				thisPeer->Rollback_Predict();
 
 				// if we predicted more frames than our rollback frames budget or we did not receive any messages to predict with
 				if (thisPeer->predictedRemoteStatuses.size() >= thisPeer->rollbackFrames.size())
@@ -226,6 +222,26 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 
 					// When we roll out of lockstep, we must reconcile the predicted states with the received new state 
 					// Rollback to the first incorrect frame
+				}
+			}
+			else
+			{
+				// If we have predicted statuses, it means we need to rollback
+				if (thisPeer->predictedRemoteStatuses.size() > 0)
+				{
+					std::cout << "Rollback in progres. Rolling back: " << thisPeer->predictedRemoteStatuses.size() << " for a " << thisPeer->dynamicDelayFrames << "f delayed message\n";
+					// Find the first incorrect frame
+					int framesToResimulate = thisPeer->Rollback_Restore();
+
+					// Resimulate up to now again
+					for (int i = 0; i < framesToResimulate; i++)
+					{
+						// do as many update cycles as needed to catch up/resimulate up to the current frame
+					}
+
+					// Clear the predictions
+					thisPeer->predictedRemoteStatuses.clear();
+					
 				}
 			}
 

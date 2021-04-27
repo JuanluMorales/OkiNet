@@ -122,6 +122,20 @@ void NetworkPeer::Pressed_W()
 	localInputThisFrame = true;
 }
 
+void NetworkPeer::Rollback_Predict()
+{
+	// grab last frame's remote input and apply it to this frame's input
+	remotePlayerStatus = rollbackFrames.back().remoteStatus;
+	predictedRemoteStatuses.push_back(remotePlayerStatus);
+}
+
+int NetworkPeer::Rollback_Restore()
+{
+	int frameNum = 0;
+
+	return frameNum;
+}
+
 void NetworkPeer::Rollback_Save()
 {
 	// Cache this frame's state
@@ -265,13 +279,13 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 
 		msg >> timeThen >> newRemoteStatus;
 
+		// calculate the time we should delay the remote input locally
+		int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
+		int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
+		dynamicDelayFrames = lagDiff; // Update the dynamic delay
+
 		if (currentNetworkTechnique == NetworkTechnique::InputDelay)
 		{
-			// calculate the time we should delay the remote input locally
-			int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
-			int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
-			dynamicDelayFrames = lagDiff; // Update the dynamic delay
-
 			// If the difference of the ping and the input delay is negative, it means we need to move up the delay
 			if (delayFrames < 0)
 			{
@@ -283,6 +297,10 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 			newRemoteStatus.appliedDelay = delayFrames;
 
 			remoteDelayedPlayerStatuses.push_back(newRemoteStatus);
+		}
+		else if (currentNetworkTechnique == NetworkTechnique::Rollback)
+		{
+			remotePlayerStatus = newRemoteStatus;
 		}
 		else
 		{

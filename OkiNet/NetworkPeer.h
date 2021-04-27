@@ -114,7 +114,8 @@ public:
 	void SendPlayerStatus(PlayerStatus & status);
 
 	void Rollback_Save(); // In charge of making sure we dont overcap the rollback frames amount set
-
+	void Rollback_Predict(); // Predicts what the remote status for this frame will be based on previous frames stored in rollbackFrames
+	int Rollback_Restore(); // Searches for the first incorrect frame and sets our current frame to that frame. Returns the number of frames to resimulate up to the current one
 protected:
 	// Called when a client connects to this peer
 	virtual bool OnPeerConnect();
