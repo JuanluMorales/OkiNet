@@ -298,15 +298,15 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 {
 	remotePlayerConnected = thisPeer->IsConnected();
 
+	// Update players, if connection fails go back to menu
+	localPlayer.Update(dt, window);
+	if (remotePlayerConnected) remotePlayer.Update(dt, window);
+
 	if (localPlayer.currentHealthPoints <= 0 || remotePlayer.currentHealthPoints <= 0)
 	{
 		if (restartCounter >= restartTime) Restart();
 		restartCounter++;
 	}
-
-	// Update players, if connection fails go back to menu
-	localPlayer.Update(dt, window);
-	if (remotePlayerConnected) remotePlayer.Update(dt, window);
 
 	// Update score text
 	p1ScoreText.setString(std::to_string(p1Score));
