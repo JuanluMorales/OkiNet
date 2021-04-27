@@ -6,7 +6,7 @@ void NetworkPeer::ResetRemotePlayerStatus()
 	remotePlayerStatus.Dashed_A = false;
 	remotePlayerStatus.Pressed_D = false;
 	remotePlayerStatus.Dashed_D = false;
-	remotePlayerStatus.Pressed_S = false;
+	//remotePlayerStatus.Pressed_S = false;
 	remotePlayerStatus.Pressed_Q = false;
 	remotePlayerStatus.Pressed_E = false;
 	remotePlayerStatus.Pressed_W = false;

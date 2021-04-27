@@ -34,6 +34,8 @@ public:
 
 	void HandleInput(InputManager* input, float dt); // Register input
 	void HandleRemotePlayerInput(InputManager* input, float dt); // update the remote player input based on the network state
+	void ExecuteInput(); // Updates states and positions based on the input information registered on HandleInput()
+	void ExecuteRemoteInput(); // Update local states for the local representation of the remote player
 
 	Animation* GetCurrentAnimation() { return currentAnim; }; // Return the animation currently being played
 	std::vector<CollisionBox*> GetCurrentCollision() { return currentAnim->GetCurrentBoxes(); }; // Returns a vector of hitboxes for the frame

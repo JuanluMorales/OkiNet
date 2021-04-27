@@ -136,7 +136,9 @@ public:
 	std::deque<PlayerStatus> delayedPlayerStatuses; // When using input delay, the localPlayerStatus will be stored in these delayed statuses and execute after DELAY_FRAMES have passed
 	std::deque<PlayerStatus> remoteDelayedPlayerStatuses; // If we should delay a remote status because it arrived earlier than the remote expected 
 
+	// Rollback store
 	std::deque<FrameStatus> rollbackFrames; // Structure that stores up to ROLLBACK_FRAMES amount of frame information 
+	std::deque<PlayerStatus> predictedRemoteStatuses; // Holds the predictions made for the remote player when no updates received, cant be superior in size to rollbackFrames.size()
 
 	bool peerDisconnected = false;
 	bool receivedRemoteUpdateThisFrame = false; // Has the local player received a player status received message this frame?

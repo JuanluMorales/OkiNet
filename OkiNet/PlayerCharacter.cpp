@@ -88,7 +88,7 @@ void PlayerCharacter::InitNetworkedCharacter(PlayerID id, sf::Vector2f startPos,
 	playerID = id;
 	isLocalCharacter ? networkAuthority = NetworkAuthority::Local : networkAuthority = NetworkAuthority::Remote;
 	// Use the dynamic delay or the fixed delay
-	if(thisPeer->currentNetworkTechnique == NetworkTechnique::InputDelay) thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
+	if (thisPeer->currentNetworkTechnique == NetworkTechnique::InputDelay) thisPeer->useDynamicDelay ? FRAME_DELAY = thisPeer->dynamicDelayFrames : FRAME_DELAY = thisPeer->DELAY_FRAMES;
 
 	// Assign the corresponding graphics to each player 
 	if (id == PlayerID::PlayerOne)
@@ -194,29 +194,41 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::Rollback)
 		{
-			// Send our state
+			// Send our local state
 			thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
-			// Listen for new messages
-			while (!HasReceivedRemoteUpdateThisFrame())
+			// Update the remote state
+			UpdateNetworkState();
+
+			// Save the frame state
+			thisPeer->Rollback_Save(); // We save the frame even if the remote data is wrong (we have no update from it) as we will later check for discrepancies with the new remote updates
+
+			// Check if we received a remote player state message this frame
+			if (!HasReceivedRemoteUpdateThisFrame())
 			{
-				// Make sure we listen to the network messages
-				UpdateNetworkState();
+
+				// If we have not, in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
+				// 
+				// TODO: Predict based on previous frames input what the enemy player should be doing and keep going while we dont go over our rollback budget
+				// Assume whatever the player was doing, will keep doing -> naive aproach 
+				// PlayerStatus newPredictedStatus = thisPeer->PredictRemoteStatus();
+				// remotePlayerStatus = newPredictedStatus
+				std::cout << "PREDICTED!\n";
+
+				// if we predicted more frames than our rollback frames budget or we did not receive any messages to predict with
+				if (thisPeer->predictedRemoteStatuses.size() >= thisPeer->rollbackFrames.size())
+				{
+					// Enter lockstep
+					do
+					{
+						std::cout << "Entered rollback lockstep!\n";
+						UpdateNetworkState();
+					} while (HasReceivedRemoteUpdateThisFrame());
+
+					// When we roll out of lockstep, we must reconcile the predicted states with the received new state 
+					// Rollback to the first incorrect frame
+				}
 			}
 
-			//if (!HasReceivedRemoteUpdateThisFrame())
-			//{
-			//	// TODO: Predict based on previous frames input what the enemy player should be doing and keep going while we dont go over our rollback budget
-			//	while (rollbackBlockCounter < thisPeer->ROLLBACK_FRAMES)
-			//	{
-
-			//	}
-			//	// // while(!ROLLBACK_PREDICT())
-			//	// Make sure we listen to the network messages
-			//	UpdateNetworkState();
-			//}
-			
-			// Save the frame state
-			thisPeer->Rollback_Save();
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
 		{
@@ -976,6 +988,133 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 	}
 }
 
+void PlayerCharacter::ExecuteInput()
+{
+	// Defend
+	if (thisPeer->localPlayerStatus.Pressed_S && currentEnergyPoints > 0)
+	{
+		attackState = AttackState::Defend;
+	}
+	else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
+	if (thisPeer->localPlayerStatus.Pressed_W)
+	{
+		attackState = AttackState::DragonPunch;
+	}
+	// Punch
+	if (thisPeer->localPlayerStatus.HeavyPunched)
+	{
+		attackState = AttackState::HeavyPunch;
+	}
+	else if (thisPeer->localPlayerStatus.Pressed_Q)
+	{
+		attackState = AttackState::FastPunch;
+	}
+	// Kick
+	if (thisPeer->localPlayerStatus.HeavyKicked)
+	{
+		attackState = AttackState::HeavyKick;
+	}
+	else if (thisPeer->localPlayerStatus.Pressed_E)
+	{
+		attackState = AttackState::FastKick;
+	}
+
+	//-------------------
+	// Movement ---------
+	if (thisPeer->localPlayerStatus.Dashed_A) // Dash 
+	{
+		setPosition(getPosition().x - dashDistance, getPosition().y);
+		moveState = MoveState::DashL;
+	}
+	else if (thisPeer->localPlayerStatus.Pressed_A) // Left
+	{
+		// Walk
+		setPosition(getPosition().x - moveDistance, getPosition().y);
+		moveState = MoveState::Left;
+	}
+	else if (thisPeer->localPlayerStatus.Dashed_D) // Dash 
+	{
+		setPosition(getPosition().x + dashDistance, getPosition().y);
+		moveState = MoveState::DashR;
+	}
+	else if (thisPeer->localPlayerStatus.Pressed_D) // Right
+	{
+		// Walk
+		setPosition(getPosition().x + moveDistance, getPosition().y);
+		moveState = MoveState::Right;
+	}
+	else // idle
+	{
+		moveState = MoveState::Idle;
+
+	}
+}
+
+void PlayerCharacter::ExecuteRemoteInput()
+{
+
+	// Defend
+	if (thisPeer->remotePlayerStatus.Pressed_S && currentEnergyPoints > 0)
+	{
+		attackState = AttackState::Defend;
+	}
+	else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
+	if (thisPeer->remotePlayerStatus.Pressed_W)
+	{
+		attackState = AttackState::DragonPunch;
+	}
+	// Punch
+	if (thisPeer->remotePlayerStatus.HeavyPunched)
+	{
+		attackState = AttackState::HeavyPunch;
+	}
+	else if (thisPeer->remotePlayerStatus.Pressed_Q)
+	{
+		attackState = AttackState::FastPunch;
+	}
+	// Kick
+	if (thisPeer->remotePlayerStatus.HeavyKicked)
+	{
+		attackState = AttackState::HeavyKick;
+	}
+	else if (thisPeer->remotePlayerStatus.Pressed_E)
+	{
+		attackState = AttackState::FastKick;
+	}
+
+	//-------------------
+	// Movement ---------
+	if (thisPeer->remotePlayerStatus.Dashed_A) // Dash 
+	{
+		setPosition(getPosition().x - dashDistance, getPosition().y);
+		moveState = MoveState::DashL;
+	}
+	else if (thisPeer->remotePlayerStatus.Pressed_A) // Left
+	{
+		// Walk
+		setPosition(getPosition().x - moveDistance, getPosition().y);
+		moveState = MoveState::Left;
+	}
+	else if (thisPeer->remotePlayerStatus.Dashed_D) // Dash 
+	{
+		setPosition(getPosition().x + dashDistance, getPosition().y);
+		moveState = MoveState::DashR;
+	}
+	else if (thisPeer->remotePlayerStatus.Pressed_D) // Right
+	{
+		// Walk
+		setPosition(getPosition().x + moveDistance, getPosition().y);
+		moveState = MoveState::Right;
+	}
+	else // idle
+	{
+		moveState = MoveState::Idle;
+
+	}
+}
+
 void PlayerCharacter::HandleAnimation(float dt)
 {
 	// Remember the animation class of the flip state of the sprite
@@ -1298,7 +1437,7 @@ void PlayerCharacter::CollisionResponseToPlayer(Collision::CollisionResponse* co
 			if (!receivedGuardBox)
 			{
 				// Modify energy damage receive behaviour based on type of attack
-				int modifier = 0.0f;
+				int modifier = 0;
 				if (collResponse->s1anim->GetID() == anim_fastPunch.GetID() || collResponse->s1anim->GetID() == anim_fastkick.GetID())
 				{
 					modifier = 1;
@@ -1371,7 +1510,7 @@ void PlayerCharacter::SetUpAnimationFrames()
 	// Defend ---
 	CollisionBox* GuardColl = new CollisionBox(CollisionBox::ColliderType::GuardBox, bodycallPos, bodycallSize, bodyCollOffset);
 	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Active, *GuardColl);
-	anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Recovery, *GuardColl);
+	//anim_defend.AddFrame(sf::IntRect(0, 165, 78, 55), AnimationFrameType::Recovery, *GuardColl);
 	anim_defend.SetLooping(false);
 	anim_defend.SetID(2);
 
