@@ -250,14 +250,6 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << " Remote Statuses: " << remoteDelayedPlayerStatuses.size() << "f.\n";
 				newRemoteStatus.appliedDelay = delayFrames;
 
-				//// shave unneeded messages over the delay count
-				//if (!IsMessageListEmpty())
-				//{
-				//	while (GetIncomingMessages().count() > dynamicDelayFrames)
-				//	{
-				//		PopFrontMessage();
-				//	}
-				//}
 			}
 			else
 			{
@@ -277,11 +269,6 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		{
 			remotePlayerStatus = newRemoteStatus;
 		}
-
-		
-
-
-
 	}
 	break;
 	default:
