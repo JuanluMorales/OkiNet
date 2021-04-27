@@ -167,12 +167,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			{
 				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
 			}
-				
-			// DEBUG TEMP
-			if (!thisPeer->delayedPlayerStatuses.empty() && !thisPeer->remoteDelayedPlayerStatuses.empty())
-			{
-				std::cout << "Frames waiting: " << remoteFrameWaitCounter << " Local inputs: " << thisPeer->delayedPlayerStatuses.size() << " Remote inputs: " << thisPeer->remoteDelayedPlayerStatuses.size() << " NetMessages: " << thisPeer->GetIncomingMessages().count() << "\n";
-			}
 
 			// Force lockstep until we get new updates		
 			int lockstepCount = 0;
@@ -810,15 +804,81 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 	{
 		if (thisPeer->currentNetworkTechnique == NetworkTechnique::InputDelay)
 		{
-			// Execute this frame's input ..................
+			// Execute this frame's input .................. if delay = 0 then it must be executed this frame
 			if (!thisPeer->remoteDelayedPlayerStatuses.empty())
 			{
-				bool didUpdate = false;
-
-				// Search through the list for the delayed status that should be applied (the one with delay == 0)
-				if (thisPeer->remoteDelayedPlayerStatuses.front().appliedDelay == 0)
+				for (int i = 0; i < thisPeer->remoteDelayedPlayerStatuses.size(); i++)
 				{
-					didUpdate = true;
+					if (thisPeer->remoteDelayedPlayerStatuses.at(i).appliedDelay == 0)
+					{
+
+						// Defend
+						if (thisPeer->remoteDelayedPlayerStatuses.at(i).Pressed_S && currentEnergyPoints > 0)
+						{
+							attackState = AttackState::Defend;
+						}
+						else if (attackState == AttackState::Defend) attackState = AttackState::None;
+
+						if (thisPeer->remoteDelayedPlayerStatuses.at(i).Pressed_W)
+						{
+							attackState = AttackState::DragonPunch;
+						}
+						// Punch
+						if (thisPeer->remoteDelayedPlayerStatuses.at(i).HeavyPunched)
+						{
+							attackState = AttackState::HeavyPunch;
+						}
+						else if (thisPeer->remoteDelayedPlayerStatuses.at(i).Pressed_Q)
+						{
+							attackState = AttackState::FastPunch;
+						}
+						// Kick
+						if (thisPeer->remoteDelayedPlayerStatuses.at(i).HeavyKicked)
+						{
+							attackState = AttackState::HeavyKick;
+						}
+						else if (thisPeer->remoteDelayedPlayerStatuses.at(i).Pressed_E)
+						{
+							attackState = AttackState::FastKick;
+						}
+
+						//-------------------
+						// Movement ---------
+						if (thisPeer->remoteDelayedPlayerStatuses.at(i).Dashed_A) // Dash 
+						{
+							setPosition(getPosition().x - dashDistance, getPosition().y);
+							moveState = MoveState::DashL;
+						}
+						else if (thisPeer->remoteDelayedPlayerStatuses.at(i).Pressed_A) // Left
+						{
+							// Walk
+							setPosition(getPosition().x - moveDistance, getPosition().y);
+							moveState = MoveState::Left;
+						}
+						else if (thisPeer->remoteDelayedPlayerStatuses.at(i).Dashed_D) // Dash 
+						{
+							setPosition(getPosition().x + dashDistance, getPosition().y);
+							moveState = MoveState::DashR;
+						}
+						else if (thisPeer->remoteDelayedPlayerStatuses.at(i).Pressed_D) // Right
+						{
+							// Walk
+							setPosition(getPosition().x + moveDistance, getPosition().y);
+							moveState = MoveState::Right;
+						}
+						else // idle
+						{
+							moveState = MoveState::Idle;
+
+						}
+
+						thisPeer->remoteDelayedPlayerStatuses.erase(thisPeer->remoteDelayedPlayerStatuses.begin() + i);
+					}
+
+				}
+
+				/*if (thisPeer->remoteDelayedPlayerStatuses.front().appliedDelay == 0)
+				{
 					// Defend
 					if (thisPeer->remoteDelayedPlayerStatuses.front().Pressed_S && currentEnergyPoints > 0)
 					{
@@ -881,10 +941,7 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 					// Get rid of the executed input
 					thisPeer->remoteDelayedPlayerStatuses.pop_front();
-				}
-
-				if (didUpdate) std::cout << "update\n";
-				else std::cout << "DID NOT UPDATE***************\n";
+				}*/
 
 				// Reduce the delay by one frame for all delayed statuses
 				for (int i = 0; i < thisPeer->remoteDelayedPlayerStatuses.size(); i++)

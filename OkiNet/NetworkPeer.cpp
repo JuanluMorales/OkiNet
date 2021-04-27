@@ -263,7 +263,7 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 				int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
 				int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
 
-				//std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << "f.\n";
+				std::cout << "Their frame delay: " << newRemoteStatus.appliedDelay << "f. Our applied delay: " << delayFrames << " Remote Statuses: " << remoteDelayedPlayerStatuses.size() << "f.\n";
 				newRemoteStatus.appliedDelay = delayFrames;
 			}
 
