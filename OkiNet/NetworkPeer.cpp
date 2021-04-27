@@ -245,14 +245,16 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 			int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
 			dynamicDelayFrames = lagDiff; // Update the dynamic delay
 
-			std::cout << "Their local delay: " << newRemoteStatus.appliedDelay << "f. The ping: " << lagDiff << "ms. Our applied delay: " << delayFrames << "f. Amount of remote statuses: " << remoteDelayedPlayerStatuses.size() << ".\n";
-			newRemoteStatus.appliedDelay = delayFrames;
-
 			// If the difference of the ping and the input delay is negative, it means we need to move up the delay
 			if (delayFrames < 0)
 			{
-				
+				delayFrames = 0; // As we should have been lockstepping/halting update, we can assume 0 delay and the new delay time
 			}
+
+			std::cout << "Their local delay: " << newRemoteStatus.appliedDelay << "f. The ping: " << lagDiff << "ms. Our applied delay: " << delayFrames << "f. Amount of remote statuses: " << remoteDelayedPlayerStatuses.size() << ".\n";
+			newRemoteStatus.appliedDelay = delayFrames;
+
+
 			remoteDelayedPlayerStatuses.push_back(newRemoteStatus);
 		}
 		else
