@@ -256,6 +256,9 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 		{
 			ExecuteRemoteInput();
 		}
+
+		thisPeer->ResetRemotePlayerStatus();
+
 	}
 
 	// Check local damage and life status
@@ -1121,9 +1124,6 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				moveState = MoveState::Idle;
 
 			}
-
-			// Resets all inputs this frame
-			thisPeer->ResetRemotePlayerStatus();
 		}
 	}
 }
