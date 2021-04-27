@@ -229,6 +229,10 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 				}
 			}
 
+			// Update the local status for both players
+			if (networkAuthority == NetworkAuthority::Local) ExecuteInput();
+			else if (networkAuthority == NetworkAuthority::Remote) ExecuteRemoteInput();
+
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::None)
 		{
@@ -238,6 +242,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 			UpdateNetworkState();
 		}
 
+		thisPeer->ResetRemotePlayerStatus();
 		thisPeer->ResetLocalPlayerStatus();
 	}
 
@@ -531,6 +536,133 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 			newPlayerStatus->appliedDelay = FRAME_DELAY;
 
 			thisPeer->delayedPlayerStatuses.push_back(*newPlayerStatus); // Store the input
+		}
+		else if (networkAuthority == NetworkAuthority::Local && thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
+		{
+			// Check timers and counters ----------
+			if (dashTimer >= dashTime) // Check dashing timer
+			{
+				b_dashTriggerR = false;
+				b_dashTriggerL = false;
+				dashTimer = 0.0f;
+			}
+			else if (b_dashTriggerL || b_dashTriggerR) dashTimer += 0.1f;
+
+			// Check this frame's type to decide if input should be accepted
+			switch (animState)
+			{
+			case AnimationFrameType::Idle:
+				shouldAcceptInput = true;
+				break;
+			case AnimationFrameType::StartUp:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Active:
+				shouldAcceptInput = false;
+				break;
+			case AnimationFrameType::Recovery:
+				shouldAcceptInput = true;
+				break;
+			default:
+				break;
+			}
+
+			if (frameAdvantage < 0)
+			{
+				shouldAcceptInput = false;
+			}
+
+			if (!shouldAcceptInput)
+			{
+				if (attackState == AttackState::Defend && !input->IsKeyDown(sf::Keyboard::S) || attackState == AttackState::Defend && currentEnergyPoints <= 0)
+				{
+					if (attackState == AttackState::Defend) attackState = AttackState::None;
+					shouldAcceptInput = true;
+				}
+				else if (attackState == AttackState::Defend && input->IsKeyDown(sf::Keyboard::S))
+				{
+					thisPeer->localPlayerStatus.Pressed_S = true;
+				}
+			}
+
+			if (shouldAcceptInput)
+			{
+				// Cache delayed input
+				// Defend
+				if (input->IsKeyDown(sf::Keyboard::S) && currentEnergyPoints > 0)
+				{
+					thisPeer->localPlayerStatus.Pressed_S = true;
+				}
+				// Special punch
+				if (input->IsKeyDown(sf::Keyboard::W))
+				{
+					input->SetKeyUp(sf::Keyboard::W);
+					thisPeer->localPlayerStatus.Pressed_W = true;
+				}
+				// Punch
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::Q) && input->IsKeyDown(sf::Keyboard::A))
+				{
+					input->SetKeyUp(sf::Keyboard::Q);
+					input->SetKeyUp(sf::Keyboard::D);
+					input->SetKeyUp(sf::Keyboard::A);
+					thisPeer->localPlayerStatus.HeavyPunched = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::Q))
+				{
+					input->SetKeyUp(sf::Keyboard::Q);
+					thisPeer->localPlayerStatus.Pressed_Q = true;
+				}
+				// Kick
+				if (playerID == PlayerID::PlayerOne && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::D) || playerID == PlayerID::PlayerTwo && input->IsKeyDown(sf::Keyboard::E) && input->IsKeyDown(sf::Keyboard::A))
+				{
+					input->SetKeyUp(sf::Keyboard::E);
+					input->SetKeyUp(sf::Keyboard::D);
+					input->SetKeyUp(sf::Keyboard::A);
+					thisPeer->localPlayerStatus.HeavyKicked = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::E))
+				{
+					input->SetKeyUp(sf::Keyboard::E);
+					thisPeer->localPlayerStatus.Pressed_E = true;
+				}
+				//-------------------
+				// Movement ---------
+				if (input->IsKeyDown(sf::Keyboard::A) && CanGoLeft) // Left
+				{
+					if (b_dashTriggerL) // Dash 
+					{
+						dashTimer = dashTime;
+						input->SetKeyUp(sf::Keyboard::A);
+						thisPeer->localPlayerStatus.Dashed_A = true;
+					}
+					thisPeer->localPlayerStatus.Pressed_A = true;
+				}
+				else if (input->IsKeyDown(sf::Keyboard::D) && CanGoRight) // Right
+				{
+					if (b_dashTriggerR) // Dash 
+					{
+						dashTimer = dashTime;
+						input->SetKeyUp(sf::Keyboard::D);
+						thisPeer->localPlayerStatus.Dashed_D = true;
+					}
+					thisPeer->localPlayerStatus.Pressed_D = true;
+				}
+				else
+				{
+					// if last move state was walking, check the dash relevant trigger
+					if (moveState == MoveState::Left)
+					{
+						b_dashTriggerL = true;
+						dashTimer = 0.0f;
+					}
+					if (moveState == MoveState::Right)
+					{
+						b_dashTriggerR = true;
+						dashTimer = 0.0f;
+					}
+				}
+
+			}
 		}
 		else // Run update without delay ------------------------
 		{
@@ -918,6 +1050,10 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 
 				}
 			}
+		}
+		else if (thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
+		{
+			// Do nothing, just wait for the status to be applied on ExecuteRemoteInput()
 		}
 		else
 		{
