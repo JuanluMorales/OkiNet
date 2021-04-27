@@ -177,7 +177,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 
 				if (!HasReceivedRemoteUpdateThisFrame())
 				{
-					remoteFrameWaitCounter += 1;
+					if(lockstepCount == 0) remoteFrameWaitCounter += 1;
 				}
 				else
 				{
@@ -186,10 +186,10 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd)
 				}
 
 				// If we ran out of waiting frames, enter lockstep -> loop while
-				if (FRAME_DELAY <= remoteFrameWaitCounter)
+				if (FRAME_DELAY < remoteFrameWaitCounter)
 				{
 					lockstepCount += 1;
-					std::cout << "Lockstep hit: " << lockstepCount << std::endl;
+					//std::cout << "Lockstep hit: " << lockstepCount << std::endl;
 				}
 
 			} while (lockstepCount > 0);
