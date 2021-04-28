@@ -90,13 +90,27 @@ public:
 	{
 		PlayerStatus localStatus;
 		PlayerStatus remoteStatus;
-
-		int p1_Health = 100;
-		int p1_PosX = 0;
-
-		int p2_Health = 100;
-		int p2_PosX = 0;
 	};
+
+	// Compare two statuses to check if they are the same or not
+	bool CompareStatuses(const PlayerStatus& lhs, const PlayerStatus& rhs)
+	{
+		bool result = true;
+
+		if (lhs.appliedDelay != rhs.appliedDelay) return false;
+		if (lhs.Dashed_A != rhs.Dashed_A) return false;
+		if (lhs.Dashed_D != rhs.Dashed_D) return false;
+		if (lhs.HeavyKicked != rhs.HeavyKicked) return false;
+		if (lhs.HeavyPunched != rhs.HeavyPunched) return false;
+		if (lhs.Pressed_A != rhs.Pressed_A) return false;
+		if (lhs.Pressed_D != rhs.Pressed_D) return false;
+		if (lhs.Pressed_E != rhs.Pressed_E) return false;
+		if (lhs.Pressed_Q != rhs.Pressed_Q) return false;
+		if (lhs.Pressed_S != rhs.Pressed_S) return false;
+		if (lhs.Pressed_W != rhs.Pressed_W) return false;
+
+		return result;
+	}
 
 	// Change the player status 
 	void Pressed_A();
@@ -115,7 +129,7 @@ public:
 
 	void Rollback_Save(); // In charge of making sure we dont overcap the rollback frames amount set
 	void Rollback_Predict(); // Predicts what the remote status for this frame will be based on previous frames stored in rollbackFrames
-	void Rollback_Restore(); // Searches for the first incorrect frame and sets our current frame to that frame. Returns the number of frames to resimulate up to the current one
+	int Rollback_Restore(); // Searches for the first incorrect frame and sets our current frame to that frame. Returns the number of frames to resimulate up to the current one
 protected:
 	// Called when a client connects to this peer
 	virtual bool OnPeerConnect();

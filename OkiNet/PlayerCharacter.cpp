@@ -216,6 +216,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 			}
 
 			// We save the frame even if the remote data is wrong (we have no update from it) as we will later check for discrepancies with the new remote updates
+			if(!thisPeer->delayedPlayerStatuses.empty() && !thisPeer->remoteDelayedPlayerStatuses.empty())
 			thisPeer->Rollback_Save();
 
 			// Check if we would enter lockstep, and then predict instead of block	
@@ -225,42 +226,53 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 				// Make sure we listen to the network messages
 				UpdateNetworkState();
 
-				std::cout << "Frame wait counter: " << remoteFrameWaitCounter << std::endl;
-
 				if (!HasReceivedRemoteUpdateThisFrame())
 				{
-					if (lockstepCount == 0) remoteFrameWaitCounter += 1;
+					remoteFrameWaitCounter += 1;
 				}
 				else
 				{
+					// If we have predicted any frames, we must rollback
+					if (thisPeer->predictedRemoteStatuses.size() > 0)
+					{
+						std::cout << "Rollback!!!\n";
+					//	// Rollback----
+					// Find the first incorrect frame and restore the state to that frame
+						int framesToResimulate = thisPeer->Rollback_Restore();
+
+						std::cout << "Rolling back: " << framesToResimulate << " frames out of " << thisPeer->rollbackFrames.size() << " available rollback frames.\n";
+
+						// Resimulate up to now again
+						for (int i = 0; i < framesToResimulate; i++)
+						{
+							ResimulateFrame();
+							playerTwo->ResimulateFrame();
+						}
+					}
+
 					// Clear the predicted statuses as we no longer need them once we have the update
 					thisPeer->predictedRemoteStatuses.clear();
 					lockstepCount = 0;
-					if (remoteFrameWaitCounter > 0) remoteFrameWaitCounter -= 1;
+					if (remoteFrameWaitCounter > 0) remoteFrameWaitCounter = FRAME_DELAY - 1;
 				}
 
 				// If we ran out of waiting frames, enter lockstep -> loop while
 				if (FRAME_DELAY < remoteFrameWaitCounter)
 				{
-					// Assume whatever the player was doing, will keep doing (naive aproach)
-					if (!thisPeer->remoteDelayedPlayerStatuses.empty())
+					// Assume whatever the player was doing, will keep doing (naive aproach) so we dont inmediately lockstep
+					if (!thisPeer->remoteDelayedPlayerStatuses.empty()) // as long as we have actually received any message
 					{
 						thisPeer->Rollback_Predict();
 						std::cout << "Predicted this frame\n";
-						lockstepCount += 0; // break out of lockstep
-					}
-					else // If we dont have any remote inputs to predict with, theres no other choice than to lockstep
-					{
-						lockstepCount += 1;
-					}
-					
+						lockstepCount += 1; // add to the lockstep counter
+					}		
+					else lockstepCount += 1;
+
 				}
 
-			} while (lockstepCount > 0);
+			} while (lockstepCount > thisPeer->ROLLBACK_FRAMES); // Only lockstep if we run out of both delay frames and rollback frames
 
 			thisPeer->ResetRemotePlayerStatus();
-
-
 
 			/*
 			#pragma region Rollback

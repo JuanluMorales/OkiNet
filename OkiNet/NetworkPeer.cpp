@@ -130,24 +130,39 @@ void NetworkPeer::Rollback_Predict()
 
 }
 
-void NetworkPeer::Rollback_Restore()
+int NetworkPeer::Rollback_Restore()
 {
 	// How many frames we are ahead
-	int rollbackAmount = static_cast<int>(predictedRemoteStatuses.size() + dynamicDelayFrames);
+	int rollbackAmount = static_cast<int>(predictedRemoteStatuses.size());
 
-	// find the incorrect frame
-	int rollbackPos = static_cast<int>(rollbackFrames.size() - 1 - rollbackAmount);
+	// Search for discrepancies
+	bool areEqual = true;
+	bool discrepancy = false;
+	for (int i = 0; i < rollbackAmount; i++)
+	{
+		// compare the remote status with the new update
+		areEqual = CompareStatuses(rollbackFrames.at(rollbackFrames.size() - 1 - i).remoteStatus, remoteDelayedPlayerStatuses.back());
 
-	// restore that frame
-	localPlayerStatus = rollbackFrames.at(rollbackPos).localStatus;
-	// remotePlayerStatus = rollbackFrames.at(rollbackPos).remoteStatus; // we dont change remote as we want to keep the data received from the peer
-	localHP = rollbackFrames.at(rollbackPos).p1_Health;
-	localPosX = rollbackFrames.at(rollbackPos).p1_PosX;
-	remoteHP = rollbackFrames.at(rollbackPos).p2_Health;
-	remotePosX = rollbackFrames.at(rollbackPos).p2_PosX;
+		if (!areEqual)
+		{
+			discrepancy = true;
+			rollbackAmount = i;
+		}
+	}
 
-	// Clear unneeded rollback frames so we can access them for resimulation
-	//rollbackFrames.erase(rollbackFrames.begin(), rollbackFrames.begin() + rollbackPos);
+	if (discrepancy)
+	{
+		int rollbackPos = static_cast<int>(rollbackFrames.size() - 1 - rollbackAmount);
+
+		// restore that frame
+		delayedPlayerStatuses.back() = rollbackFrames.at(rollbackPos).localStatus;
+		return rollbackAmount;
+	}
+	else
+	{
+		// Return 0 frames to resimulate if there was no discrepancy
+		return 0;
+	}
 }
 
 void NetworkPeer::Rollback_Save()
@@ -155,14 +170,8 @@ void NetworkPeer::Rollback_Save()
 	// Cache this frame's state
 	FrameStatus currentStatus;
 
-	currentStatus.localStatus = localPlayerStatus;
-	currentStatus.remoteStatus = remotePlayerStatus;
-
-	currentStatus.p1_Health = localHP;
-	currentStatus.p1_PosX = localPosX;
-
-	currentStatus.p2_Health = remoteHP;
-	currentStatus.p2_PosX = remotePosX;
+	currentStatus.localStatus = delayedPlayerStatuses.back();
+	currentStatus.remoteStatus = remoteDelayedPlayerStatuses.back();
 
 	// Save the frame information
 	if (rollbackFrames.size() < ROLLBACK_FRAMES)
