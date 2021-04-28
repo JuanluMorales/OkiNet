@@ -139,8 +139,6 @@ void PlayerCharacter::UpdateNetworkState()
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerTwo)
 {
-	if (networkAuthority == NetworkAuthority::Local) thisPeer->ResetRemotePlayerStatus();
-
 	// Update our info on the remote player state
 	if (networkAuthority == NetworkAuthority::Remote)
 	{
@@ -148,7 +146,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		thisPeer->remoteHP = currentHealthPoints;
 		thisPeer->remotePosX = static_cast<int>(getPosition().x);
 	}
-
 	if (networkAuthority == NetworkAuthority::Local)
 	{
 		thisPeer->localHP = currentHealthPoints;
@@ -161,6 +158,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		// Handle lockstep
 		if (GetNetworkTechnique() == NetworkTechnique::DeterministicLockstep)
 		{
+			if (networkAuthority == NetworkAuthority::Local) thisPeer->ResetRemotePlayerStatus();
+
 			// Send our state every frame
 			thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
 			// IF we have not yet received update this frame, keep waiting by not updating or rendering			
@@ -205,14 +204,11 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 				}
 
 			} while (lockstepCount > 0);
+
+			thisPeer->ResetRemotePlayerStatus();
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::Rollback)
 		{
-			// Send our local state
-			thisPeer->SendPlayerStatus(thisPeer->localPlayerStatus);
-			// Update the remote state
-			UpdateNetworkState();
-
 			// Send the delayed status update
 			if (!thisPeer->delayedPlayerStatuses.empty())
 			{
@@ -223,6 +219,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 			int lockstepCount = 0;
 			do
 			{
+
 				// Make sure we listen to the network messages
 				UpdateNetworkState();
 
@@ -244,8 +241,12 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 
 			} while (lockstepCount > 0);
 
-			ExecuteInput();
-			playerTwo->ExecuteRemoteInput();
+			//ExecuteInput();
+			//playerTwo->ExecuteRemoteInput();
+
+			thisPeer->ResetRemotePlayerStatus();
+
+
 
 			/*
 			#pragma region Rollback
@@ -350,10 +351,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		}
 	}
 
-	// reset frame input info
-	if (networkAuthority == NetworkAuthority::Local) thisPeer->ResetLocalPlayerStatus();
-
-
 	// Check local damage and life status
 	if (receivedDamage)
 	{
@@ -388,8 +385,6 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 	{
 		coll->SetCollisionBoxPosition(getPosition());
 	}
-
-
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
@@ -397,6 +392,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	// If this is the second local networked character use player 1 scheme for both players
 	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
+		thisPeer->ResetLocalPlayerStatus();
+
 		// If we are online and this is the local player
 		if (networkAuthority == NetworkAuthority::Local)
 		{
@@ -641,6 +638,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 		else if (networkAuthority == NetworkAuthority::Local && thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
 		{
+			ExecuteInput();
+
 			// CACHE THIS FRAMES INPUT ...................................
 			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
 			// Check timers and counters ----------
@@ -1160,6 +1159,10 @@ void PlayerCharacter::HandleRemotePlayerInput(InputManager* input, float dt)
 				}
 			}
 		}
+		else if (thisPeer->currentNetworkTechnique == NetworkTechnique::Rollback)
+		{
+			ExecuteRemoteInput();
+		}
 		else if (thisPeer->currentNetworkTechnique == NetworkTechnique::None || thisPeer->currentNetworkTechnique == NetworkTechnique::DeterministicLockstep)
 		{
 			// Defend
@@ -1417,16 +1420,11 @@ void PlayerCharacter::ResimulateFrame()
 	//Check and apply the inputs
 	if (networkAuthority == NetworkAuthority::Local)
 	{
-		//thisPeer->localPlayerStatus = thisPeer->rollbackFrames.front().localStatus;
 		ExecuteInput();
-		//thisPeer->ResetLocalPlayerStatus();
-
-		//thisPeer->rollbackFrames.pop_front();
 	}
 	else if (networkAuthority == NetworkAuthority::Remote)
 	{
 		ExecuteRemoteInput();
-		//thisPeer->ResetRemotePlayerStatus();
 	}
 
 	// Update our info on the remote player state
