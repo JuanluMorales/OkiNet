@@ -28,6 +28,13 @@ namespace net
 		{
 			std::scoped_lock lock(muxQueue);
 			return deqQueue.back();
+
+		}
+
+		const T& at(const int i)
+		{
+			std::scoped_lock lock(muxQueue);
+			return deqQueue.at(i);
 		}
 
 		void push_back(const T& item)

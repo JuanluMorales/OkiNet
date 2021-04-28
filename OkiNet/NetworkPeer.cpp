@@ -282,6 +282,15 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 
 	case MsgTypes::ReceivePlayerState:
 	{
+		if (receivedRemoteUpdateThisFrame)
+		{
+			extraUpdateMessagesReceived += 1;
+		}
+		else
+		{
+			extraUpdateMessagesReceived = 0;
+		}
+
 		receivedRemoteUpdateThisFrame = true; // Raise the flag of having received notification from the other player (as he should every frame)
 
 		// Interpret the message
@@ -313,7 +322,16 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		}
 		else if (currentNetworkTechnique == NetworkTechnique::Rollback)
 		{
-			remotePlayerStatus = newRemoteStatus;
+			// Input delay part
+			// If the difference of the ping and the input delay is negative, it means we need to move up the delay
+			if (delayFrames < 0)
+			{
+				delayFrames = 0; // As we should have been lockstepping/halting update, we can assume 0 local delay
+			}
+
+			newRemoteStatus.appliedDelay = delayFrames;
+
+			remoteDelayedPlayerStatuses.push_back(newRemoteStatus);
 		}
 		else
 		{

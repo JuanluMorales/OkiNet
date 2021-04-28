@@ -48,8 +48,8 @@ public:
 	// FRAME CONSTANTS
 	bool useDynamicDelay; // whether to calculate frame delay every frame or use the fixed delay
 	int dynamicDelayFrames = 0; // The dynamic (updated each frame) frames of delay to be used, should vary from 5 to 20 in a succesful manner
-	const int DELAY_FRAMES = 5; // Fixed delay input to be used along with rollback. 3 to 8 is enough, 1 frame = 16 ms of leeway but less responsive input
-	const int ROLLBACK_FRAMES = 8; // 5 to 10 is enough
+	const int ROLLBACK_DELAY_FRAMES = 3; // Fixed delay input to be used along with rollback. 3 to 8 is enough, 1 frame = 16 ms of leeway but less responsive input
+	const int ROLLBACK_FRAMES = 7; // 5 to 10 is enough
 
 	// Call at the end of the frame to set all remote statuses to false
 	// This way the inputs are treated as triggers
@@ -140,6 +140,7 @@ public:
 	// Rollback store
 	std::deque<FrameStatus> rollbackFrames; // Structure that stores up to ROLLBACK_FRAMES amount of frame information 
 	std::deque<PlayerStatus> predictedRemoteStatuses; // Holds the predictions made for the remote player when no updates received, cant be superior in size to rollbackFrames.size()
+	int extraUpdateMessagesReceived = 0; // in case we receive more than 1 update message, keep track of it with this counter
 
 	bool peerDisconnected = false;
 	bool receivedRemoteUpdateThisFrame = false; // Has the local player received a player status received message this frame?
