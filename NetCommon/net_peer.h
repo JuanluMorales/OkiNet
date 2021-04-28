@@ -169,6 +169,8 @@ namespace net
 		// Function that will iterate linearly the incoming messages and include them into the message queue
 		void Update()
 		{
+			if (messagesIn.count() > 1) std::cout << "Incoming messages atm: " << messagesIn.count() << std::endl;
+
 			while (!messagesIn.empty())
 			{
 				auto msg = messagesIn.pop_front();

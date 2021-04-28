@@ -141,6 +141,20 @@ void PlayerCharacter::UpdateNetworkState()
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerTwo)
 {
+	// Update our info on the remote player state
+	if (networkAuthority == NetworkAuthority::Remote)
+	{
+		// Pass the info on local image of the remote player state
+		thisPeer->remoteHP = currentHealthPoints;
+		thisPeer->remotePosX = static_cast<int>(getPosition().x);
+
+	}
+	else
+	{
+		thisPeer->localHP = currentHealthPoints;
+		thisPeer->localPosX = static_cast<int>(getPosition().x);
+	}
+
 	// Update network component (send our state then listen)
 	if (networkAuthority == NetworkAuthority::Local && thisPeer->IsConnected())
 	{
@@ -202,17 +216,15 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 			// Save the frame state
 			thisPeer->Rollback_Save(); // We save the frame even if the remote data is wrong (we have no update from it) as we will later check for discrepancies with the new remote updates
 
+			
 
 			// in order to not block we will predict what the remote will do based on their last input/s (if we dont have any messages we jump directly to lockstep)
-			if (!HasReceivedRemoteUpdateThisFrame())
+			if (!HasReceivedRemoteUpdateThisFrame() && thisPeer->GetIncomingMessages().empty())
 			{
 				// Assume whatever the player was doing, will keep doing (naive aproach) 
 				thisPeer->Rollback_Predict();
 
 			}
-
-			ExecuteInput();
-			playerTwo->ExecuteRemoteInput();
 
 			// If we have predicted (it will probably be wrong) we need to rollback when we get updates from remote
 			if (HasReceivedRemoteUpdateThisFrame() && thisPeer->predictedRemoteStatuses.size() > 0)
@@ -222,26 +234,26 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 				thisPeer->Rollback_Restore();
 
 				int framesToResimulate = static_cast<int>(thisPeer->predictedRemoteStatuses.size() + thisPeer->dynamicDelayFrames);
-				std::cout << "Rolling back: " << framesToResimulate << "frames out of " << thisPeer->rollbackFrames.size() << " available rollback frames.\n";
+				std::cout << "Rolling back: " << framesToResimulate << " frames out of " << thisPeer->rollbackFrames.size() << " available rollback frames.\n";
 
-				//// Resimulate up to now again
-				//for (int i = 0; i < framesToResimulate; i++)
-				//{
-				//	// do as many update cycles as needed to catch up/resimulate up to the current frame
-				//	ResimulateFrame();
-				//	playerTwo->ResimulateFrame();
+				// Resimulate up to now again
+				for (int i = 0; i < framesToResimulate; i++)
+				{
+					if(i = framesToResimulate - 1) thisPeer->localPlayerStatus = thisPeer->rollbackFrames.back().localStatus; // If we are using rollback, make sure to keep the input for this frame
+					// do as many update cycles as needed to catch up/resimulate up to the current frame
+					ResimulateFrame();
+					playerTwo->ResimulateFrame();
 
-				//}
+				}
 
-				//// Clear the predictions
-				//thisPeer->predictedRemoteStatuses.clear();
-
-				//// Clear the predicted statuses as we no longer need them
+				// Clear the predicted statuses as we no longer need them
 				thisPeer->predictedRemoteStatuses.clear();
 			}
-
-
-
+			else
+			{
+				ExecuteInput();
+				playerTwo->ExecuteRemoteInput();
+			}
 
 			//// Check if we received a remote player state message this frame
 			//if (!HasReceivedRemoteUpdateThisFrame())
@@ -302,18 +314,7 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		}
 
 		thisPeer->ResetLocalPlayerStatus();
-	}
-
-	// Update our info on the remote player state
-	if (networkAuthority == NetworkAuthority::Remote)
-	{
-		// Pass the info on local image of the remote player state
-		thisPeer->remoteHP = currentHealthPoints;
-		thisPeer->remotePosX = static_cast<int>(getPosition().x);
-		//ExecuteRemoteInput();
-
-
-
+		
 	}
 
 	// Check local damage and life status
@@ -1314,13 +1315,30 @@ void PlayerCharacter::ResimulateFrame()
 	//Check and apply the inputs
 	if (networkAuthority == NetworkAuthority::Local)
 	{
+		//thisPeer->localPlayerStatus = thisPeer->rollbackFrames.front().localStatus;
 		ExecuteInput();
-		thisPeer->ResetLocalPlayerStatus();
+		//thisPeer->ResetLocalPlayerStatus();
+
+		//thisPeer->rollbackFrames.pop_front();
 	}
 	else if (networkAuthority == NetworkAuthority::Remote)
 	{
 		ExecuteRemoteInput();
-		thisPeer->ResetRemotePlayerStatus();
+		//thisPeer->ResetRemotePlayerStatus();
+	}
+
+	// Update our info on the remote player state
+	if (networkAuthority == NetworkAuthority::Remote)
+	{
+		// Pass the info on local image of the remote player state
+		thisPeer->remoteHP = currentHealthPoints;
+		thisPeer->remotePosX = static_cast<int>(getPosition().x);
+
+	}
+	else
+	{
+		thisPeer->localHP = currentHealthPoints;
+		thisPeer->localPosX = static_cast<int>(getPosition().x);
 	}
 
 	// Check local damage and life status

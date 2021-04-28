@@ -135,7 +135,7 @@ void NetworkPeer::Rollback_Restore()
 	int rollbackAmount = static_cast<int>(predictedRemoteStatuses.size() + dynamicDelayFrames);
 
 	// find the incorrect frame
-	int rollbackPos = static_cast<int>(rollbackFrames.size() - rollbackAmount);
+	int rollbackPos = static_cast<int>(rollbackFrames.size() - 1 - rollbackAmount);
 
 	// restore that frame
 	localPlayerStatus = rollbackFrames.at(rollbackPos).localStatus;
@@ -144,6 +144,9 @@ void NetworkPeer::Rollback_Restore()
 	localPosX = rollbackFrames.at(rollbackPos).p1_PosX;
 	remoteHP = rollbackFrames.at(rollbackPos).p2_Health;
 	remotePosX = rollbackFrames.at(rollbackPos).p2_PosX;
+
+	// Clear unneeded rollback frames so we can access them for resimulation
+	//rollbackFrames.erase(rollbackFrames.begin(), rollbackFrames.begin() + rollbackPos);
 }
 
 void NetworkPeer::Rollback_Save()
