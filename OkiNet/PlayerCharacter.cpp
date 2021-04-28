@@ -139,6 +139,8 @@ void PlayerCharacter::UpdateNetworkState()
 //Manages the movement and animation of the player
 void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerTwo)
 {
+	if (networkAuthority == NetworkAuthority::Local) thisPeer->ResetRemotePlayerStatus();
+
 	// Update our info on the remote player state
 	if (networkAuthority == NetworkAuthority::Remote)
 	{
@@ -146,7 +148,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		thisPeer->remoteHP = currentHealthPoints;
 		thisPeer->remotePosX = static_cast<int>(getPosition().x);
 	}
-	else
+
+	if (networkAuthority == NetworkAuthority::Local)
 	{
 		thisPeer->localHP = currentHealthPoints;
 		thisPeer->localPosX = static_cast<int>(getPosition().x);
@@ -345,11 +348,11 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 			// Listen for new messages
 			UpdateNetworkState();
 		}
-
-		thisPeer->ResetLocalPlayerStatus();
-		thisPeer->ResetRemotePlayerStatus();
-
 	}
+
+	// reset frame input info
+	if (networkAuthority == NetworkAuthority::Local) thisPeer->ResetLocalPlayerStatus();
+
 
 	// Check local damage and life status
 	if (receivedDamage)
@@ -385,6 +388,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 	{
 		coll->SetCollisionBoxPosition(getPosition());
 	}
+
+
 }
 
 void PlayerCharacter::HandleInput(InputManager* input, float dt)
