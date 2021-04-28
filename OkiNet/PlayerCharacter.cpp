@@ -215,13 +215,17 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 				thisPeer->SendPlayerStatus(thisPeer->delayedPlayerStatuses.back());
 			}
 
-			// Force lockstep until we get new updates		
+			// We save the frame even if the remote data is wrong (we have no update from it) as we will later check for discrepancies with the new remote updates
+			thisPeer->Rollback_Save();
+
+			// Check if we would enter lockstep, and then predict instead of block	
 			int lockstepCount = 0;
 			do
 			{
-
 				// Make sure we listen to the network messages
 				UpdateNetworkState();
+
+				std::cout << "Frame wait counter: " << remoteFrameWaitCounter << std::endl;
 
 				if (!HasReceivedRemoteUpdateThisFrame())
 				{
@@ -229,6 +233,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 				}
 				else
 				{
+					// Clear the predicted statuses as we no longer need them once we have the update
+					thisPeer->predictedRemoteStatuses.clear();
 					lockstepCount = 0;
 					if (remoteFrameWaitCounter > 0) remoteFrameWaitCounter -= 1;
 				}
@@ -236,13 +242,21 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 				// If we ran out of waiting frames, enter lockstep -> loop while
 				if (FRAME_DELAY < remoteFrameWaitCounter)
 				{
-					lockstepCount += 1;
+					// Assume whatever the player was doing, will keep doing (naive aproach)
+					if (!thisPeer->remoteDelayedPlayerStatuses.empty())
+					{
+						thisPeer->Rollback_Predict();
+						std::cout << "Predicted this frame\n";
+						lockstepCount += 0; // break out of lockstep
+					}
+					else // If we dont have any remote inputs to predict with, theres no other choice than to lockstep
+					{
+						lockstepCount += 1;
+					}
+					
 				}
 
 			} while (lockstepCount > 0);
-
-			//ExecuteInput();
-			//playerTwo->ExecuteRemoteInput();
 
 			thisPeer->ResetRemotePlayerStatus();
 

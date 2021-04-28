@@ -125,8 +125,9 @@ void NetworkPeer::Pressed_W()
 void NetworkPeer::Rollback_Predict()
 {
 	// grab last frame's remote input and apply it to this frame's input
-	remotePlayerStatus = rollbackFrames.back().remoteStatus;
-	predictedRemoteStatuses.push_back(remotePlayerStatus);
+	remoteDelayedPlayerStatuses.back() = rollbackFrames.back().remoteStatus;
+	predictedRemoteStatuses.push_back(remoteDelayedPlayerStatuses.back());
+
 }
 
 void NetworkPeer::Rollback_Restore()
@@ -172,7 +173,7 @@ void NetworkPeer::Rollback_Save()
 	{
 		rollbackFrames.pop_front();
 		rollbackFrames.push_back(currentStatus);
-	}	
+	}
 }
 
 bool NetworkPeer::OnPeerConnect()
@@ -326,7 +327,7 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 				delayFrames = 0; // As we should have been lockstepping/halting update, we can assume 0 local delay
 			}
 
-			std::cout << "Their local delay: " << newRemoteStatus.appliedDelay << "f. The ping: " << lagDiff << "ms. Our applied delay: " << delayFrames << "f. Amount of remote statuses: " << remoteDelayedPlayerStatuses.size() << ".\n";
+			//std::cout << "Their local delay: " << newRemoteStatus.appliedDelay << "f. The ping: " << lagDiff << "ms. Our applied delay: " << delayFrames << "f. Amount of remote statuses: " << remoteDelayedPlayerStatuses.size() << ".\n";
 
 			newRemoteStatus.appliedDelay = delayFrames;
 
