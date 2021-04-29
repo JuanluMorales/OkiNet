@@ -48,6 +48,13 @@ void NetworkPeer::SyncStateRequest()
 	Send_UDP(msg);
 }
 
+void NetworkPeer::RestartRequest()
+{
+	net::message<MsgTypes> msg;
+	msg.header.id = MsgTypes::RestartRequest;
+	Send_UDP(msg);
+}
+
 
 void NetworkPeer::Pressed_A()
 {
@@ -289,6 +296,9 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 		}
 	}
 	break;
+	case MsgTypes::RestartRequest:
+		shouldRestartThisFrame = true;
+		break;
 
 	case MsgTypes::ReceivePlayerState:
 	{

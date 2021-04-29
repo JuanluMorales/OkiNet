@@ -307,6 +307,11 @@ void Scene_OnlineMatch::OverrideUpdate(float dt)
 		if (restartCounter >= restartTime) Restart();
 		restartCounter++;
 	}
+	else if (thisPeer->shouldRestartThisFrame)
+	{
+		thisPeer->shouldRestartThisFrame = false;
+		Restart();
+	}
 
 	// Update score text
 	p1ScoreText.setString(std::to_string(p1Score));
@@ -463,16 +468,24 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 	if (isHost)
 	{
 		if (input->IsKeyDown(sf::Keyboard::Numpad0)) {
+			input->SetKeyUp(sf::Keyboard::Numpad0);
 			thisPeer->currentNetworkTechnique = NetworkTechnique::None;
 		}
 		if (input->IsKeyDown(sf::Keyboard::Numpad1)) {
+			input->SetKeyUp(sf::Keyboard::Numpad1);
 			thisPeer->currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
 		}
 		if (input->IsKeyDown(sf::Keyboard::Numpad2)) {
+			input->SetKeyUp(sf::Keyboard::Numpad2);
 			thisPeer->currentNetworkTechnique = NetworkTechnique::InputDelay;
 		}
 		if (input->IsKeyDown(sf::Keyboard::Numpad3)) {
 			thisPeer->currentNetworkTechnique = NetworkTechnique::Rollback;
+		}
+		if (input->IsKeyDown(sf::Keyboard::Numpad5) && remotePlayerConnected) {
+			input->SetKeyUp(sf::Keyboard::Numpad5);
+			thisPeer->RestartRequest();
+			Restart();
 		}
 	}
 	// Dont accept input until the remote is ready -> potential critical desync issue
@@ -490,12 +503,12 @@ void Scene_OnlineMatch::Restart()
 	if (isHost)
 	{
 		if (localPlayer.currentHealthPoints <= 0) p2Score += 1;
-		else p1Score += 1;
+		else if(remotePlayer.currentHealthPoints <= 0) p1Score += 1;
 	}
 	else
 	{
 		if (localPlayer.currentHealthPoints <= 0) p1Score += 1;
-		else p2Score += 1;
+		else if (remotePlayer.currentHealthPoints <= 0) p2Score += 1;
 	}
 
 	if (isHost)
@@ -514,8 +527,6 @@ void Scene_OnlineMatch::Restart()
 	localPlayer.currentEnergyPoints = 100;
 	remotePlayer.currentEnergyPoints = 100;
 	thisMatchState = MatchState::Start;
-
-
 
 	restartCounter = 0;
 }

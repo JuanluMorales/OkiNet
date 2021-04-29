@@ -12,8 +12,9 @@ enum class MsgTypes : uint32_t
 	SyncStateRequest,
 	SyncStateAnswer,
 	// Message id to receive the state of the remote player
-	ReceivePlayerState
-
+	ReceivePlayerState,
+	// Message to inform that the match will reset, used to restart when desync happens
+	RestartRequest
 };
 
 // The synchronization state of both peers
@@ -60,6 +61,8 @@ public:
 	void PingRequest();
 	// Send a state request. Pass local player state as argument
 	void SyncStateRequest();
+	// Send a match restart request
+	void RestartRequest();
 
 	// Set the network technique to deal with latency
 	void SetNetworkTechnique(NetworkTechnique nw) { currentNetworkTechnique = nw; }
@@ -159,6 +162,7 @@ public:
 	int extraUpdateMessagesReceived = 0; // in case we receive more than 1 update message, keep track of it with this counter
 
 	bool peerDisconnected = false;
+	bool shouldRestartThisFrame = false; // Used by the scene to restart the match and reposition the players so everythings in sync
 	bool receivedRemoteUpdateThisFrame = false; // Has the local player received a player status received message this frame?
 	bool localInputThisFrame = false; // To save on bandwith when not using lockstep, only send 
 
