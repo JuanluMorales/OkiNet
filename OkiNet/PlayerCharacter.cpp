@@ -209,6 +209,8 @@ void PlayerCharacter::Update(float dt, sf::Window* wnd, PlayerCharacter* playerT
 		}
 		else if (GetNetworkTechnique() == NetworkTechnique::Rollback)
 		{
+			FRAME_DELAY = thisPeer->ROLLBACK_DELAY_FRAMES;
+
 			// Send the delayed status update
 			if (!thisPeer->delayedPlayerStatuses.empty())
 			{
