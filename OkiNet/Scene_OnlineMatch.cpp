@@ -460,6 +460,21 @@ void Scene_OnlineMatch::OverrideHandleInput(float dt)
 		window->close();
 	}
 
+	if (isHost)
+	{
+		if (input->IsKeyDown(sf::Keyboard::Numpad0)) {
+			thisPeer->currentNetworkTechnique = NetworkTechnique::None;
+		}
+		if (input->IsKeyDown(sf::Keyboard::Numpad1)) {
+			thisPeer->currentNetworkTechnique = NetworkTechnique::DeterministicLockstep;
+		}
+		if (input->IsKeyDown(sf::Keyboard::Numpad2)) {
+			thisPeer->currentNetworkTechnique = NetworkTechnique::InputDelay;
+		}
+		if (input->IsKeyDown(sf::Keyboard::Numpad3)) {
+			thisPeer->currentNetworkTechnique = NetworkTechnique::Rollback;
+		}
+	}
 	// Dont accept input until the remote is ready -> potential critical desync issue
 	if (remotePlayerConnected)
 	{

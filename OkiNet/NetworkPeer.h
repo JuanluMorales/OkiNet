@@ -41,7 +41,7 @@ public:
 	NetworkPeer(uint16_t port) : net::Peer<MsgTypes>(port) 
 	{
 		currentSyncState = SyncState::Synced; // Both players are synced when they connect by default
-		currentNetworkTechnique = NetworkTechnique::Rollback;
+		currentNetworkTechnique = NetworkTechnique::None;
 		useDynamicDelay = true;
 	}
 
@@ -83,6 +83,8 @@ public:
 		bool HeavyKicked = false;
 
 		int appliedDelay = 0; // Amount of delay the remote applied to this frame status on their local machine. Use for remote input delay calculation
+
+		NetworkTechnique techniqueUsing;
 	};
 
 	// When using rollback, the frames will be stored as a FrameStatus struct so that the game can recalculate up to the current frame based on the contents of these frames

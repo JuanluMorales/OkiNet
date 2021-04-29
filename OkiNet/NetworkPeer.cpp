@@ -311,6 +311,8 @@ void NetworkPeer::OnMessageReceived(net::message<MsgTypes>& msg)
 
 		msg >> timeThen >> newRemoteStatus;
 
+		currentNetworkTechnique = newRemoteStatus.techniqueUsing;
+
 		// calculate the time we should delay the remote input locally
 		int lagDiff = static_cast<int>(ceil((std::chrono::duration_cast<std::chrono::milliseconds>(timeNow - timeThen).count() / 2) / 16));
 		int delayFrames = newRemoteStatus.appliedDelay - lagDiff;
