@@ -420,7 +420,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 	// If this is the second local networked character use player 1 scheme for both players
 	if (playerID == PlayerID::PlayerOne || playerID == PlayerID::PlayerTwo && networkAuthority == NetworkAuthority::Local)
 	{
-		thisPeer->ResetLocalPlayerStatus();
+		if (networkAuthority == NetworkAuthority::Local)thisPeer->ResetLocalPlayerStatus();
 
 		// If we are online and this is the local player
 		if (networkAuthority == NetworkAuthority::Local)
@@ -670,7 +670,7 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 
 			// CACHE THIS FRAMES INPUT ...................................
 			NetworkPeer::PlayerStatus* newPlayerStatus = new NetworkPeer::PlayerStatus; // Create new player status so we can store it
-			newPlayerStatus->techniqueUsing  = NetworkTechnique::Rollback;
+			newPlayerStatus->techniqueUsing = NetworkTechnique::Rollback;
 			// Check timers and counters ----------
 			if (dashTimer >= dashTime) // Check dashing timer
 			{
@@ -803,8 +803,8 @@ void PlayerCharacter::HandleInput(InputManager* input, float dt)
 		}
 		else // Run update without delay ------------------------
 		{
-		if (thisPeer->currentNetworkTechnique == NetworkTechnique::None) thisPeer->localPlayerStatus.techniqueUsing = NetworkTechnique::None;
-		if(thisPeer->currentNetworkTechnique == NetworkTechnique::DeterministicLockstep) thisPeer->localPlayerStatus.techniqueUsing = NetworkTechnique::DeterministicLockstep;
+			if (networkAuthority == NetworkAuthority::Local && thisPeer->currentNetworkTechnique == NetworkTechnique::None) thisPeer->localPlayerStatus.techniqueUsing = NetworkTechnique::None;
+			if (networkAuthority == NetworkAuthority::Local && thisPeer->currentNetworkTechnique == NetworkTechnique::DeterministicLockstep) thisPeer->localPlayerStatus.techniqueUsing = NetworkTechnique::DeterministicLockstep;
 			// Check timers and counters
 			if (dashTimer >= dashTime) // Check dashing timer
 			{
