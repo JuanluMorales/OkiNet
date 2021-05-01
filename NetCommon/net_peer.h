@@ -62,47 +62,46 @@ namespace net
 		{
 			// Call lambda function asynchronously
 			asioAcceptor.async_accept([this](/*method params*/ std::error_code ec, asio::ip::tcp::socket socket)
-			{
-				bool succesfulCon = false;
-				/*Function body*/
-				if (!ec)
 				{
-					ipAddress = socket.remote_endpoint().address().to_string();
-					UDPportNumber = portNumber + 1;
-					// Print out address
-					std::cout << "Incoming connection: " << socket.remote_endpoint() << "\n";
+					bool succesfulCon = false;
+					/*Function body*/
+					if (!ec)
+					{
+						ipAddress = socket.remote_endpoint().address().to_string();
+						UDPportNumber = portNumber + 2;
+						// Print out address
+						std::cout << "Incoming connection: " << socket.remote_endpoint() << "\n";
 
-					// HANDLE CONNECTION OBJECT --------------------------
-					asio::ip::udp::resolver resolver2(context);
-					asio::ip::udp::resolver::query query(asio::ip::udp::v4(), ipAddress, std::to_string(UDPportNumber));
-					asio::ip::udp::resolver::iterator iter = resolver2.resolve(query);
-					asio::ip::udp::endpoint endpointsUDP = *iter;
-					asio::ip::udp::socket tempSockUDP(context, endpointsUDP);
-					// Create the new connection as a shared ptr
-					std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(context, std::move(socket), std::move(tempSockUDP), messagesIn);
+						// HANDLE CONNECTION OBJECT --------------------------
+						// local socket
+						asio::ip::udp::socket tempSockUDP(context, asio::ip::udp::endpoint(asio::ip::udp::v4(), UDPportNumber));
+						tempSockUDP.set_option(asio::ip::udp::socket::reuse_address(true));
 
-					connection = std::move(newConn);
+						// Create the new connection as a shared ptr
+						std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(context, std::move(socket), std::move(tempSockUDP), messagesIn);
 
-					// Start the asynchronous read to work on the background
-					connection->Listen_TCP();
-					connection->ConnectToUDP(portNumber + 2, ipAddress);
+						connection = std::move(newConn);
 
-					std::cout << "Connection succesful." << "\n";
-					OnPeerConnect();
-					succesfulCon = true;
+						// Start the asynchronous read to work on the background
+						connection->Listen_TCP();
+						connection->ConnectToUDP(portNumber + 1, ipAddress); // connect to remote socket
 
-					// Close as theres no need to listen for more connections
-					asioAcceptor.close();
-				}
-				else
-				{
-					// Error while accepting a client
-					std::cout << "Incoming connection error: " << ec.message() << "\n";
-				}
+						std::cout << "Connection succesful." << "\n";
+						OnPeerConnect();
+						succesfulCon = true;
 
-				// Make sure asio does not run out of tasks so it does not close
-				if (!succesfulCon) WaitForConnection();
-			});
+						// Close as theres no need to listen for more connections
+						asioAcceptor.close();
+					}
+					else
+					{
+						// Error while accepting a client
+						std::cout << "Incoming connection error: " << ec.message() << "\n";
+					}
+
+					// Make sure asio does not run out of tasks so it does not close
+					if (!succesfulCon) WaitForConnection();
+				});
 		}
 
 	public:
@@ -112,22 +111,21 @@ namespace net
 			try
 			{
 				ipAddress = host;
-				UDPportNumber = portNumber + 2;
+				UDPportNumber = portNumber + 1;
+
 				// Resolve hostname/ip into address
 				asio::ip::tcp::resolver resolver(context);
 				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port)); // url magic
 
-				asio::ip::udp::resolver resolver2(context);
-				asio::ip::udp::resolver::query query(asio::ip::udp::v4(), ipAddress, std::to_string(UDPportNumber));
-				asio::ip::udp::resolver::iterator iter = resolver2.resolve(query);
-				asio::ip::udp::endpoint endpointsUDP = *iter;
-				asio::ip::udp::socket tempSockUDP(context, endpointsUDP);
+				asio::ip::udp::socket tempSockUDP(context, asio::ip::udp::endpoint(asio::ip::udp::v4(), UDPportNumber));
+				tempSockUDP.set_option(asio::ip::udp::socket::reuse_address(true));
 				// Create connection
 				connection = std::make_unique<Connection<T>>(context, asio::ip::tcp::socket(context), std::move(tempSockUDP), messagesIn);
 
 				// Connect to host client
 				connection->ConnectTo(endpoints);
-				connection->ConnectToUDP(portNumber + 1, ipAddress);
+				connection->ConnectToUDP(portNumber + 2, ipAddress);
+
 				// Create the thread to run the context
 				thrContext = std::thread([this]() { context.run(); });
 
@@ -231,9 +229,9 @@ namespace net
 
 		}
 
-		bool IsMessageListEmpty() 
-		{ 
-			return messagesIn.empty(); 
+		bool IsMessageListEmpty()
+		{
+			return messagesIn.empty();
 		}
 
 		void PopFrontMessage()
