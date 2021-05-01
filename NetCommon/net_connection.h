@@ -24,30 +24,37 @@ namespace net
 			// ASYNC - Attempt connection
 			asio::async_connect(socket_tcp, endpoints,
 				[this](std::error_code ec, asio::ip::tcp::endpoint endpoint)
-			{
-				if (!ec)
 				{
-					ReadHeader_TCP();
-				}
-			});
+					if (!ec)
+					{
+						ReadHeader_TCP();
+					}
+				});
 		}
 
 		// "Connect" udp to use async methods without passing endpoints
 		void ConnectToUDP(uint16_t portNumber, std::string ipAddress)
 		{
 			// ASYNC - Attempt connection TODO: MAKE ASYNC?
-			
-			if (socket_udp.is_open())
-			{
-				asio::error_code ec;
-				socket_udp.connect(asio::ip::udp::endpoint(asio::ip::make_address(ipAddress), portNumber), ec);
+			asio::error_code ec;
 
-				if (!ec)
-				{
-					ReadHeader_UDP();
-				}
-				else std::cout << "UDP Connection failed: " << ec.message() << "\n.";
+			socket_udp.open(asio::ip::udp::v4(), ec);
+
+			asio::ip::udp::resolver resolver2(asioContext);
+			asio::ip::udp::resolver::query query(asio::ip::udp::v4(), ipAddress, std::to_string(portNumber));
+			asio::ip::udp::resolver::iterator iter = resolver2.resolve(query);
+			asio::ip::udp::endpoint endpointsUDP = *iter;
+
+			socket_udp.bind(endpointsUDP);
+
+			socket_udp.connect(endpointsUDP, ec);
+
+			if (!ec)
+			{
+				ReadHeader_UDP();
 			}
+			else std::cout << "UDP Connection failed: " << ec.message() << "\n.";
+
 		}
 
 		// Asynchronously close the socket so that ASIO can do so when apropriate
@@ -69,16 +76,16 @@ namespace net
 		{
 			asio::post(asioContext,
 				[this, msg]()
-			{
-				// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO:
-				// Assume if the out queue is not empty, ASIO is working on sending
-				bool writingMessage = !messagesOut.empty();
-				messagesOut.push_back(msg);
-				if (!writingMessage)
 				{
-					WriteHeader_TCP();
-				}
-			});
+					// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO:
+					// Assume if the out queue is not empty, ASIO is working on sending
+					bool writingMessage = !messagesOut.empty();
+					messagesOut.push_back(msg);
+					if (!writingMessage)
+					{
+						WriteHeader_TCP();
+					}
+				});
 		}
 
 		// ASYNC - Send/post a message to the connection
@@ -86,16 +93,16 @@ namespace net
 		{
 			asio::post(asioContext,
 				[this, msg]()
-			{
-				// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO:
-				// Assume if the out queue is not empty, ASIO is working on sending
-				bool writingMessage = !messagesOut.empty();
-				messagesOut.push_back(msg);
-				if (!writingMessage)
 				{
-					WriteHeader_UDP();
-				}
-			});
+					// Check if the queue is empty or not. This is done because of the asynchronous nature of ASIO:
+					// Assume if the out queue is not empty, ASIO is working on sending
+					bool writingMessage = !messagesOut.empty();
+					messagesOut.push_back(msg);
+					if (!writingMessage)
+					{
+						WriteHeader_UDP();
+					}
+				});
 		}
 
 		// If socket is ready, start reading headers
@@ -111,26 +118,26 @@ namespace net
 		{
 			asio::async_read(socket_tcp, asio::buffer(&tempIn.header, sizeof(message_header<T>)),
 				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
 				{
-					if (tempIn.header.size > 0) // if the header is larger than 0, there must be a body
+					if (!ec)
 					{
-						// Allocate enough space to the body based on the header size info
-						tempIn.body.resize(tempIn.header.size);
-						ReadBody_TCP(); // ASYNC
+						if (tempIn.header.size > 0) // if the header is larger than 0, there must be a body
+						{
+							// Allocate enough space to the body based on the header size info
+							tempIn.body.resize(tempIn.header.size);
+							ReadBody_TCP(); // ASYNC
+						}
+						else // message is empty/ no body
+						{
+							AddToIncomingMessageQueue_TCP();
+						}
 					}
-					else // message is empty/ no body
+					else
 					{
-						AddToIncomingMessageQueue_TCP();
+						std::cout << "[TCP] Reading message header failed.\n";
+						socket_tcp.close();
 					}
-				}
-				else
-				{
-					std::cout << "[TCP] Reading message header failed.\n";
-					socket_tcp.close();
-				}
-			});
+				});
 
 		}
 
@@ -139,17 +146,17 @@ namespace net
 		{
 			asio::async_read(socket_tcp, asio::buffer(tempIn.body.data(), tempIn.body.size()),
 				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
 				{
-					AddToIncomingMessageQueue_TCP();
-				}
-				else
-				{
-					std::cout << "[TCP] Reading message body failed.\n";
-					socket_tcp.close();
-				}
-			});
+					if (!ec)
+					{
+						AddToIncomingMessageQueue_TCP();
+					}
+					else
+					{
+						std::cout << "[TCP] Reading message body failed.\n";
+						socket_tcp.close();
+					}
+				});
 		}
 
 		// ASYNC - Asynchronous write operation of the header
@@ -157,14 +164,38 @@ namespace net
 		{
 			asio::async_write(socket_tcp, asio::buffer(&messagesOut.front().header, sizeof(message_header<T>)),
 				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
 				{
-					if (messagesOut.front().body.size() > 0) // is there a body to send?
+					if (!ec)
 					{
-						WriteBody_TCP();
+						if (messagesOut.front().body.size() > 0) // is there a body to send?
+						{
+							WriteBody_TCP();
+						}
+						else // Pop message and check if theres more
+						{
+							messagesOut.pop_front();
+
+							if (!messagesOut.empty())
+							{
+								WriteHeader_TCP();
+							}
+						}
 					}
-					else // Pop message and check if theres more
+					else
+					{
+						std::cout << "[TCP] Writing message header failed.\n";
+						socket_tcp.close();
+					}
+				});
+		}
+
+		// ASYNC
+		void WriteBody_TCP()
+		{
+			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().body.data(), messagesOut.front().body.size()),
+				[this](std::error_code ec, std::size_t length)
+				{
+					if (!ec)
 					{
 						messagesOut.pop_front();
 
@@ -173,36 +204,12 @@ namespace net
 							WriteHeader_TCP();
 						}
 					}
-				}
-				else
-				{
-					std::cout << "[TCP] Writing message header failed.\n";
-					socket_tcp.close();
-				}
-			});
-		}
-
-		// ASYNC
-		void WriteBody_TCP()
-		{
-			asio::async_write(socket_tcp, asio::buffer(messagesOut.front().body.data(), messagesOut.front().body.size()),
-				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
-				{
-					messagesOut.pop_front();
-
-					if (!messagesOut.empty())
+					else
 					{
-						WriteHeader_TCP();
+						std::cout << "[TCP] Writing message body failed.\n";
+						socket_tcp.close();
 					}
-				}
-				else
-				{
-					std::cout << "[TCP] Writing message body failed.\n";
-					socket_tcp.close();
-				}
-			});
+				});
 		}
 #pragma endregion
 
@@ -212,26 +219,26 @@ namespace net
 		{
 			socket_udp.async_receive(asio::buffer(&tempIn.header, sizeof(message_header<T>)),
 				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
 				{
-					if (tempIn.header.size > 0) // if the header is larger than 0, there must be a body
+					if (!ec)
 					{
-						// Allocate enough space to the body based on the header size info
-						tempIn.body.resize(tempIn.header.size);
-						ReadBody_UDP(); // ASYNC
+						if (tempIn.header.size > 0) // if the header is larger than 0, there must be a body
+						{
+							// Allocate enough space to the body based on the header size info
+							tempIn.body.resize(tempIn.header.size);
+							ReadBody_UDP(); // ASYNC
+						}
+						else // message is empty/ no body
+						{
+							AddToIncomingMessageQueue_UDP();
+						}
 					}
-					else // message is empty/ no body
+					else
 					{
-						AddToIncomingMessageQueue_UDP();
+						std::cout << "[UDP] Reading message header failed: " << ec.message() << "\n";
+						socket_udp.close();
 					}
-				}
-				else
-				{
-					std::cout << "[UDP] Reading message header failed: " << ec.message() << "\n";
-					socket_udp.close();
-				}
-			});
+				});
 
 		}
 
@@ -240,17 +247,17 @@ namespace net
 		{
 			socket_udp.async_receive(asio::buffer(tempIn.body.data(), tempIn.body.size()),
 				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
 				{
-					AddToIncomingMessageQueue_UDP();
-				}
-				else
-				{
-					std::cout << "[UDP] Reading message body failed.\n";
-					socket_udp.close();
-				}
-			});
+					if (!ec)
+					{
+						AddToIncomingMessageQueue_UDP();
+					}
+					else
+					{
+						std::cout << "[UDP] Reading message body failed.\n";
+						socket_udp.close();
+					}
+				});
 		}
 
 		// ASYNC - Asynchronous write operation of the header
@@ -258,14 +265,38 @@ namespace net
 		{
 			socket_udp.async_send(asio::buffer(&messagesOut.front().header, sizeof(message_header<T>)),
 				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
 				{
-					if (messagesOut.front().body.size() > 0) // is there a body to send?
+					if (!ec)
 					{
-						WriteBody_UDP();
+						if (messagesOut.front().body.size() > 0) // is there a body to send?
+						{
+							WriteBody_UDP();
+						}
+						else // Pop message and check if theres more
+						{
+							messagesOut.pop_front();
+
+							if (!messagesOut.empty())
+							{
+								WriteHeader_UDP();
+							}
+						}
 					}
-					else // Pop message and check if theres more
+					else
+					{
+						std::cout << "[UDP] Writing message header failed: " << ec.message() << ".\n";
+						socket_udp.close();
+					}
+				});
+		}
+
+		// ASYNC
+		void WriteBody_UDP()
+		{
+			socket_udp.async_send(asio::buffer(messagesOut.front().body.data(), messagesOut.front().body.size()),
+				[this](std::error_code ec, std::size_t length)
+				{
+					if (!ec)
 					{
 						messagesOut.pop_front();
 
@@ -274,36 +305,12 @@ namespace net
 							WriteHeader_UDP();
 						}
 					}
-				}
-				else
-				{
-					std::cout << "[UDP] Writing message header failed: " << ec.message() << ".\n";
-					socket_udp.close();
-				}
-			});
-		}
-
-		// ASYNC
-		void WriteBody_UDP()
-		{
-			socket_udp.async_send(asio::buffer(messagesOut.front().body.data(), messagesOut.front().body.size()),
-				[this](std::error_code ec, std::size_t length)
-			{
-				if (!ec)
-				{
-					messagesOut.pop_front();
-
-					if (!messagesOut.empty())
+					else
 					{
-						WriteHeader_UDP();
+						std::cout << "[UDP] Writing message body failed.\n";
+						socket_udp.close();
 					}
-				}
-				else
-				{
-					std::cout << "[UDP] Writing message body failed.\n";
-					socket_udp.close();
-				}
-			});
+				});
 		}
 #pragma endregion
 		void AddToIncomingMessageQueue_TCP()
