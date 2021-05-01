@@ -73,7 +73,11 @@ namespace net
 					std::cout << "Incoming connection: " << socket.remote_endpoint() << "\n";
 
 					// HANDLE CONNECTION OBJECT --------------------------
-					asio::ip::udp::socket tempSockUDP(context);
+					asio::ip::udp::resolver resolver2(context);
+					asio::ip::udp::resolver::query query(asio::ip::udp::v4(), ipAddress, std::to_string(UDPportNumber));
+					asio::ip::udp::resolver::iterator iter = resolver2.resolve(query);
+					asio::ip::udp::endpoint endpointsUDP = *iter;
+					asio::ip::udp::socket tempSockUDP(context, endpointsUDP);
 					// Create the new connection as a shared ptr
 					std::shared_ptr<Connection<T>> newConn = std::make_shared<Connection<T>>(context, std::move(socket), std::move(tempSockUDP), messagesIn);
 
@@ -113,7 +117,11 @@ namespace net
 				asio::ip::tcp::resolver resolver(context);
 				asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(host, std::to_string(port)); // url magic
 
-				asio::ip::udp::socket tempSockUDP(context);
+				asio::ip::udp::resolver resolver2(context);
+				asio::ip::udp::resolver::query query(asio::ip::udp::v4(), ipAddress, std::to_string(UDPportNumber));
+				asio::ip::udp::resolver::iterator iter = resolver2.resolve(query);
+				asio::ip::udp::endpoint endpointsUDP = *iter;
+				asio::ip::udp::socket tempSockUDP(context, endpointsUDP);
 				// Create connection
 				connection = std::make_unique<Connection<T>>(context, asio::ip::tcp::socket(context), std::move(tempSockUDP), messagesIn);
 
